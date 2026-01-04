@@ -1,0 +1,58 @@
+# ==============================================================
+# SHOPIZER CBSE - APPLICATION CONFIGURATION TEMPLATE
+# ==============================================================
+# Copy this file to 'application.properties' and update the values
+# File location: springboot/src/main/resources/application.properties
+# ==============================================================
+
+# Application Name
+spring.application.name=shopizer-springboot
+
+# Server Configuration
+server.port=8080
+
+# ==============================================================
+# DATABASE CONFIGURATION (SUPABASE POSTGRESQL)
+# ==============================================================
+# Get these values from your Supabase project:
+# 1. Go to Supabase Dashboard > Project Settings > Database
+# 2. Copy the connection string details
+
+spring.datasource.url=jdbc:postgresql://YOUR_SUPABASE_HOST:5432/postgres
+spring.datasource.username=postgres
+spring.datasource.password=YOUR_DATABASE_PASSWORD
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# ==============================================================
+# JPA/HIBERNATE CONFIGURATION
+# ==============================================================
+# ddl-auto options:
+#   - update: Update schema automatically (recommended for development)
+#   - create: Create schema, destroying previous data
+#   - create-drop: Create and drop when SessionFactory closes
+#   - validate: Validate schema, make no changes
+#   - none: Do nothing
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.format_sql=true
+
+# ==============================================================
+# SWAGGER/OPENAPI CONFIGURATION
+# ==============================================================
+# Access Swagger UI at: http://localhost:8080/swagger-ui.html
+# Access API docs at: http://localhost:8080/api-docs
+
+springdoc.api-docs.path=/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.enabled=true
+
+# ==============================================================
+# LOGGING CONFIGURATION (OPTIONAL)
+# ==============================================================
+# Uncomment to enable debug logging
+
+# logging.level.org.springframework=DEBUG
+# logging.level.org.hibernate.SQL=DEBUG
+# logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
