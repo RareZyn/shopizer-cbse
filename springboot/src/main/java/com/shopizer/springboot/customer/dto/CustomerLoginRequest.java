@@ -2,10 +2,24 @@ package com.shopizer.springboot.customer.dto;
 
 /**
  * Customer Login Request DTO
- * FR-025: The system shall support customer authentication (login/logout)
+ * FR-025: The system shall allow customers to login and logout
  */
 public class CustomerLoginRequest {
-    // Request fields will be implemented here
-    // - email
-    // - password
+
+    private String email;
+    private String password;
+
+    public CustomerLoginRequest() {}
+
+    public CustomerLoginRequest(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
+    // Getters and Setters
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 }
