@@ -8,11 +8,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.shopizer.springboot.merchant.dto.MerchantStoreRequest;
+import com.shopizer.springboot.merchant.dto.MerchantStoreResponse;
+// import com.shopizer.springboot.merchant.service.MerchantService;
+import jakarta.validation.Valid;
+// import org.springframework.http.HttpStatus;
+// import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 /**
  * Merchant REST Controller
- * FR-015: Merchant store profile management
+ * FR-015: Merchant register and login
  */
 @RestController
 @RequestMapping("/api/v1/merchants")
@@ -57,4 +64,47 @@ public class MerchantController {
         merchantService.deleteMerchant(id);
         return ResponseEntity.noContent().build();
     }
+
+    // UC13 step2: list stores
+    @GetMapping("/{merchantId}/stores")
+    @Operation(summary = "Get store list", description = "FR-015: Get all stores for a merchant")
+    public List<MerchantStoreResponse> listStores(@PathVariable Long merchantId) {
+        return merchantService.listStores(merchantId);
+    }
+
+    // UC13 create store
+    @PostMapping("/{merchantId}/stores")
+    @ResponseStatus(HttpStatus.CREATED)
+    public MerchantStoreResponse createStore(
+            @PathVariable Long merchantId,
+            @Valid @RequestBody MerchantStoreRequest req
+    ) {
+        return merchantService.createStore(merchantId, req);
+    }
+
+    // View store details
+    @GetMapping("/{merchantId}/stores/{storeId}")
+    public MerchantStoreResponse getStore(
+            @PathVariable Long merchantId,
+            @PathVariable Long storeId
+    ) {
+        return merchantService.getStore(merchantId, storeId);
+    }
+
+    // Update store details
+    @PutMapping("/{merchantId}/stores/{storeId}")
+    public MerchantStoreResponse updateStore(
+            @PathVariable Long merchantId,
+            @PathVariable Long storeId,
+            @Valid @RequestBody MerchantStoreRequest req
+    ) {
+        return merchantService.updateStore(merchantId, storeId, req);
+    }
+
+    @DeleteMapping("/{merchantId}/stores/{storeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteStore(@PathVariable Long merchantId, @PathVariable Long storeId) {
+    merchantService.deleteStore(merchantId, storeId);
+}
+
 }

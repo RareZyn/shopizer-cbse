@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 /**
- * Merchant Repository Interface
+ * Merchant Repository Interface  
  * FR-015: Merchant store profile management
  */
 @Repository
