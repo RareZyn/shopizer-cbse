@@ -1,0 +1,32 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: com.shopizer.springboot.catalog
+Bundle-Version: 1.0.0
+Bundle-Name: Shopizer Catalog Module
+Bundle-Description: Catalog Module for Product and Category Management (FR-001 to FR-005)
+Bundle-Vendor: Shopizer CBSE
+Bundle-Activator: com.shopizer.springboot.catalog.activator.CatalogBundleActivator
+
+Export-Package: com.shopizer.springboot.catalog.service;version="1.0.0",
+ com.shopizer.springboot.catalog.entity;version="1.0.0",
+ com.shopizer.springboot.catalog.dto;version="1.0.0"
+
+Import-Package: org.osgi.framework;version="[1.10,2)",
+ org.slf4j;version="[2.0,3)",
+ org.springframework.*;resolution:=optional,
+ jakarta.persistence;version="[3.2,4)",
+ io.swagger.v3.oas.annotations;version="[2.2,3)",
+ java.lang,
+ java.util,
+ java.math,
+ java.time
+
+Private-Package: com.shopizer.springboot.catalog.repository,
+ com.shopizer.springboot.catalog.controller,
+ com.shopizer.springboot.catalog.service.impl,
+ com.shopizer.springboot.catalog.activator,
+ com.shopizer.springboot.catalog.osgi
+
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=21))"
+
+
