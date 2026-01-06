@@ -108,8 +108,81 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional
     public Product updateProduct(Long id, Product product) {
-        product.setId(id);
-        return productRepository.save(product);
+        // Check if product exists
+        Optional<Product> existingProductOpt = productRepository.findById(id);
+        if (existingProductOpt.isEmpty()) {
+            throw new IllegalArgumentException("Product with id " + id + " not found");
+        }
+        
+        Product existingProduct = existingProductOpt.get();
+        
+        // Validate SKU if provided
+        if (product.getSku() != null) {
+            String trimmedSku = product.getSku().trim();
+            if (trimmedSku.isEmpty()) {
+                throw new IllegalArgumentException("SKU cannot be empty");
+            }
+            // Check for duplicate SKU (excluding current product)
+            Optional<Product> duplicateProduct = productRepository.findBySku(trimmedSku);
+            if (duplicateProduct.isPresent() && !duplicateProduct.get().getId().equals(id)) {
+                throw new IllegalArgumentException("Product with SKU '" + trimmedSku + "' already exists");
+            }
+            existingProduct.setSku(trimmedSku);
+        }
+        
+        // Validate name if provided
+        if (product.getName() != null) {
+            String trimmedName = product.getName().trim();
+            if (trimmedName.isEmpty()) {
+                throw new IllegalArgumentException("Product name cannot be empty");
+            }
+            existingProduct.setName(trimmedName);
+        }
+        
+        // Validate price if provided
+        if (product.getPrice() != null) {
+            if (product.getPrice().compareTo(java.math.BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("Product price cannot be negative");
+            }
+            existingProduct.setPrice(product.getPrice());
+        }
+        
+        // Update other fields if provided
+        if (product.getDescription() != null) {
+            existingProduct.setDescription(product.getDescription().trim());
+        }
+        
+        if (product.getStockQuantity() != null) {
+            existingProduct.setStockQuantity(product.getStockQuantity());
+        }
+        
+        if (product.getLowStockThreshold() != null) {
+            existingProduct.setLowStockThreshold(product.getLowStockThreshold());
+        }
+        
+        if (product.getIsActive() != null) {
+            existingProduct.setIsActive(product.getIsActive());
+        }
+        
+        // Handle category reference properly
+        if (product.getCategory() != null) {
+            Long categoryId = product.getCategory().getId();
+            
+            if (categoryId != null && categoryId > 0) {
+                // Category ID provided - fetch from database
+                Optional<Category> categoryOpt = categoryRepository.findById(categoryId);
+                if (categoryOpt.isPresent()) {
+                    existingProduct.setCategory(categoryOpt.get());
+                } else {
+                    throw new IllegalArgumentException("Category with id " + categoryId + " not found");
+                }
+            } else if (categoryId == null || categoryId == 0) {
+                // Explicitly set to null if category ID is 0 or null
+                existingProduct.setCategory(null);
+            }
+        }
+        
+        return productRepository.save(existingProduct);
     }
 
     @Override
@@ -122,9 +195,22 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional
     public Category createCategory(Category category) {
+        // Validate required fields
+        if (category.getName() == null || category.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Category name is required and cannot be empty");
+        }
+        
         // Force new entity creation - ignore any ID sent in request (including id: 0)
         // This ensures Hibernate treats it as a new entity, not an update
         category.setId(null);
+        
+        // Trim name for consistency
+        category.setName(category.getName().trim());
+        
+        // Trim description if provided
+        if (category.getDescription() != null) {
+            category.setDescription(category.getDescription().trim());
+        }
         
         // Timestamps will be automatically set by @PrePersist in Category entity
         // No need to reset them as Category doesn't expose setters for these fields
@@ -145,8 +231,33 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional
     public Category updateCategory(Long id, Category category) {
-        category.setId(id);
-        return categoryRepository.save(category);
+        // Check if category exists
+        Optional<Category> existingCategoryOpt = categoryRepository.findById(id);
+        if (existingCategoryOpt.isEmpty()) {
+            throw new IllegalArgumentException("Category with id " + id + " not found");
+        }
+        
+        Category existingCategory = existingCategoryOpt.get();
+        
+        // Validate name if provided
+        if (category.getName() != null) {
+            String trimmedName = category.getName().trim();
+            if (trimmedName.isEmpty()) {
+                throw new IllegalArgumentException("Category name cannot be empty");
+            }
+            existingCategory.setName(trimmedName);
+        }
+        
+        // Update other fields if provided
+        if (category.getDescription() != null) {
+            existingCategory.setDescription(category.getDescription().trim());
+        }
+        
+        if (category.getIsActive() != null) {
+            existingCategory.setIsActive(category.getIsActive());
+        }
+        
+        return categoryRepository.save(existingCategory);
     }
 
     @Override
