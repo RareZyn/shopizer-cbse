@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopizer - E-Commerce Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #e94560, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            margin-bottom: 20px;
+        }
+
+        .course-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 30px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        .course-info p {
+            color: #ccc;
+            font-size: 0.95rem;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #e94560;
+            border: 2px solid #e94560;
+        }
+
+        .btn-outline:hover {
+            background: #e94560;
+            color: #fff;
+            transform: translateY(-3px);
+        }
+
+        .overview {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .overview h2 {
+            color: #e94560;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .overview p {
+            color: #ccc;
+            line-height: 1.8;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .module-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            border-color: #e94560;
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.2);
+        }
+
+        .module-card h3 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .module-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .module-card li {
+            color: #bbb;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.95rem;
+        }
+
+        .module-card li:last-child {
+            border-bottom: none;
+        }
+
+        .module-card li strong {
+            color: #888;
+            font-size: 0.85rem;
+            margin-right: 8px;
+        }
+
+        .tech-stack {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .tech-stack h2 {
+            color: #e94560;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tech-tag {
+            background: rgba(233, 69, 96, 0.2);
+            color: #ff6b6b;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        footer p {
+            margin-bottom: 10px;
+        }
+
+        .team-members {
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Shopizer</h1>
+            <p class="subtitle">Component-Based E-Commerce Platform</p>
+            <div class="course-info">
+                <p><strong>WIF3006</strong> - Component Based Software Engineering</p>
+                <p>Semester 1, 2025/2026 | Group 5</p>
+            </div>
+        </header>
+
+        <div class="buttons-container">
+            <a href="/swagger-ui.html" class="btn btn-primary">
+                <span>Swagger UI</span>
+            </a>
+            <a href="/api-docs" class="btn btn-secondary">
+                <span>API Documentation</span>
+            </a>
+            <a href="/api/v1" class="btn btn-outline">
+                <span>API Base URL</span>
+            </a>
+        </div>
+
+        <div class="overview">
+            <h2>Project Overview</h2>
+            <p>
+                Shopizer is a comprehensive e-commerce platform built using component-based software engineering principles.
+                The system is designed with a layered architecture consisting of Presentation Layer, Business Layer, and Data Layer.
+                It implements Spring Boot for the main application framework with OSGi bundle support for modular deployment.
+                The platform provides complete functionality for product catalog management, shopping cart operations,
+                order processing, payment handling, merchant store management, and customer account management.
+            </p>
+        </div>
+
+        <div class="modules-grid">
+            <div class="module-card">
+                <h3>Catalog Module</h3>
+                <ul>
+                    <li><strong>FR-001</strong> Manage products (CRUD)</li>
+                    <li><strong>FR-002</strong> Manage categories (CRUD)</li>
+                    <li><strong>FR-003</strong> Search products by keyword</li>
+                    <li><strong>FR-004</strong> Browse products by category</li>
+                    <li><strong>FR-005</strong> Track product stock levels</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>Cart Module</h3>
+                <ul>
+                    <li><strong>FR-006</strong> Manage cart items (Add, View, Update, Remove)</li>
+                    <li><strong>FR-007</strong> Calculate cart total automatically</li>
+                    <li><strong>FR-008</strong> Validate product availability</li>
+                    <li><strong>FR-009</strong> Persist cart for logged-in customers</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>Order Module</h3>
+                <ul>
+                    <li><strong>FR-010</strong> Place orders from cart</li>
+                    <li><strong>FR-011</strong> Generate unique order reference ID</li>
+                    <li><strong>FR-012</strong> View order history</li>
+                    <li><strong>FR-013</strong> Track and update order status</li>
+                    <li><strong>FR-014</strong> Cancel pending orders</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>Merchant Module</h3>
+                <ul>
+                    <li><strong>FR-015</strong> Merchant register and login</li>
+                    <li><strong>FR-016</strong> Manage store details (CRUD)</li>
+                    <li><strong>FR-017</strong> Manage inventory</li>
+                    <li><strong>FR-018</strong> View sales reports and analytics</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>Payment Module</h3>
+                <ul>
+                    <li><strong>FR-019</strong> Process payment for orders</li>
+                    <li><strong>FR-020</strong> Support multiple payment methods</li>
+                    <li><strong>FR-022</strong> Verify and record transactions</li>
+                    <li><strong>FR-023</strong> View payment history</li>
+                </ul>
+            </div>
+
+            <div class="module-card">
+                <h3>Customer Module</h3>
+                <ul>
+                    <li><strong>FR-024</strong> Register new account</li>
+                    <li><strong>FR-025</strong> Login and logout</li>
+                    <li><strong>FR-026</strong> Manage profile (View, Update)</li>
+                    <li><strong>FR-027</strong> Manage addresses (CRUD)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tech-stack">
+            <h2>Technology Stack</h2>
+            <div class="tech-tags">
+                <span class="tech-tag">Spring Boot 4.0.1</span>
+                <span class="tech-tag">Java 21</span>
+                <span class="tech-tag">PostgreSQL</span>
+                <span class="tech-tag">Spring Data JPA</span>
+                <span class="tech-tag">Spring Security</span>
+                <span class="tech-tag">JWT Authentication</span>
+                <span class="tech-tag">OpenAPI / Swagger</span>
+                <span class="tech-tag">OSGi Bundles</span>
+                <span class="tech-tag">Maven</span>
+                <span class="tech-tag">Supabase</span>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>Group 5 Members</strong></p>
+            <p class="team-members">
+                Razin Bin Nazarudin (Leader) |
+                Aina Nur Malisa Binti Azizi |
+                Abdul Hanif Bin Abdul Aziz |
+                Yourisha Sofea Binti Mohd Youzaimi |
+                Jawwad Ibne Kabir
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
