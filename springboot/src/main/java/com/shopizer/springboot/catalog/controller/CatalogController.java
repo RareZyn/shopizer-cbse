@@ -16,6 +16,7 @@ import java.util.List;
  * FR-001: Product CRUD operations
  * FR-002: Category CRUD operations
  * FR-003: Search products by keyword
+ * FR-004: Browse products by category
  * FR-005: Track product stock levels
  */
 @RestController
@@ -105,6 +106,14 @@ public class CatalogController {
     @Operation(summary = "Search products", description = "FR-003: Search products by keyword")
     public ResponseEntity<List<Product>> searchProducts(@RequestParam String keyword) {
         return ResponseEntity.ok(catalogService.searchProducts(keyword));
+    }
+
+    // ==================== BROWSE BY CATEGORY ENDPOINT (FR-004) ====================
+
+    @GetMapping("/categories/{id}/products")
+    @Operation(summary = "Browse products by category", description = "FR-004: Get all products in a category")
+    public ResponseEntity<List<Product>> browseProductsByCategory(@PathVariable Long id) {
+        return ResponseEntity.ok(catalogService.browseProductsByCategory(id));
     }
 
     // ==================== STOCK ENDPOINT (FR-005) ====================

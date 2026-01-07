@@ -94,17 +94,5 @@ public class MerchantStore {
 
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
-    // Entity fields will be implemented here
-    // - id
-    // - merchantId
-    // - storeName
-    // - storeCode
-    // - description
-    // - logo
-    // - address
-    // - currency
-    // - defaultLanguage
-    // - isActive
-    // - createdAt
-    // - updatedAt
+
 }
