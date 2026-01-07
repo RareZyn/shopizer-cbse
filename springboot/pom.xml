@@ -114,13 +114,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- OSGi Framework (Apache Felix) -->
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.framework</artifactId>
-			<version>7.0.5</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>
@@ -133,99 +126,6 @@
 					<source>${java.version}</source>
 					<target>${java.version}</target>
 				</configuration>
-			</plugin>
-			
-			<!-- OSGi Bundle Plugin - Generates MANIFEST.MF and creates OSGi bundle JAR -->
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<version>5.1.8</version>
-				<executions>
-					<!-- Generate main manifest during process-classes phase (before package phase) -->
-					<execution>
-						<id>bundle-manifest</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>manifest</goal>
-						</goals>
-					</execution>
-					<!-- Create OSGi bundle JAR with classifier (separate from Spring Boot JAR) -->
-					<execution>
-						<id>bundle-jar</id>
-						<phase>package</phase>
-						<goals>
-							<goal>bundle</goal>
-						</goals>
-						<configuration>
-							<classifier>osgi-bundle</classifier>
-							<supportedProjectTypes>
-								<supportedProjectType>jar</supportedProjectType>
-							</supportedProjectTypes>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<instructions>
-						<!-- Bundle Identity -->
-						<Bundle-SymbolicName>com.shopizer.springboot.catalog</Bundle-SymbolicName>
-						<Bundle-Version>1.0.0</Bundle-Version>
-						<Bundle-Name>Shopizer Catalog Module</Bundle-Name>
-						<Bundle-Description>Catalog Module for Product and Category Management (FR-001 to FR-005)</Bundle-Description>
-						<Bundle-Vendor>Shopizer CBSE</Bundle-Vendor>
-						
-						<!-- Bundle Activator -->
-						<Bundle-Activator>com.shopizer.springboot.catalog.activator.CatalogBundleActivator</Bundle-Activator>
-						
-						<!-- Export Packages: Make these available to other bundles -->
-						<Export-Package>
-							com.shopizer.springboot.catalog.service;version=1.0.0,
-							com.shopizer.springboot.catalog.entity;version=1.0.0,
-							com.shopizer.springboot.catalog.dto;version=1.0.0
-						</Export-Package>
-						
-						<!-- Import Packages: Required dependencies -->
-						<Import-Package>
-							*,
-							org.springframework.*;resolution:=optional,
-							org.slf4j.*;version="[1.7,2)"
-						</Import-Package>
-						
-						<!-- Private Packages: Internal implementation (not exported) -->
-						<Private-Package>
-							com.shopizer.springboot.catalog.repository,
-							com.shopizer.springboot.catalog.controller,
-							com.shopizer.springboot.catalog.service.impl,
-							com.shopizer.springboot.catalog.activator
-						</Private-Package>
-					</instructions>
-				</configuration>
-			</plugin>
-			
-			<!-- Copy manifest to catalog-specific location -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.3.1</version>
-				<executions>
-					<execution>
-						<id>copy-catalog-manifest</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/catalog/META-INF</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${project.build.directory}/classes/META-INF</directory>
-									<includes>
-										<include>MANIFEST.MF</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			
 			<!-- Spring Boot Maven Plugin - Creates executable JAR -->
