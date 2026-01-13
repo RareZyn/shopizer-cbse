@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.shopizer.springboot.merchant.entity.MerchantStore; //link to MerchantStore entity
+
+
 /**
  * Product Entity
  * FR-001: The system shall allow CRUD operations for products
@@ -49,6 +52,10 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private MerchantStore store; // Each product belongs to exactly one store
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -93,4 +100,7 @@ public class Product {
 
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+    
+    public MerchantStore getStore() { return store; }
+    public void setStore(MerchantStore store) { this.store = store; } //product belong to exactly one store
 }

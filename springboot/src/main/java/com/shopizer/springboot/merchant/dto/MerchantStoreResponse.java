@@ -1,22 +1,21 @@
 package com.shopizer.springboot.merchant.dto;
 
+import java.time.Instant;
 /**
  * Merchant Store Response DTO
  * FR-015: The system shall allow merchants to manage their store profile
  */
-public class MerchantStoreResponse {
-    // Response fields will be implemented here
-    // - id
-    // - merchantId
-    // - storeName
-    // - storeCode
-    // - description
-    // - logo
-    // - address
-    // - currency
-    // - defaultLanguage
-    // - isActive
-    // - shippingOptions (List<ShippingOptionResponse>)
-    // - createdAt
-    // - updatedAt
-}
+public record MerchantStoreResponse (
+    Long id,
+    Long merchantId,
+    String storeName,
+    String storeCode,
+    String description,
+    String logoUrl,
+    String address,
+    String currency,
+    String defaultLanguage,
+    Boolean isActive,
+    Instant createdAt,
+    Instant updatedAt
+){}

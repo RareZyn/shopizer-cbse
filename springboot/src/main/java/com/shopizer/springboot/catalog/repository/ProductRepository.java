@@ -29,6 +29,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findBySku(String sku);
 
+    List<Product> findByStoreId(Long storeId); // Find products by store ID - added by yourisha
+    List<Product> findByStoreMerchantId(Long merchantId); // Find products by merchant ID through store - added by yourisha
+
+
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.category")
     List<Product> findAllWithCategory();
 
