@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.shopizer</groupId>
+        <artifactId>shopizer-osgi-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>com.shopizer.merchant</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>Shopizer OSGI - Merchant Module</name>
+    <description>Merchant store management, inventory, and sales reporting</description>
+
+    <dependencies>
+        <!-- Common Module -->
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Catalog Module (for product management) -->
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.catalog</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Order Module (for sales reports) -->
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.order</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- OSGI Core -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+        </dependency>
+
+        <!-- OSGI Compendium -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.cmpn</artifactId>
+        </dependency>
+
+        <!-- Spring Data JPA -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Hibernate -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <!-- SLF4J -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <Bundle-Activator>com.shopizer.merchant.activator.MerchantActivator</Bundle-Activator>
+                        <Export-Package>
+                            com.shopizer.merchant.api,
+                            com.shopizer.merchant.dto
+                        </Export-Package>
+                        <Import-Package>
+                            com.shopizer.common.entity,
+                            com.shopizer.common.exception,
+                            com.shopizer.catalog.api,
+                            com.shopizer.catalog.dto,
+                            com.shopizer.order.api,
+                            com.shopizer.order.dto,
+                            org.osgi.framework,
+                            org.osgi.util.tracker,
+                            org.slf4j,
+                            org.springframework.data.jpa.repository,
+                            jakarta.persistence,
+                            *
+                        </Import-Package>
+                        <Private-Package>
+                            com.shopizer.merchant.impl,
+                            com.shopizer.merchant.repository,
+                            com.shopizer.merchant.activator
+                        </Private-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

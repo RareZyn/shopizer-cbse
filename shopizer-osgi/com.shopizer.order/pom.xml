@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.shopizer</groupId>
+        <artifactId>shopizer-osgi-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>com.shopizer.order</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>Shopizer Order Module</name>
+    <description>Order Processing and Payment Module (FR-010 to FR-023)</description>
+
+    <dependencies>
+        <!-- Common Module -->
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.common</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- Cart Module (for order creation from cart) -->
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.cart</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- Catalog Module (for inventory management) -->
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.catalog</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- OSGI -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.cmpn</artifactId>
+        </dependency>
+
+        <!-- Spring Data JPA -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>com.shopizer.order</Bundle-SymbolicName>
+                        <Bundle-Name>Shopizer Order Module</Bundle-Name>
+                        <Bundle-Version>1.0.0</Bundle-Version>
+                        <Bundle-Activator>com.shopizer.order.activator.OrderActivator</Bundle-Activator>
+                        <Export-Package>
+                            com.shopizer.order.api,
+                            com.shopizer.order.dto,
+                            com.shopizer.order.payment
+                        </Export-Package>
+                        <Private-Package>
+                            com.shopizer.order.impl,
+                            com.shopizer.order.repository,
+                            com.shopizer.order.activator
+                        </Private-Package>
+                        <Import-Package>
+                            com.shopizer.common.entity,
+                            com.shopizer.common.exception,
+                            com.shopizer.common.dto,
+                            com.shopizer.cart.api,
+                            com.shopizer.cart.dto,
+                            com.shopizer.catalog.api,
+                            javax.persistence,
+                            org.springframework.data.jpa.repository,
+                            org.osgi.framework,
+                            org.slf4j,
+                            *
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

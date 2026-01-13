@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.shopizer</groupId>
+        <artifactId>shopizer-osgi-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>com.shopizer.customer</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>Shopizer OSGI - Customer Module</name>
+    <description>Customer management, authentication, and profile services</description>
+
+    <dependencies>
+        <!-- Common Module -->
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- OSGI Core -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+        </dependency>
+
+        <!-- OSGI Compendium -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.cmpn</artifactId>
+        </dependency>
+
+        <!-- Spring Data JPA -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Hibernate -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+
+        <!-- JWT -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <!-- SLF4J -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <Bundle-Activator>com.shopizer.customer.activator.CustomerActivator</Bundle-Activator>
+                        <Export-Package>
+                            com.shopizer.customer.api,
+                            com.shopizer.customer.dto
+                        </Export-Package>
+                        <Import-Package>
+                            com.shopizer.common.entity,
+                            com.shopizer.common.exception,
+                            com.shopizer.common.util,
+                            org.osgi.framework,
+                            org.osgi.util.tracker,
+                            org.slf4j,
+                            org.springframework.data.jpa.repository,
+                            jakarta.persistence,
+                            io.jsonwebtoken,
+                            *
+                        </Import-Package>
+                        <Private-Package>
+                            com.shopizer.customer.impl,
+                            com.shopizer.customer.repository,
+                            com.shopizer.customer.activator
+                        </Private-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

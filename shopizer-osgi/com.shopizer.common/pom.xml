@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.shopizer</groupId>
+        <artifactId>shopizer-osgi-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>com.shopizer.common</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>Shopizer Common Module</name>
+    <description>Shared entities, utilities, exceptions, and configuration</description>
+
+    <dependencies>
+        <!-- OSGI -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.cmpn</artifactId>
+        </dependency>
+
+        <!-- JPA & Hibernate -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+
+        <!-- Spring Data JPA -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+        </dependency>
+
+        <!-- JWT -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>com.shopizer.common</Bundle-SymbolicName>
+                        <Bundle-Name>Shopizer Common Module</Bundle-Name>
+                        <Bundle-Version>1.0.0</Bundle-Version>
+                        <Export-Package>
+                            com.shopizer.common.entity,
+                            com.shopizer.common.exception,
+                            com.shopizer.common.util,
+                            com.shopizer.common.dto
+                        </Export-Package>
+                        <Import-Package>
+                            javax.persistence,
+                            javax.persistence.criteria,
+                            org.springframework.data.jpa.repository,
+                            org.slf4j,
+                            *
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

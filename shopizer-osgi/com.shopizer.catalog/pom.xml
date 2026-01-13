@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.shopizer</groupId>
+        <artifactId>shopizer-osgi-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>com.shopizer.catalog</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>Shopizer Catalog Module</name>
+    <description>Product and Category Management Module</description>
+
+    <dependencies>
+        <!-- Common Module -->
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.common</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- OSGI -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.cmpn</artifactId>
+        </dependency>
+
+        <!-- Spring Data JPA -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>com.shopizer.catalog</Bundle-SymbolicName>
+                        <Bundle-Name>Shopizer Catalog Module</Bundle-Name>
+                        <Bundle-Version>1.0.0</Bundle-Version>
+                        <Bundle-Activator>com.shopizer.catalog.activator.CatalogActivator</Bundle-Activator>
+                        <Export-Package>
+                            com.shopizer.catalog.api,
+                            com.shopizer.catalog.dto
+                        </Export-Package>
+                        <Private-Package>
+                            com.shopizer.catalog.impl,
+                            com.shopizer.catalog.repository,
+                            com.shopizer.catalog.activator
+                        </Private-Package>
+                        <Import-Package>
+                            com.shopizer.common.entity,
+                            com.shopizer.common.exception,
+                            com.shopizer.common.dto,
+                            javax.persistence,
+                            org.springframework.data.jpa.repository,
+                            org.osgi.framework,
+                            org.slf4j,
+                            *
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
