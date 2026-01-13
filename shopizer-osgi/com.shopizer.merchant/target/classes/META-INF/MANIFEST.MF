@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1768294094015
+Bnd-LastModified: 1768315102531
 Build-Jdk-Spec: 21
 Bundle-Activator: com.shopizer.merchant.activator.MerchantActivator
 Bundle-Description: Merchant store management, inventory, and sales repo

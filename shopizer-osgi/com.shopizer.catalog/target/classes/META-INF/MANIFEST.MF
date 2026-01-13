@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1768294078671
+Bnd-LastModified: 1768315086261
 Build-Jdk-Spec: 21
 Bundle-Activator: com.shopizer.catalog.activator.CatalogActivator
 Bundle-Description: Product and Category Management Module

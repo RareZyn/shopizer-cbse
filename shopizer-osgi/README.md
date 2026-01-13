@@ -232,15 +232,24 @@ Database
 ### Prerequisites
 - Java 21
 - Maven 3.8+
-- PostgreSQL (optional - for persistence)
+- PostgreSQL (required for data persistence)
 
-### Database Setup (Optional)
-Update `persistence.xml` in each module:
+### Database Setup
+
+Database configuration is centralized in the **common module**:
+
+**Location:** `com.shopizer.common/src/main/resources/database.properties`
+
+⚠️ **IMPORTANT:** This file is in `.gitignore` and contains sensitive credentials. Never commit it to version control.
+
 ```properties
-javax.persistence.jdbc.url=jdbc:postgresql://localhost:5432/shopizer
+# Update these values for your database
+javax.persistence.jdbc.url=jdbc:postgresql://your-host:5432/your-database
 javax.persistence.jdbc.user=your_username
 javax.persistence.jdbc.password=your_password
 ```
+
+For detailed database configuration instructions, see [DATABASE_CONFIGURATION_GUIDE.md](DATABASE_CONFIGURATION_GUIDE.md).
 
 ### Change REST API Port
 Edit `com.shopizer.rest/src/main/java/.../RestActivator.java`:
@@ -333,7 +342,8 @@ Ensure server is running: Look for "Jetty server started on port 8080" in consol
 
 ## 📚 Documentation
 
-- **[SWAGGER_GUIDE.md](SWAGGER_GUIDE.md)** - Interactive API documentation (NEW!)
+- **[DATABASE_CONFIGURATION_GUIDE.md](DATABASE_CONFIGURATION_GUIDE.md)** - Database setup and configuration
+- **[SWAGGER_GUIDE.md](SWAGGER_GUIDE.md)** - Interactive API documentation
 - `TESTING_GUIDE.md` - cURL examples for all endpoints
 - `com.shopizer.rest/README.md` - REST API module details
 - `com.shopizer.cart/README.md` - Cart module documentation

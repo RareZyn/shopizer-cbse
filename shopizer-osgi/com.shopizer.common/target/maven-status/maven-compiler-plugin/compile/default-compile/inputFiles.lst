@@ -8,11 +8,15 @@ C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopiz
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\util\JwtTokenProvider.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\exception\ResourceNotFoundException.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\entity\Address.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\config\DatabaseConfigService.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\entity\MerchantStore.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\exception\BadRequestException.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\CommonActivator.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\entity\Product.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\entity\CartItem.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\exception\PaymentProcessingException.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\entity\Category.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\config\JpaConfig.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\config\DatabaseConfigServiceImpl.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\entity\Cart.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.common\src\main\java\com\shopizer\common\entity\Payment.java

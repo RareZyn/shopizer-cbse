@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1768294081778
+Bnd-LastModified: 1768315090138
 Build-Jdk-Spec: 21
 Bundle-Activator: com.shopizer.cart.activator.CartActivator
 Bundle-Description: Shopping Cart Management Module (FR-006 to FR-009)

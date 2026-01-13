@@ -88,11 +88,13 @@
                         <Bundle-SymbolicName>com.shopizer.common</Bundle-SymbolicName>
                         <Bundle-Name>Shopizer Common Module</Bundle-Name>
                         <Bundle-Version>1.0.0</Bundle-Version>
+                        <Bundle-Activator>com.shopizer.common.CommonActivator</Bundle-Activator>
                         <Export-Package>
                             com.shopizer.common.entity;-noimport:=true,
                             com.shopizer.common.exception;-noimport:=true,
                             com.shopizer.common.util;-noimport:=true,
                             com.shopizer.common.dto;-noimport:=true,
+                            com.shopizer.common.config;-noimport:=true,
                             jakarta.persistence.*;-split-package:=merge-first,
                             org.hibernate.*;-split-package:=merge-first,
                             org.springframework.*;-split-package:=merge-first,
