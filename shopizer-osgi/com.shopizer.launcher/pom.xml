@@ -113,6 +113,12 @@
             <artifactId>com.shopizer.merchant</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.rest</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

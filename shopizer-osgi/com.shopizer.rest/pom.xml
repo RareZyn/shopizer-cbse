@@ -171,13 +171,8 @@
                             com.shopizer.merchant.dto,
                             com.shopizer.common.entity,
                             com.shopizer.common.exception,
-                            jakarta.servlet;version="[6.0,7)",
-                            jakarta.servlet.http;version="[6.0,7)",
                             org.slf4j;version="[2.0,3)",
-                            com.fasterxml.jackson.databind,
-                            com.fasterxml.jackson.databind.node,
-                            com.fasterxml.jackson.core,
-                            com.fasterxml.jackson.datatype.jsr310
+                            *;resolution:=optional
                         </Import-Package>
                         <Embed-Dependency>
                             jetty-server,
@@ -186,6 +181,7 @@
                             jetty-io,
                             jetty-util,
                             jetty-security,
+                            jetty-jakarta-servlet-api,
                             jackson-databind,
                             jackson-core,
                             jackson-annotations,
@@ -196,6 +192,7 @@
                             swagger-models-jakarta
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
+                        <_removeheaders>Require-Capability</_removeheaders>
                     </instructions>
                 </configuration>
             </plugin>

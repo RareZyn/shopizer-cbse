@@ -40,20 +40,26 @@ public class RestActivator implements BundleActivator {
     @Override
     public void start(BundleContext context) throws Exception {
         this.context = context;
-        logger.info("Starting Shopizer REST API Bundle...");
+        System.out.println("[REST] Starting Shopizer REST API Bundle...");
 
-        // Wait for all required services to be available
-        startServiceTrackers();
+        try {
+            // Wait for all required services to be available
+            startServiceTrackers();
 
-        // Wait a bit for services to register
-        Thread.sleep(1000);
+            // Wait a bit for services to register
+            Thread.sleep(1000);
 
-        // Start Jetty server
-        startJettyServer();
+            // Start Jetty server
+            startJettyServer();
 
-        logger.info("Shopizer REST API Bundle started successfully");
-        logger.info("REST API available at: http://localhost:" + HTTP_PORT + "/api/v1");
-        printEndpointSummary();
+            System.out.println("[REST] Shopizer REST API Bundle started successfully");
+            System.out.println("[REST] REST API available at: http://localhost:" + HTTP_PORT + "/api/v1");
+            System.out.println("[REST] Web UI available at: http://localhost:" + HTTP_PORT + "/");
+            printEndpointSummary();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Override
@@ -108,6 +114,9 @@ public class RestActivator implements BundleActivator {
         ServletContextHandler contextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         contextHandler.setContextPath("/");
 
+        // Register index page at root
+        registerIndexPage(contextHandler);
+
         // Register servlets for each service
         registerCatalogEndpoints(contextHandler);
         registerCartEndpoints(contextHandler);
@@ -123,7 +132,15 @@ public class RestActivator implements BundleActivator {
 
         // Start server
         jettyServer.start();
-        logger.info("Jetty server started on port " + HTTP_PORT);
+        System.out.println("[REST] Jetty server started on port " + HTTP_PORT);
+        System.out.println("[REST] Jetty server is running: " + jettyServer.isRunning());
+        System.out.println("[REST] Jetty server is started: " + jettyServer.isStarted());
+    }
+
+    private void registerIndexPage(ServletContextHandler context) {
+        ServletHolder indexServlet = new ServletHolder(new IndexServlet());
+        context.addServlet(indexServlet, "/");
+        System.out.println("[REST] Registered Index page: http://localhost:" + HTTP_PORT + "/");
     }
 
     private void registerCatalogEndpoints(ServletContextHandler context) {

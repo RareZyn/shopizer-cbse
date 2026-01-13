@@ -148,6 +148,10 @@ public class ShpizerOSGILauncher {
                 System.out.println("[STARTED] " + bundle.getSymbolicName());
             } catch (BundleException e) {
                 System.err.println("[FAILED] Failed to start " + bundle.getSymbolicName() + ": " + e.getMessage());
+                if (e.getCause() != null) {
+                    System.err.println("Cause: ");
+                    e.getCause().printStackTrace();
+                }
             }
         }
     }
@@ -166,6 +170,9 @@ public class ShpizerOSGILauncher {
         String[][] dependencies = {
             // Jakarta Persistence API
             {"jakarta/persistence/jakarta.persistence-api/3.1.0", "jakarta.persistence-api-3.1.0.jar"},
+
+            // Jakarta Servlet API (required by REST module)
+            {"jakarta/servlet/jakarta.servlet-api/6.0.0", "jakarta.servlet-api-6.0.0.jar"},
 
             // ASM library (required by Aries SPI Fly)
             {"org/ow2/asm/asm/9.7", "asm-9.7.jar"},
@@ -209,6 +216,15 @@ public class ShpizerOSGILauncher {
 
         while (running) {
             System.out.print("\nshopizer> ");
+            if (!scanner.hasNextLine()) {
+                // No input available (non-interactive mode), keep running
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    break;
+                }
+                continue;
+            }
             String command = scanner.nextLine().trim();
 
             switch (command.toLowerCase()) {
