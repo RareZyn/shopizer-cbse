@@ -5,7 +5,6 @@ import com.shopizer.catalog.dto.*;
 import com.shopizer.catalog.repository.CategoryRepository;
 import com.shopizer.catalog.repository.ProductRepository;
 import com.shopizer.common.entity.Category;
-import com.shopizer.common.entity.MerchantStore;
 import com.shopizer.common.entity.Product;
 import com.shopizer.common.exception.ResourceNotFoundException;
 import org.slf4j.Logger;

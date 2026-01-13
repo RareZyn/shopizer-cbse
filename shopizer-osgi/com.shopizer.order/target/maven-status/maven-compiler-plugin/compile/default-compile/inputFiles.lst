@@ -1,0 +1,16 @@
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\repository\OrderRepository.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\dto\OrderDetailResponse.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\impl\OrderServiceImpl.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\dto\OrderTrackingResponse.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\payment\PaymentProcessor.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\repository\PaymentRepository.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\payment\StripePaymentProcessor.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\api\OrderService.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\payment\PayPalPaymentProcessor.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\repository\OrderItemRepository.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\dto\OrderItemResponse.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\activator\OrderActivator.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\dto\PaymentRequest.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\dto\OrderResponse.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\dto\OrderRequest.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.order\src\main\java\com\shopizer\order\dto\PaymentResponse.java

@@ -46,7 +46,11 @@
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.cmpn</artifactId>
+            <artifactId>org.osgi.service.component.annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.component</artifactId>
         </dependency>
 
         <!-- Spring Data JPA -->
@@ -96,7 +100,7 @@
                             com.shopizer.cart.api,
                             com.shopizer.cart.dto,
                             com.shopizer.catalog.api,
-                            javax.persistence,
+                            jakarta.persistence,
                             org.springframework.data.jpa.repository,
                             org.osgi.framework,
                             org.slf4j,

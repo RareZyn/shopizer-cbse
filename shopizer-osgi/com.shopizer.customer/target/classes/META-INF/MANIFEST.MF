@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1768280570802
+Build-Jdk-Spec: 21
+Bundle-Activator: com.shopizer.customer.activator.CustomerActivator
+Bundle-Description: Customer management, authentication, and profile ser
+ vices
+Bundle-ManifestVersion: 2
+Bundle-Name: Shopizer OSGI - Customer Module
+Bundle-SymbolicName: com.shopizer.customer
+Bundle-Version: 1.0.0
+Created-By: Apache Maven Bundle Plugin 5.1.9
+Export-Package: com.shopizer.customer.api;uses:="com.shopizer.customer.d
+ to";version="1.0.0",com.shopizer.customer.dto;version="1.0.0"
+Import-Package: com.shopizer.common.entity;version="[1.0,2)",com.shopize
+ r.common.exception;version="[1.0,2)",com.shopizer.common.util;version="
+ [1.0,2)",org.osgi.framework;version="[1.10,2)",org.slf4j;version="[2.0,
+ 3)",org.springframework.data.jpa.repository;version="[1.0,2)",com.shopi
+ zer.customer.api,com.shopizer.customer.dto,java.lang,java.lang.invoke,j
+ ava.time,java.util,java.util.function,java.util.stream,org.springframew
+ ork.stereotype;version="[1.0,2)",org.osgi.util.tracker;version="[1.5,2)
+ ",jakarta.persistence;version="[3.1,4)",io.jsonwebtoken;version="[0.12,
+ 1)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=21))"
+Tool: Bnd-6.3.1.202206071316

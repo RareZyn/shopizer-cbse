@@ -55,8 +55,7 @@ public class CustomerActivator implements BundleActivator {
             // Initialize JWT token provider
             // TODO: Load secret key from configuration
             JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(
-                "your-256-bit-secret-key-change-this-in-production",
-                86400000 // 24 hours
+                "your-256-bit-secret-key-change-this-in-production"
             );
 
             // Create service implementation

@@ -5,8 +5,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-
-import java.io.File;
 import java.util.*;
 
 /**
@@ -15,7 +13,6 @@ import java.util.*;
  */
 public class ShpizerOSGILauncher {
 
-    private static final String BUNDLE_DIR = "bundles";
     private static Framework framework;
 
     public static void main(String[] args) {
@@ -81,7 +78,12 @@ public class ShpizerOSGILauncher {
      * Install and start bundles in dependency order
      */
     private static void installAndStartBundles(BundleContext context) {
-        System.out.println("\nInstalling bundles...");
+        System.out.println("\nInstalling third-party dependency bundles...");
+
+        // Install third-party OSGI bundles first
+        List<Bundle> dependencyBundles = installDependencyBundles(context);
+
+        System.out.println("\nInstalling application bundles...");
 
         // Define bundle installation order (respecting dependencies)
         String[] bundleOrder = {
@@ -98,7 +100,8 @@ public class ShpizerOSGILauncher {
         // Install bundles
         for (String bundleName : bundleOrder) {
             try {
-                String bundlePath = "file:target/" + bundleName + "-1.0.0.jar";
+                // Build path relative to parent directory (shopizer-osgi)
+                String bundlePath = "file:../" + bundleName + "/target/" + bundleName + "-1.0.0.jar";
                 Bundle bundle = context.installBundle(bundlePath);
                 installedBundles.add(bundle);
                 System.out.println("[INSTALLED] " + bundleName);
@@ -109,7 +112,35 @@ public class ShpizerOSGILauncher {
 
         System.out.println("\nStarting bundles...");
 
-        // Start bundles
+        // Start dependency bundles first
+        // Start SPI Fly bundle first (if present) as it provides the ServiceLoader extender
+        for (Bundle bundle : dependencyBundles) {
+            if (bundle.getSymbolicName() != null && bundle.getSymbolicName().contains("spifly")) {
+                try {
+                    bundle.start();
+                    System.out.println("[STARTED] " + bundle.getSymbolicName());
+                } catch (BundleException e) {
+                    System.err.println("[FAILED] Failed to start " + bundle.getSymbolicName() + ": " + e.getMessage());
+                }
+            }
+        }
+
+        // Start other dependency bundles
+        for (Bundle bundle : dependencyBundles) {
+            if (bundle.getSymbolicName() == null || !bundle.getSymbolicName().contains("spifly")) {
+                try {
+                    bundle.start();
+                    System.out.println("[STARTED] " + bundle.getSymbolicName());
+                } catch (BundleException e) {
+                    // Some bundles are fragments and cannot be started
+                    if (e.getType() != BundleException.INVALID_OPERATION) {
+                        System.err.println("[FAILED] Failed to start " + bundle.getSymbolicName() + ": " + e.getMessage());
+                    }
+                }
+            }
+        }
+
+        // Start application bundles
         for (Bundle bundle : installedBundles) {
             try {
                 bundle.start();
@@ -118,6 +149,54 @@ public class ShpizerOSGILauncher {
                 System.err.println("[FAILED] Failed to start " + bundle.getSymbolicName() + ": " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * Install third-party dependency bundles from Maven repository
+     */
+    private static List<Bundle> installDependencyBundles(BundleContext context) {
+        List<Bundle> bundles = new ArrayList<>();
+
+        // Get user home directory for Maven local repository
+        String userHome = System.getProperty("user.home");
+        String mavenRepo = userHome + "/.m2/repository/";
+
+        // Define Maven dependencies to install as OSGI bundles
+        String[][] dependencies = {
+            // Jakarta Persistence API
+            {"jakarta/persistence/jakarta.persistence-api/3.1.0", "jakarta.persistence-api-3.1.0.jar"},
+
+            // ASM library (required by Aries SPI Fly)
+            {"org/ow2/asm/asm/9.7", "asm-9.7.jar"},
+            {"org/ow2/asm/asm-commons/9.7", "asm-commons-9.7.jar"},
+            {"org/ow2/asm/asm-tree/9.7", "asm-tree-9.7.jar"},
+            {"org/ow2/asm/asm-analysis/9.7", "asm-analysis-9.7.jar"},
+            {"org/ow2/asm/asm-util/9.7", "asm-util-9.7.jar"},
+
+            // OSGI ServiceLoader Mediator (required by SLF4J)
+            {"org/apache/aries/spifly/org.apache.aries.spifly.dynamic.bundle/1.3.7", "org.apache.aries.spifly.dynamic.bundle-1.3.7.jar"},
+
+            // SLF4J API (logging)
+            {"org/slf4j/slf4j-api/2.0.9", "slf4j-api-2.0.9.jar"},
+
+            // SLF4J Simple Implementation
+            {"org/slf4j/slf4j-simple/2.0.9", "slf4j-simple-2.0.9.jar"},
+        };
+
+        for (String[] dep : dependencies) {
+            try {
+                String bundlePath = "file:///" + mavenRepo + dep[0] + "/" + dep[1];
+                bundlePath = bundlePath.replace("\\", "/");
+                Bundle bundle = context.installBundle(bundlePath);
+                bundles.add(bundle);
+                System.out.println("[INSTALLED] " + dep[1]);
+            } catch (BundleException e) {
+                System.err.println("[WARN] Failed to install " + dep[1] + ": " + e.getMessage());
+                System.err.println("       Bundle path: file:///" + mavenRepo + dep[0] + "/" + dep[1]);
+            }
+        }
+
+        return bundles;
     }
 
     /**

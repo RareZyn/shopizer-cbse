@@ -32,7 +32,11 @@
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.cmpn</artifactId>
+            <artifactId>org.osgi.service.component.annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.component</artifactId>
         </dependency>
 
         <!-- Spring Data JPA -->
@@ -78,7 +82,7 @@
                             com.shopizer.common.entity,
                             com.shopizer.common.exception,
                             com.shopizer.common.dto,
-                            javax.persistence,
+                            jakarta.persistence,
                             org.springframework.data.jpa.repository,
                             org.osgi.framework,
                             org.slf4j,

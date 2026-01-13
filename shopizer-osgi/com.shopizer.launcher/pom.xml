@@ -43,6 +43,40 @@
             <version>${slf4j.version}</version>
         </dependency>
 
+        <!-- Apache Aries SPI Fly - Dynamic Weaving for ServiceLoader -->
+        <dependency>
+            <groupId>org.apache.aries.spifly</groupId>
+            <artifactId>org.apache.aries.spifly.dynamic.bundle</artifactId>
+            <version>1.3.7</version>
+        </dependency>
+
+        <!-- ASM library (required by Aries SPI Fly) -->
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>9.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-commons</artifactId>
+            <version>9.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-tree</artifactId>
+            <version>9.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-analysis</artifactId>
+            <version>9.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-util</artifactId>
+            <version>9.7</version>
+        </dependency>
+
         <!-- All Module Dependencies (will be installed as bundles) -->
         <dependency>
             <groupId>com.shopizer</groupId>
@@ -116,6 +150,16 @@
                 <configuration>
                     <source>21</source>
                     <target>21</target>
+                </configuration>
+            </plugin>
+
+            <!-- Exec Maven Plugin for running the application -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.6.3</version>
+                <configuration>
+                    <mainClass>com.shopizer.launcher.ShpizerOSGILauncher</mainClass>
                 </configuration>
             </plugin>
         </plugins>

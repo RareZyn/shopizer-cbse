@@ -11,13 +11,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CartValidationResponse {
-    private Boolean isValid;
+    private boolean valid;
     private List<String> errors = new ArrayList<>();
     private List<String> warnings = new ArrayList<>();
 
     public void addError(String error) {
         this.errors.add(error);
-        this.isValid = false;
+        this.valid = false;
     }
 
     public void addWarning(String warning) {
@@ -26,7 +26,7 @@ public class CartValidationResponse {
 
     public static CartValidationResponse valid() {
         CartValidationResponse response = new CartValidationResponse();
-        response.setIsValid(true);
+        response.setValid(true);
         return response;
     }
 }

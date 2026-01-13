@@ -25,7 +25,18 @@
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
-            <artifactId>osgi.cmpn</artifactId>
+            <artifactId>org.osgi.service.component.annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.component</artifactId>
+        </dependency>
+
+        <!-- Jakarta Persistence API -->
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>3.1.0</version>
         </dependency>
 
         <!-- JPA & Hibernate -->
@@ -78,18 +89,36 @@
                         <Bundle-Name>Shopizer Common Module</Bundle-Name>
                         <Bundle-Version>1.0.0</Bundle-Version>
                         <Export-Package>
-                            com.shopizer.common.entity,
-                            com.shopizer.common.exception,
-                            com.shopizer.common.util,
-                            com.shopizer.common.dto
+                            com.shopizer.common.entity;-noimport:=true,
+                            com.shopizer.common.exception;-noimport:=true,
+                            com.shopizer.common.util;-noimport:=true,
+                            com.shopizer.common.dto;-noimport:=true,
+                            jakarta.persistence.*;-split-package:=merge-first,
+                            org.hibernate.*;-split-package:=merge-first,
+                            org.springframework.*;-split-package:=merge-first,
+                            io.jsonwebtoken.*;-split-package:=merge-first
                         </Export-Package>
                         <Import-Package>
-                            javax.persistence,
-                            javax.persistence.criteria,
-                            org.springframework.data.jpa.repository,
-                            org.slf4j,
-                            *
+                            jakarta.persistence.*;resolution:=optional,
+                            org.hibernate.*;resolution:=optional,
+                            org.springframework.*;resolution:=optional,
+                            io.jsonwebtoken.*;resolution:=optional,
+                            org.slf4j;version="[2.0,3)",
+                            org.osgi.framework;version="[1.8,2)",
+                            org.osgi.service.component.annotations;version="[1.3,2)";resolution:=optional,
+                            *;resolution:=optional
                         </Import-Package>
+                        <Embed-Dependency>
+                            hibernate-core,
+                            spring-data-jpa,
+                            jjwt-api,
+                            jjwt-impl,
+                            jjwt-jackson,
+                            jakarta.persistence-api,
+                            *;scope=compile|runtime;inline=false
+                        </Embed-Dependency>
+                        <Embed-Transitive>true</Embed-Transitive>
+                        <Bundle-ClassPath>.,{maven-dependencies}</Bundle-ClassPath>
                     </instructions>
                 </configuration>
             </plugin>

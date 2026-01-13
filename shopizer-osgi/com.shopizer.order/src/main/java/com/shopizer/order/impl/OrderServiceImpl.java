@@ -73,14 +73,14 @@ public class OrderServiceImpl implements OrderService {
         customer.setId(request.getCustomerId());
         order.setCustomer(customer);
 
-        order.setStatus("PENDING_PAYMENT");
+        order.setStatus(Order.OrderStatus.PENDING_PAYMENT);
         order.setSubtotal(cartTotal);
         order.setShippingCost(shippingCost);
         order.setTotalAmount(totalAmount);
 
         // Set shipping address
         Address shippingAddress = new Address();
-        shippingAddress.setStreet(request.getShippingAddress().getStreet());
+        shippingAddress.setAddressLine1(request.getShippingAddress().getStreet());
         shippingAddress.setCity(request.getShippingAddress().getCity());
         shippingAddress.setState(request.getShippingAddress().getState());
         shippingAddress.setCountry(request.getShippingAddress().getCountry());
@@ -90,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
         // Set billing address
         if (request.getBillingAddress() != null) {
             Address billingAddress = new Address();
-            billingAddress.setStreet(request.getBillingAddress().getStreet());
+            billingAddress.setAddressLine1(request.getBillingAddress().getStreet());
             billingAddress.setCity(request.getBillingAddress().getCity());
             billingAddress.setState(request.getBillingAddress().getState());
             billingAddress.setCountry(request.getBillingAddress().getCountry());
@@ -157,9 +157,10 @@ public class OrderServiceImpl implements OrderService {
             .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
         // Validate status transition
-        validateStatusTransition(order.getStatus(), status);
+        Order.OrderStatus newStatus = Order.OrderStatus.valueOf(status);
+        validateStatusTransition(order.getStatus(), newStatus);
 
-        order.setStatus(status);
+        order.setStatus(newStatus);
         order = orderRepository.save(order);
 
         logger.info("Order status updated successfully");
@@ -175,24 +176,24 @@ public class OrderServiceImpl implements OrderService {
             .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
         // Check if order can be cancelled
-        if (order.getStatus().equals("SHIPPED") || order.getStatus().equals("DELIVERED")) {
+        if (order.getStatus() == Order.OrderStatus.SHIPPED || order.getStatus() == Order.OrderStatus.DELIVERED) {
             throw new BadRequestException("Cannot cancel order that has been shipped or delivered");
         }
 
-        if (order.getStatus().equals("CANCELLED")) {
+        if (order.getStatus() == Order.OrderStatus.CANCELLED) {
             throw new BadRequestException("Order is already cancelled");
         }
 
         // Process refund if payment was made
-        if (order.getStatus().equals("PAID") || order.getStatus().equals("PROCESSING")) {
+        if (order.getStatus() == Order.OrderStatus.PAID || order.getStatus() == Order.OrderStatus.PROCESSING) {
             Payment payment = paymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", "orderId", orderId));
 
-            if (payment.getStatus().equals("SUCCESS")) {
-                PaymentProcessor processor = getPaymentProcessor(payment.getPaymentMethod());
+            if (payment.getStatus() == Payment.PaymentStatus.COMPLETED) {
+                PaymentProcessor processor = getPaymentProcessor(payment.getPaymentMethod().name());
                 try {
                     String refundId = processor.refund(payment.getTransactionId(), order.getTotalAmount());
-                    payment.setStatus("REFUNDED");
+                    payment.setStatus(Payment.PaymentStatus.REFUNDED);
                     payment.setTransactionId(refundId);
                     paymentRepository.save(payment);
                     logger.info("Refund processed successfully: {}", refundId);
@@ -215,7 +216,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        order.setStatus("CANCELLED");
+        order.setStatus(Order.OrderStatus.CANCELLED);
         order = orderRepository.save(order);
 
         logger.info("Order cancelled successfully");
@@ -230,7 +231,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
-        if (!order.getStatus().equals("PENDING_PAYMENT")) {
+        if (order.getStatus() != Order.OrderStatus.PENDING_PAYMENT) {
             throw new BadRequestException("Order is not in pending payment status");
         }
 
@@ -240,20 +241,20 @@ public class OrderServiceImpl implements OrderService {
         // Create payment entity
         Payment payment = new Payment();
         payment.setOrder(order);
-        payment.setPaymentMethod(paymentRequest.getPaymentMethod());
+        payment.setPaymentMethod(Payment.PaymentMethod.valueOf(paymentRequest.getPaymentMethod()));
         payment.setAmount(order.getTotalAmount());
-        payment.setStatus("PENDING");
+        payment.setStatus(Payment.PaymentStatus.PENDING);
 
         try {
             // Process payment
             String transactionId = processor.process(order, order.getTotalAmount());
 
             payment.setTransactionId(transactionId);
-            payment.setStatus("SUCCESS");
+            payment.setStatus(Payment.PaymentStatus.COMPLETED);
             payment = paymentRepository.save(payment);
 
             // Update order status
-            order.setStatus("PAID");
+            order.setStatus(Order.OrderStatus.PAID);
             orderRepository.save(order);
 
             // Reduce stock quantities
@@ -274,7 +275,7 @@ public class OrderServiceImpl implements OrderService {
         } catch (Exception e) {
             logger.error("Payment failed for order: {}", orderId, e);
 
-            payment.setStatus("FAILED");
+            payment.setStatus(Payment.PaymentStatus.FAILED);
             payment.setTransactionId("FAILED");
             paymentRepository.save(payment);
 
@@ -292,16 +293,14 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
 
         OrderDetailResponse response = new OrderDetailResponse();
-        response.setOrderId(order.getId());
+        response.setId(order.getId());
         response.setOrderNumber(order.getOrderNumber());
-        response.setStatus(order.getStatus());
+        response.setStatus(order.getStatus().name());
         response.setSubtotal(order.getSubtotal());
         response.setShippingCost(order.getShippingCost());
-        response.setTotalAmount(order.getTotalAmount());
-        response.setPaymentMethod(order.getPaymentMethod());
-        response.setShippingMethod(order.getShippingMethod());
-        response.setShippingAddress(order.getShippingAddress());
-        response.setBillingAddress(order.getBillingAddress());
+        response.setTotal(order.getTotalAmount());
+        response.setShippingAddress(formatAddress(order.getShippingAddress()));
+        response.setBillingAddress(formatAddress(order.getBillingAddress()));
         response.setCreatedAt(order.getCreatedAt());
         response.setUpdatedAt(order.getUpdatedAt());
 
@@ -312,8 +311,12 @@ public class OrderServiceImpl implements OrderService {
 
         // Get payment info
         paymentRepository.findByOrderId(orderId).ifPresent(payment -> {
-            response.setPaymentStatus(payment.getStatus());
-            response.setTransactionId(payment.getTransactionId());
+            OrderDetailResponse.PaymentInfo paymentInfo = new OrderDetailResponse.PaymentInfo();
+            paymentInfo.setPaymentMethod(payment.getPaymentMethod().name());
+            paymentInfo.setPaymentStatus(payment.getStatus().name());
+            paymentInfo.setTransactionId(payment.getTransactionId());
+            paymentInfo.setPaymentDate(payment.getCreatedAt());
+            response.setPaymentInfo(paymentInfo);
         });
 
         return response;
@@ -327,13 +330,9 @@ public class OrderServiceImpl implements OrderService {
             .orElseThrow(() -> new ResourceNotFoundException("Order", "id", orderId));
 
         OrderTrackingResponse response = new OrderTrackingResponse();
-        response.setOrderId(order.getId());
         response.setOrderNumber(order.getOrderNumber());
-        response.setStatus(order.getStatus());
-        response.setEstimatedDelivery(calculateEstimatedDelivery(order));
-        response.setShippingMethod(order.getShippingMethod());
-        response.setCreatedAt(order.getCreatedAt());
-        response.setUpdatedAt(order.getUpdatedAt());
+        response.setCurrentStatus(order.getStatus().name());
+        response.setEstimatedDeliveryDate(calculateEstimatedDelivery(order).toString());
 
         return response;
     }
@@ -364,20 +363,20 @@ public class OrderServiceImpl implements OrderService {
         return order.getCreatedAt().plusDays(daysToAdd);
     }
 
-    private void validateStatusTransition(String currentStatus, String newStatus) {
+    private void validateStatusTransition(Order.OrderStatus currentStatus, Order.OrderStatus newStatus) {
         // Define valid transitions
         boolean isValid = switch (currentStatus) {
-            case "PENDING_PAYMENT" -> newStatus.equals("PAID") || newStatus.equals("CANCELLED");
-            case "PAID" -> newStatus.equals("PROCESSING") || newStatus.equals("CANCELLED");
-            case "PROCESSING" -> newStatus.equals("SHIPPED") || newStatus.equals("CANCELLED");
-            case "SHIPPED" -> newStatus.equals("DELIVERED");
-            case "DELIVERED", "CANCELLED" -> false;
+            case PENDING_PAYMENT -> newStatus == Order.OrderStatus.PAID || newStatus == Order.OrderStatus.CANCELLED;
+            case PAID -> newStatus == Order.OrderStatus.PROCESSING || newStatus == Order.OrderStatus.CANCELLED;
+            case PROCESSING -> newStatus == Order.OrderStatus.SHIPPED || newStatus == Order.OrderStatus.CANCELLED;
+            case SHIPPED -> newStatus == Order.OrderStatus.DELIVERED;
+            case DELIVERED, CANCELLED, REFUNDED -> false;
             default -> false;
         };
 
         if (!isValid) {
             throw new BadRequestException(
-                String.format("Invalid status transition from %s to %s", currentStatus, newStatus)
+                String.format("Invalid status transition from %s to %s", currentStatus.name(), newStatus.name())
             );
         }
     }
@@ -391,17 +390,28 @@ public class OrderServiceImpl implements OrderService {
             ));
     }
 
+    private String formatAddress(Address address) {
+        if (address == null) {
+            return "";
+        }
+        return String.format("%s, %s, %s, %s %s",
+            address.getAddressLine1(),
+            address.getCity(),
+            address.getState(),
+            address.getCountry(),
+            address.getPostalCode()
+        );
+    }
+
     private OrderResponse mapToOrderResponse(Order order) {
         OrderResponse response = new OrderResponse();
         response.setId(order.getId());
         response.setOrderNumber(order.getOrderNumber());
         response.setCustomerId(order.getCustomer().getId());
-        response.setStatus(order.getStatus());
+        response.setStatus(order.getStatus().name());
         response.setSubtotal(order.getSubtotal());
         response.setShippingCost(order.getShippingCost());
-        response.setTotalAmount(order.getTotalAmount());
-        response.setPaymentMethod(order.getPaymentMethod());
-        response.setShippingMethod(order.getShippingMethod());
+        response.setTotal(order.getTotalAmount());
         response.setCreatedAt(order.getCreatedAt());
         response.setUpdatedAt(order.getUpdatedAt());
 
@@ -432,13 +442,13 @@ public class OrderServiceImpl implements OrderService {
 
     private PaymentResponse mapToPaymentResponse(Payment payment) {
         PaymentResponse response = new PaymentResponse();
-        response.setId(payment.getId());
+        response.setPaymentId(payment.getId());
         response.setOrderId(payment.getOrder().getId());
-        response.setPaymentMethod(payment.getPaymentMethod());
+        response.setPaymentMethod(payment.getPaymentMethod().name());
         response.setAmount(payment.getAmount());
-        response.setStatus(payment.getStatus());
+        response.setStatus(payment.getStatus().name());
         response.setTransactionId(payment.getTransactionId());
-        response.setCreatedAt(payment.getCreatedAt());
+        response.setPaymentDate(payment.getCreatedAt());
 
         return response;
     }

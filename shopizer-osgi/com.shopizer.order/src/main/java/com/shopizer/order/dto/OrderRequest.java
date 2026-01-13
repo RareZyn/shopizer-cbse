@@ -12,19 +12,22 @@ import java.math.BigDecimal;
 public class OrderRequest {
     private Long customerId;
     private Long cartId;
-    private String shippingAddressLine1;
-    private String shippingAddressLine2;
-    private String shippingCity;
-    private String shippingState;
-    private String shippingPostalCode;
-    private String shippingCountry;
-    private String billingAddressLine1;
-    private String billingAddressLine2;
-    private String billingCity;
-    private String billingState;
-    private String billingPostalCode;
-    private String billingCountry;
+    private AddressDTO shippingAddress;
+    private AddressDTO billingAddress;
+    private String shippingMethod;
+    private String paymentMethod;
     private BigDecimal shippingCost;
     private BigDecimal tax;
     private String notes;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AddressDTO {
+        private String street;
+        private String city;
+        private String state;
+        private String country;
+        private String postalCode;
+    }
 }

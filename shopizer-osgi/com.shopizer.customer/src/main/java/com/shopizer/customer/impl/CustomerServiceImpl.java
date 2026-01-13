@@ -46,10 +46,10 @@ public class CustomerServiceImpl implements CustomerService {
         // Create customer entity
         Customer customer = new Customer();
         customer.setEmail(request.getEmail());
-        customer.setPasswordHash(hashPassword(request.getPassword()));
+        customer.setPassword(hashPassword(request.getPassword()));
         customer.setFirstName(request.getFirstName());
         customer.setLastName(request.getLastName());
-        customer.setPhoneNumber(request.getPhoneNumber());
+        customer.setPhone(request.getPhoneNumber());
         customer.setActive(true);
 
         customer = customerRepository.save(customer);
@@ -57,7 +57,7 @@ public class CustomerServiceImpl implements CustomerService {
         logger.info("Customer registered successfully: {}", customer.getEmail());
 
         // Generate JWT token
-        String token = jwtTokenProvider.generateToken(customer.getId().toString(), customer.getEmail());
+        String token = jwtTokenProvider.generateToken(customer.getEmail(), customer.getId());
 
         return mapToAuthResponse(customer, token);
     }
@@ -71,7 +71,7 @@ public class CustomerServiceImpl implements CustomerService {
             .orElseThrow(() -> new BadRequestException("Invalid email or password"));
 
         // Verify password
-        if (!verifyPassword(request.getPassword(), customer.getPasswordHash())) {
+        if (!verifyPassword(request.getPassword(), customer.getPassword())) {
             throw new BadRequestException("Invalid email or password");
         }
 
@@ -83,7 +83,7 @@ public class CustomerServiceImpl implements CustomerService {
         logger.info("Customer logged in successfully: {}", customer.getEmail());
 
         // Generate JWT token
-        String token = jwtTokenProvider.generateToken(customer.getId().toString(), customer.getEmail());
+        String token = jwtTokenProvider.generateToken(customer.getEmail(), customer.getId());
 
         return mapToAuthResponse(customer, token);
     }
@@ -122,7 +122,7 @@ public class CustomerServiceImpl implements CustomerService {
             customer.setLastName(request.getLastName());
         }
         if (request.getPhoneNumber() != null) {
-            customer.setPhoneNumber(request.getPhoneNumber());
+            customer.setPhone(request.getPhoneNumber());
         }
 
         customer = customerRepository.save(customer);
@@ -140,7 +140,7 @@ public class CustomerServiceImpl implements CustomerService {
             .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
 
         // Verify current password
-        if (!verifyPassword(request.getCurrentPassword(), customer.getPasswordHash())) {
+        if (!verifyPassword(request.getCurrentPassword(), customer.getPassword())) {
             throw new BadRequestException("Current password is incorrect");
         }
 
@@ -148,7 +148,7 @@ public class CustomerServiceImpl implements CustomerService {
         validatePassword(request.getNewPassword());
 
         // Update password
-        customer.setPasswordHash(hashPassword(request.getNewPassword()));
+        customer.setPassword(hashPassword(request.getNewPassword()));
         customerRepository.save(customer);
 
         logger.info("Password changed successfully");
@@ -172,7 +172,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         Address address = new Address();
         address.setCustomer(customer);
-        address.setStreet(request.getStreet());
+        address.setAddressLine1(request.getStreet());
         address.setCity(request.getCity());
         address.setState(request.getState());
         address.setCountry(request.getCountry());
@@ -225,7 +225,7 @@ public class CustomerServiceImpl implements CustomerService {
             });
         }
 
-        address.setStreet(request.getStreet());
+        address.setAddressLine1(request.getStreet());
         address.setCity(request.getCity());
         address.setState(request.getState());
         address.setCountry(request.getCountry());
@@ -298,8 +298,8 @@ public class CustomerServiceImpl implements CustomerService {
                 throw new BadRequestException("Invalid or expired token");
             }
 
-            String customerId = jwtTokenProvider.getSubject(token);
-            return getCustomerById(Long.parseLong(customerId));
+            Long customerId = jwtTokenProvider.getUserIdFromToken(token);
+            return getCustomerById(customerId);
 
         } catch (Exception e) {
             logger.error("Token validation failed", e);
@@ -371,7 +371,7 @@ public class CustomerServiceImpl implements CustomerService {
         response.setEmail(customer.getEmail());
         response.setFirstName(customer.getFirstName());
         response.setLastName(customer.getLastName());
-        response.setPhoneNumber(customer.getPhoneNumber());
+        response.setPhoneNumber(customer.getPhone());
         response.setToken(token);
         return response;
     }
@@ -382,7 +382,7 @@ public class CustomerServiceImpl implements CustomerService {
         response.setEmail(customer.getEmail());
         response.setFirstName(customer.getFirstName());
         response.setLastName(customer.getLastName());
-        response.setPhoneNumber(customer.getPhoneNumber());
+        response.setPhoneNumber(customer.getPhone());
         response.setActive(customer.getActive());
         response.setCreatedAt(customer.getCreatedAt());
         response.setUpdatedAt(customer.getUpdatedAt());
@@ -399,7 +399,7 @@ public class CustomerServiceImpl implements CustomerService {
     private AddressResponse mapToAddressResponse(Address address) {
         AddressResponse response = new AddressResponse();
         response.setId(address.getId());
-        response.setStreet(address.getStreet());
+        response.setStreet(address.getAddressLine1());
         response.setCity(address.getCity());
         response.setState(address.getState());
         response.setCountry(address.getCountry());

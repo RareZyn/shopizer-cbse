@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -53,19 +52,13 @@ public class MerchantServiceImpl implements MerchantService {
 
         store.setStoreName(request.getStoreName());
         store.setDescription(request.getDescription());
-        store.setStoreEmail(request.getStoreEmail());
-        store.setStorePhone(request.getStorePhone());
-        store.setCurrency(request.getCurrency() != null ? request.getCurrency() : "USD");
-        store.setLanguage(request.getLanguage() != null ? request.getLanguage() : "en");
+        store.setEmail(request.getStoreEmail());
+        store.setPhone(request.getStorePhone());
         store.setActive(true);
 
-        Address address = new Address();
-        address.setStreet(request.getStreet());
-        address.setCity(request.getCity());
-        address.setState(request.getState());
-        address.setCountry(request.getCountry());
-        address.setPostalCode(request.getPostalCode());
-        store.setAddress(address);
+        store.setAddress(request.getStreet());
+        store.setCity(request.getCity());
+        store.setCountry(request.getCountry());
 
         store = merchantStoreRepository.save(store);
 
@@ -108,30 +101,20 @@ public class MerchantServiceImpl implements MerchantService {
             store.setDescription(request.getDescription());
         }
         if (request.getStoreEmail() != null) {
-            store.setStoreEmail(request.getStoreEmail());
+            store.setEmail(request.getStoreEmail());
         }
         if (request.getStorePhone() != null) {
-            store.setStorePhone(request.getStorePhone());
+            store.setPhone(request.getStorePhone());
         }
-        if (request.getCurrency() != null) {
-            store.setCurrency(request.getCurrency());
-        }
-        if (request.getLanguage() != null) {
-            store.setLanguage(request.getLanguage());
-        }
-
         // Update address if provided
-        if (request.getStreet() != null || request.getCity() != null) {
-            Address address = store.getAddress();
-            if (address == null) {
-                address = new Address();
-                store.setAddress(address);
-            }
-            if (request.getStreet() != null) address.setStreet(request.getStreet());
-            if (request.getCity() != null) address.setCity(request.getCity());
-            if (request.getState() != null) address.setState(request.getState());
-            if (request.getCountry() != null) address.setCountry(request.getCountry());
-            if (request.getPostalCode() != null) address.setPostalCode(request.getPostalCode());
+        if (request.getStreet() != null) {
+            store.setAddress(request.getStreet());
+        }
+        if (request.getCity() != null) {
+            store.setCity(request.getCity());
+        }
+        if (request.getCountry() != null) {
+            store.setCountry(request.getCountry());
         }
 
         store = merchantStoreRepository.save(store);
@@ -182,7 +165,7 @@ public class MerchantServiceImpl implements MerchantService {
 
         // Filter products by store and map to inventory items
         return products.stream()
-            .filter(product -> product.getMerchantStoreId().equals(storeId))
+            .filter(product -> product.getStoreId().equals(storeId))
             .map(this::mapToInventoryItem)
             .collect(Collectors.toList());
     }
@@ -197,7 +180,7 @@ public class MerchantServiceImpl implements MerchantService {
 
         ProductResponse product = catalogService.getProductById(productId);
 
-        if (!product.getMerchantStoreId().equals(storeId)) {
+        if (!product.getStoreId().equals(storeId)) {
             throw new BadRequestException("Product does not belong to this store");
         }
 
@@ -214,7 +197,7 @@ public class MerchantServiceImpl implements MerchantService {
 
         ProductResponse product = catalogService.getProductById(productId);
 
-        if (!product.getMerchantStoreId().equals(storeId)) {
+        if (!product.getStoreId().equals(storeId)) {
             throw new BadRequestException("Product does not belong to this store");
         }
 
@@ -245,7 +228,7 @@ public class MerchantServiceImpl implements MerchantService {
 
         ProductResponse product = catalogService.getProductById(productId);
 
-        if (!product.getMerchantStoreId().equals(storeId)) {
+        if (!product.getStoreId().equals(storeId)) {
             throw new BadRequestException("Product does not belong to this store");
         }
 
@@ -272,7 +255,7 @@ public class MerchantServiceImpl implements MerchantService {
 
         ProductResponse product = catalogService.getProductById(productId);
 
-        if (!product.getMerchantStoreId().equals(storeId)) {
+        if (!product.getStoreId().equals(storeId)) {
             throw new BadRequestException("Product does not belong to this store");
         }
 
@@ -296,7 +279,7 @@ public class MerchantServiceImpl implements MerchantService {
         List<ProductResponse> products = catalogService.getAllProducts();
 
         return products.stream()
-            .filter(product -> product.getMerchantStoreId().equals(storeId))
+            .filter(product -> product.getStoreId().equals(storeId))
             .filter(product -> product.getStockQuantity() <= threshold)
             .map(this::mapToInventoryItem)
             .collect(Collectors.toList());
@@ -443,21 +426,20 @@ public class MerchantServiceImpl implements MerchantService {
         response.setMerchantId(store.getMerchant().getId());
         response.setStoreName(store.getStoreName());
         response.setDescription(store.getDescription());
-        response.setStoreEmail(store.getStoreEmail());
-        response.setStorePhone(store.getStorePhone());
-        response.setCurrency(store.getCurrency());
-        response.setLanguage(store.getLanguage());
+        response.setStoreEmail(store.getEmail());
+        response.setStorePhone(store.getPhone());
+        response.setCurrency(null);
+        response.setLanguage(null);
         response.setActive(store.getActive());
         response.setCreatedAt(store.getCreatedAt());
         response.setUpdatedAt(store.getUpdatedAt());
 
         if (store.getAddress() != null) {
-            Address address = store.getAddress();
-            response.setStreet(address.getStreet());
-            response.setCity(address.getCity());
-            response.setState(address.getState());
-            response.setCountry(address.getCountry());
-            response.setPostalCode(address.getPostalCode());
+            response.setStreet(store.getAddress());
+            response.setCity(store.getCity());
+            response.setState(null);
+            response.setCountry(store.getCountry());
+            response.setPostalCode(null);
         }
 
         return response;
