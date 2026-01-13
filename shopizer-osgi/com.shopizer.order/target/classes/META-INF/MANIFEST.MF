@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1768280567650
+Bnd-LastModified: 1768283041089
 Build-Jdk-Spec: 21
 Bundle-Activator: com.shopizer.order.activator.OrderActivator
 Bundle-Description: Order Processing and Payment Module (FR-010 to FR-02

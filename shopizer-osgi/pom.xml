@@ -45,6 +45,7 @@
         <module>com.shopizer.order</module>
         <module>com.shopizer.customer</module>
         <module>com.shopizer.merchant</module>
+        <module>com.shopizer.rest</module>
         <module>com.shopizer.launcher</module>
     </modules>
 

@@ -92,7 +92,8 @@ public class ShpizerOSGILauncher {
             "com.shopizer.cart",
             "com.shopizer.order",
             "com.shopizer.customer",
-            "com.shopizer.merchant"
+            "com.shopizer.merchant",
+            "com.shopizer.rest"  // REST API module (must be last)
         };
 
         List<Bundle> installedBundles = new ArrayList<>();

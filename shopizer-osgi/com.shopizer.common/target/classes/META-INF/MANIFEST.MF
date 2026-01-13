@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1768280540476
+Bnd-LastModified: 1768283008645
 Build-Jdk-Spec: 21
 Bundle-ClassPath: .,hibernate-core-6.4.1.Final.jar,spring-data-jpa-3.2.1
  .jar,jjwt-api-0.12.3.jar,jjwt-impl-0.12.3.jar,jjwt-jackson-0.12.3.jar,j
