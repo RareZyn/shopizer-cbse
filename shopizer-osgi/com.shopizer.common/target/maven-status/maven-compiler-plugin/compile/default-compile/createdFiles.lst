@@ -22,4 +22,5 @@ com\shopizer\common\exception\InsufficientStockException.class
 com\shopizer\common\entity\Payment$PaymentMethod.class
 com\shopizer\common\dto\ApiResponse.class
 com\shopizer\common\util\JwtTokenProvider.class
+com\shopizer\common\config\JpaConfig$CustomPersistenceUnitInfo.class
 com\shopizer\common\exception\ResourceNotFoundException.class

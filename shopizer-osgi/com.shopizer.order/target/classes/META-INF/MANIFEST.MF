@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1768315094660
+Bnd-LastModified: 1768320165128
 Build-Jdk-Spec: 21
 Bundle-Activator: com.shopizer.order.activator.OrderActivator
 Bundle-Description: Order Processing and Payment Module (FR-010 to FR-02
@@ -9,19 +9,20 @@ Bundle-Name: Shopizer Order Module
 Bundle-SymbolicName: com.shopizer.order
 Bundle-Version: 1.0.0
 Created-By: Apache Maven Bundle Plugin 5.1.9
-Export-Package: com.shopizer.order.api;uses:="com.shopizer.order.dto";ve
- rsion="1.0.0",com.shopizer.order.dto;version="1.0.0",com.shopizer.order
- .payment;uses:="com.shopizer.common.entity";version="1.0.0"
+Export-Package: com.shopizer.order.api;version="1.0.0";uses:="com.shopiz
+ er.order.dto",com.shopizer.order.dto;version="1.0.0",com.shopizer.order
+ .payment;version="1.0.0";uses:="com.shopizer.common.entity"
 Import-Package: com.shopizer.common.entity;version="[1.0,2)",com.shopize
  r.common.exception;version="[1.0,2)",com.shopizer.cart.api;version="[1.
  0,2)",com.shopizer.cart.dto;version="[1.0,2)",com.shopizer.catalog.api;
  version="[1.0,2)",org.springframework.data.jpa.repository;version="[1.0
  ,2)",org.osgi.framework;version="[1.10,2)",org.slf4j;version="[2.0,3)",
- com.shopizer.catalog.dto;version="[1.0,2)",com.shopizer.order.api,com.s
- hopizer.order.dto,com.shopizer.order.payment,java.lang,java.lang.invoke
- ,java.math,java.time,java.util,java.util.function,java.util.stream,org.
- osgi.util.tracker;version="[1.5,2)",org.springframework.stereotype;vers
- ion="[1.0,2)",com.shopizer.common.dto;version="[1.0,2)",jakarta.persist
- ence;version="[3.1,4)"
+ com.shopizer.catalog.dto;version="[1.0,2)",com.shopizer.order.api;versi
+ on="[1.0,2)",com.shopizer.order.dto;version="[1.0,2)",com.shopizer.orde
+ r.payment;version="[1.0,2)",java.lang,java.lang.invoke,java.math,java.t
+ ime,java.util,java.util.function,java.util.stream,org.osgi.util.tracker
+ ;version="[1.5,2)",org.springframework.stereotype;version="[1.0,2)",com
+ .shopizer.common.dto;version="[1.0,2)",jakarta.persistence;version="[3.
+ 1,4)"
 Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=21))"
 Tool: Bnd-6.3.1.202206071316

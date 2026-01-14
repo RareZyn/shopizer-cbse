@@ -23,14 +23,11 @@ public class MerchantServiceImpl implements MerchantService {
 
     private final MerchantStoreRepository merchantStoreRepository;
     private final CatalogService catalogService;
-    private final OrderService orderService;
-
     public MerchantServiceImpl(MerchantStoreRepository merchantStoreRepository,
                               CatalogService catalogService,
                               OrderService orderService) {
         this.merchantStoreRepository = merchantStoreRepository;
         this.catalogService = catalogService;
-        this.orderService = orderService;
     }
 
     // ========== Store Management (FR-015) ==========
@@ -157,8 +154,8 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Fetching inventory for store: {}", storeId);
 
         // Verify store exists
-        MerchantStore store = merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
+        // MerchantStore store = merchantStoreRepository.findById(storeId)
+        //     .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
 
         // Get all products for this store
         List<ProductResponse> products = catalogService.getAllProducts();
