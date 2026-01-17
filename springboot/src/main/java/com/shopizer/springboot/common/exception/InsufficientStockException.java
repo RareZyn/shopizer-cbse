@@ -6,8 +6,16 @@ package com.shopizer.springboot.common.exception;
  * Related to FR-008: Product availability validation
  */
 public class InsufficientStockException extends RuntimeException {
-    // Exception implementation will be here
-    // - productId
-    // - requestedQuantity
-    // - availableQuantity
+
+    public InsufficientStockException() {
+        super();
+    }
+
+    public InsufficientStockException(String message) {
+        super(message);
+    }
+
+    public InsufficientStockException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
