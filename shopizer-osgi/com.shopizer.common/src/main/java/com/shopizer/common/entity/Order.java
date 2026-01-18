@@ -55,7 +55,7 @@ public class Order {
         @AttributeOverride(name = "country", column = @Column(name = "shipping_country")),
         @AttributeOverride(name = "postalCode", column = @Column(name = "shipping_postal_code"))
     })
-    private Address shippingAddress;
+    private AddressInfo shippingAddress;
 
     @Embedded
     @AttributeOverrides({
@@ -65,7 +65,7 @@ public class Order {
         @AttributeOverride(name = "country", column = @Column(name = "billing_country")),
         @AttributeOverride(name = "postalCode", column = @Column(name = "billing_postal_code"))
     })
-    private Address billingAddress;
+    private AddressInfo billingAddress;
 
     @Column(name = "shipping_method")
     private String shippingMethod;

@@ -79,8 +79,8 @@ public class OrderServiceImpl implements OrderService {
         order.setTotalAmount(totalAmount);
 
         // Set shipping address
-        Address shippingAddress = new Address();
-        shippingAddress.setAddressLine1(request.getShippingAddress().getStreet());
+        AddressInfo shippingAddress = new AddressInfo();
+        shippingAddress.setStreet(request.getShippingAddress().getStreet());
         shippingAddress.setCity(request.getShippingAddress().getCity());
         shippingAddress.setState(request.getShippingAddress().getState());
         shippingAddress.setCountry(request.getShippingAddress().getCountry());
@@ -89,8 +89,8 @@ public class OrderServiceImpl implements OrderService {
 
         // Set billing address
         if (request.getBillingAddress() != null) {
-            Address billingAddress = new Address();
-            billingAddress.setAddressLine1(request.getBillingAddress().getStreet());
+            AddressInfo billingAddress = new AddressInfo();
+            billingAddress.setStreet(request.getBillingAddress().getStreet());
             billingAddress.setCity(request.getBillingAddress().getCity());
             billingAddress.setState(request.getBillingAddress().getState());
             billingAddress.setCountry(request.getBillingAddress().getCountry());
@@ -390,12 +390,12 @@ public class OrderServiceImpl implements OrderService {
             ));
     }
 
-    private String formatAddress(Address address) {
+    private String formatAddress(AddressInfo address) {
         if (address == null) {
             return "";
         }
         return String.format("%s, %s, %s, %s %s",
-            address.getAddressLine1(),
+            address.getStreet(),
             address.getCity(),
             address.getState(),
             address.getCountry(),

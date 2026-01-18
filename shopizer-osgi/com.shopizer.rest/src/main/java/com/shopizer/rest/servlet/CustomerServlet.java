@@ -12,20 +12,23 @@ import java.util.List;
  * REST Controller for Customer Service
  *
  * Endpoints:
- * POST   /api/v1/customers/register              - Register customer
- * POST   /api/v1/customers/login                 - Login customer
- * POST   /api/v1/customers/validate-token        - Validate token
- * GET    /api/v1/customers/{id}                  - Get customer by ID
- * GET    /api/v1/customers/email?email={email}   - Get customer by email
- * PUT    /api/v1/customers/{id}                  - Update profile
- * POST   /api/v1/customers/{id}/change-password  - Change password
- * POST   /api/v1/customers/{id}/addresses        - Add address
- * GET    /api/v1/customers/{id}/addresses        - Get addresses
+ * GET    /api/v1/customers                      - Get all customers (Admin)
+ * POST   /api/v1/customers                      - Create customer (Admin)
+ * GET    /api/v1/customers/{id}                 - Get customer by ID
+ * PUT    /api/v1/customers/{id}                 - Update customer (Admin)
+ * DELETE /api/v1/customers/{id}                 - Delete customer (Admin)
+ * POST   /api/v1/customers/register             - Register customer (FR-024)
+ * POST   /api/v1/customers/login                - Login customer (FR-025)
+ * POST   /api/v1/customers/{customerId}/logout  - Logout customer (FR-025)
+ * GET    /api/v1/customers/email/{email}        - Get customer by email
+ * GET    /api/v1/customers/{customerId}/profile - Get customer profile (FR-026)
+ * PUT    /api/v1/customers/{customerId}/profile - Update customer profile (FR-026)
+ * POST   /api/v1/customers/{id}/change-password - Change password
+ * POST   /api/v1/customers/{id}/addresses       - Add address
+ * GET    /api/v1/customers/{id}/addresses       - Get addresses
  * PUT    /api/v1/customers/{id}/addresses/{addressId} - Update address
  * DELETE /api/v1/customers/{id}/addresses/{addressId} - Delete address
  * PUT    /api/v1/customers/{id}/addresses/{addressId}/default - Set default address
- * POST   /api/v1/customers/{id}/deactivate       - Deactivate account
- * POST   /api/v1/customers/{id}/activate         - Activate account
  */
 public class CustomerServlet extends BaseServlet {
 
@@ -43,13 +46,20 @@ public class CustomerServlet extends BaseServlet {
             String pathInfo = request.getPathInfo();
 
             if (pathInfo == null || pathInfo.equals("/")) {
-                sendBadRequest(response, "Customer ID or email is required");
+                // GET /api/v1/customers - Get all customers (Admin)
+                List<CustomerResponse> customers = customerService.getAllCustomers();
+                sendSuccess(response, customers);
                 return;
             }
 
-            if (pathInfo.equals("/email")) {
-                // GET /api/v1/customers/email?email={email}
-                handleGetByEmail(request, response);
+            if (pathInfo.startsWith("/email/")) {
+                // GET /api/v1/customers/email/{email}
+                String email = pathInfo.substring("/email/".length());
+                CustomerResponse customer = customerService.getCustomerByEmail(email);
+                sendSuccess(response, customer);
+            } else if (pathInfo.contains("/profile")) {
+                // GET /api/v1/customers/{customerId}/profile
+                handleGetProfile(request, response);
             } else if (pathInfo.contains("/addresses")) {
                 // GET /api/v1/customers/{id}/addresses
                 handleGetAddresses(request, response);
@@ -71,41 +81,29 @@ public class CustomerServlet extends BaseServlet {
             String pathInfo = request.getPathInfo();
 
             if (pathInfo == null || pathInfo.equals("/")) {
-                sendBadRequest(response, "Invalid endpoint");
-                return;
-            }
-
-            if (pathInfo.equals("/register")) {
+                // POST /api/v1/customers - Create customer (Admin)
+                CustomerRegistrationRequest regRequest = readJsonBody(request, CustomerRegistrationRequest.class);
+                CustomerResponse customer = customerService.createCustomer(regRequest);
+                sendCreated(response, customer);
+            } else if (pathInfo.equals("/register")) {
                 // POST /api/v1/customers/register
                 CustomerRegistrationRequest regRequest = readJsonBody(request, CustomerRegistrationRequest.class);
-                CustomerAuthResponse authResponse = customerService.register(regRequest);
-                sendCreated(response, authResponse);
+                CustomerResponse customer = customerService.register(regRequest);
+                sendCreated(response, customer);
             } else if (pathInfo.equals("/login")) {
                 // POST /api/v1/customers/login
                 CustomerLoginRequest loginRequest = readJsonBody(request, CustomerLoginRequest.class);
-                CustomerAuthResponse authResponse = customerService.login(loginRequest);
-                sendSuccess(response, authResponse);
-            } else if (pathInfo.equals("/validate-token")) {
-                // POST /api/v1/customers/validate-token
-                TokenRequest tokenRequest = readJsonBody(request, TokenRequest.class);
-                CustomerResponse customer = customerService.validateToken(tokenRequest.getToken());
-                if (customer != null) {
-                    sendSuccess(response, customer);
-                } else {
-                    sendError(response, "Invalid token", HttpServletResponse.SC_UNAUTHORIZED);
-                }
+                CustomerLoginResponse loginResponse = customerService.login(loginRequest);
+                sendSuccess(response, loginResponse);
+            } else if (pathInfo.contains("/logout")) {
+                // POST /api/v1/customers/{customerId}/logout
+                handleLogout(request, response);
             } else if (pathInfo.contains("/change-password")) {
                 // POST /api/v1/customers/{id}/change-password
                 handleChangePassword(request, response);
             } else if (pathInfo.contains("/addresses") && !pathInfo.contains("/default")) {
                 // POST /api/v1/customers/{id}/addresses
                 handleAddAddress(request, response);
-            } else if (pathInfo.contains("/deactivate")) {
-                // POST /api/v1/customers/{id}/deactivate
-                handleDeactivate(request, response);
-            } else if (pathInfo.contains("/activate")) {
-                // POST /api/v1/customers/{id}/activate
-                handleActivate(request, response);
             } else {
                 sendBadRequest(response, "Invalid endpoint");
             }
@@ -127,15 +125,18 @@ public class CustomerServlet extends BaseServlet {
                 return;
             }
 
-            if (pathInfo.contains("/addresses") && pathInfo.contains("/default")) {
+            if (pathInfo.contains("/profile")) {
+                // PUT /api/v1/customers/{customerId}/profile
+                handleUpdateProfile(request, response);
+            } else if (pathInfo.contains("/addresses") && pathInfo.contains("/default")) {
                 // PUT /api/v1/customers/{id}/addresses/{addressId}/default
                 handleSetDefaultAddress(request, response);
             } else if (pathInfo.contains("/addresses")) {
                 // PUT /api/v1/customers/{id}/addresses/{addressId}
                 handleUpdateAddress(request, response);
             } else {
-                // PUT /api/v1/customers/{id}
-                handleUpdateProfile(request, response);
+                // PUT /api/v1/customers/{id} - Update customer (Admin)
+                handleUpdateCustomer(request, response);
             }
         } catch (Exception e) {
             logger.error("Error in PUT request", e);
@@ -153,28 +154,15 @@ public class CustomerServlet extends BaseServlet {
             if (pathInfo != null && pathInfo.contains("/addresses")) {
                 // DELETE /api/v1/customers/{id}/addresses/{addressId}
                 handleDeleteAddress(request, response);
+            } else if (pathInfo != null && !pathInfo.equals("/")) {
+                // DELETE /api/v1/customers/{id} - Delete customer (Admin)
+                handleDeleteCustomer(request, response);
             } else {
                 sendBadRequest(response, "Invalid endpoint");
             }
         } catch (Exception e) {
             logger.error("Error in DELETE request", e);
             sendInternalError(response, "Error deleting address: " + e.getMessage());
-        }
-    }
-
-    private void handleGetById(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Long customerId = extractIdFromPath(request, "/api/v1/customers");
-
-        if (customerId == null) {
-            sendBadRequest(response, "Invalid customer ID");
-            return;
-        }
-
-        CustomerResponse customer = customerService.getCustomerById(customerId);
-        if (customer != null) {
-            sendSuccess(response, customer);
-        } else {
-            sendNotFound(response, "Customer not found with ID: " + customerId);
         }
     }
 
@@ -194,7 +182,56 @@ public class CustomerServlet extends BaseServlet {
         }
     }
 
+    private void handleGetById(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Long customerId = extractIdFromPath(request, "/api/v1/customers");
+
+        if (customerId == null) {
+            sendBadRequest(response, "Invalid customer ID");
+            return;
+        }
+
+        CustomerResponse customer = customerService.getCustomerById(customerId);
+        sendSuccess(response, customer);
+    }
+
+    private void handleGetProfile(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        if (parts.length < 2) {
+            sendBadRequest(response, "Customer ID is required");
+            return;
+        }
+
+        try {
+            Long customerId = Long.parseLong(parts[1]);
+            CustomerResponse customer = customerService.getCustomerProfile(customerId);
+            sendSuccess(response, customer);
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid customer ID");
+        }
+    }
+
     private void handleUpdateProfile(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        if (parts.length < 2) {
+            sendBadRequest(response, "Customer ID is required");
+            return;
+        }
+
+        try {
+            Long customerId = Long.parseLong(parts[1]);
+            CustomerProfileUpdateRequest updateRequest = readJsonBody(request, CustomerProfileUpdateRequest.class);
+            CustomerResponse updated = customerService.updateProfile(customerId, updateRequest);
+            sendSuccess(response, updated);
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid customer ID");
+        }
+    }
+
+    private void handleUpdateCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Long customerId = extractIdFromPath(request, "/api/v1/customers");
 
         if (customerId == null) {
@@ -203,8 +240,20 @@ public class CustomerServlet extends BaseServlet {
         }
 
         CustomerUpdateRequest updateRequest = readJsonBody(request, CustomerUpdateRequest.class);
-        CustomerResponse updated = customerService.updateProfile(customerId, updateRequest);
+        CustomerResponse updated = customerService.updateCustomer(customerId, updateRequest);
         sendSuccess(response, updated);
+    }
+
+    private void handleDeleteCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Long customerId = extractIdFromPath(request, "/api/v1/customers");
+
+        if (customerId == null) {
+            sendBadRequest(response, "Invalid customer ID");
+            return;
+        }
+
+        customerService.deleteCustomer(customerId);
+        sendNoContent(response);
     }
 
     private void handleChangePassword(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -321,7 +370,7 @@ public class CustomerServlet extends BaseServlet {
         }
     }
 
-    private void handleDeactivate(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
 
@@ -332,28 +381,13 @@ public class CustomerServlet extends BaseServlet {
 
         try {
             Long customerId = Long.parseLong(parts[1]);
-            customerService.deactivateAccount(customerId);
-            sendSuccess(response, new MessageResponse("Account deactivated successfully"));
+            customerService.logout(customerId);
+            sendSuccess(response, new MessageResponse("Logout successful"));
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid customer ID");
-        }
-    }
-
-    private void handleActivate(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        String[] parts = pathInfo.split("/");
-
-        if (parts.length < 2) {
-            sendBadRequest(response, "Customer ID is required");
-            return;
-        }
-
-        try {
-            Long customerId = Long.parseLong(parts[1]);
-            customerService.activateAccount(customerId);
-            sendSuccess(response, new MessageResponse("Account activated successfully"));
-        } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid customer ID");
+        } catch (Exception e) {
+            logger.error("Error during logout", e);
+            sendInternalError(response, "Error processing logout: " + e.getMessage());
         }
     }
 
@@ -363,6 +397,13 @@ public class CustomerServlet extends BaseServlet {
 
         public String getToken() { return token; }
         public void setToken(String token) { this.token = token; }
+    }
+
+    static class LogoutRequest {
+        private Long customerId;
+
+        public Long getCustomerId() { return customerId; }
+        public void setCustomerId(Long customerId) { this.customerId = customerId; }
     }
 
     static class MessageResponse {

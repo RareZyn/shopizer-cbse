@@ -32,12 +32,17 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerAuthResponse register(CustomerRegistrationRequest request) {
+    public CustomerResponse register(CustomerRegistrationRequest request) {
         logger.info("Registering new customer: {}", request.getEmail());
 
         // Check if email already exists
         if (customerRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email already registered: " + request.getEmail());
+        }
+
+        // Validate password match
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new BadRequestException("Passwords do not match");
         }
 
         // Validate password strength
@@ -46,72 +51,88 @@ public class CustomerServiceImpl implements CustomerService {
         // Create customer entity
         Customer customer = new Customer();
         customer.setEmail(request.getEmail());
-        customer.setPassword(hashPassword(request.getPassword()));
+        customer.setPasswordHash(hashPassword(request.getPassword()));
         customer.setFirstName(request.getFirstName());
         customer.setLastName(request.getLastName());
-        customer.setPhone(request.getPhoneNumber());
-        customer.setActive(true);
+        customer.setPhone(request.getPhone());
+        customer.setStatus("ACTIVE");
+        customer.setEmailVerified(false);
 
         customer = customerRepository.save(customer);
 
         logger.info("Customer registered successfully: {}", customer.getEmail());
 
-        // Generate JWT token
-        String token = jwtTokenProvider.generateToken(customer.getEmail(), customer.getId());
-
-        return mapToAuthResponse(customer, token);
+        return mapToCustomerResponse(customer);
     }
 
     @Override
-    public CustomerAuthResponse login(CustomerLoginRequest request) {
+    public CustomerLoginResponse login(CustomerLoginRequest request) {
         logger.info("Customer login attempt: {}", request.getEmail());
 
-        // Find customer by email
         Customer customer = customerRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new BadRequestException("Invalid email or password"));
 
-        // Verify password
-        if (!verifyPassword(request.getPassword(), customer.getPassword())) {
+        if (!verifyPassword(request.getPassword(), customer.getPasswordHash())) {
             throw new BadRequestException("Invalid email or password");
         }
 
-        // Check if account is active
-        if (!customer.getActive()) {
-            throw new BadRequestException("Account is deactivated. Please contact support.");
+        if (!"ACTIVE".equals(customer.getStatus())) {
+            throw new BadRequestException("Account is not active. Please contact support.");
         }
+
+        // Update last login time
+        customer.setLastLoginAt(java.time.LocalDateTime.now());
+        customerRepository.save(customer);
 
         logger.info("Customer logged in successfully: {}", customer.getEmail());
 
-        // Generate JWT token
-        String token = jwtTokenProvider.generateToken(customer.getEmail(), customer.getId());
+        // Generate JWT tokens
+        String accessToken = jwtTokenProvider.generateToken(customer.getEmail(), customer.getId());
+        String refreshToken = jwtTokenProvider.generateToken(customer.getEmail(), customer.getId()); // TODO: Implement proper refresh token
 
-        return mapToAuthResponse(customer, token);
+        CustomerLoginResponse response = new CustomerLoginResponse();
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken);
+        response.setTokenType("Bearer");
+        response.setExpiresIn(3600L); // 1 hour
+        response.setCustomer(mapToCustomerResponse(customer));
+
+        return response;
+    }
+
+    @Override
+    public void logout(Long customerId) {
+        logger.info("Customer logout: {}", customerId);
+        // Logout is typically handled client-side by discarding the token
+        // In a production system, you might want to blacklist the token here
+        logger.info("Customer logged out successfully: {}", customerId);
     }
 
     @Override
     public CustomerResponse getCustomerById(Long customerId) {
         logger.info("Fetching customer: {}", customerId);
-
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
-
         return mapToCustomerResponse(customer);
     }
 
     @Override
     public CustomerResponse getCustomerByEmail(String email) {
         logger.info("Fetching customer by email: {}", email);
-
         Customer customer = customerRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("Customer", "email", email));
-
         return mapToCustomerResponse(customer);
     }
 
     @Override
-    public CustomerResponse updateProfile(Long customerId, CustomerUpdateRequest request) {
-        logger.info("Updating profile for customer: {}", customerId);
+    public CustomerResponse getCustomerProfile(Long customerId) {
+        logger.info("Fetching customer profile: {}", customerId);
+        return getCustomerById(customerId);
+    }
 
+    @Override
+    public CustomerResponse updateProfile(Long customerId, CustomerProfileUpdateRequest request) {
+        logger.info("Updating profile for customer: {}", customerId);
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
 
@@ -121,47 +142,73 @@ public class CustomerServiceImpl implements CustomerService {
         if (request.getLastName() != null) {
             customer.setLastName(request.getLastName());
         }
-        if (request.getPhoneNumber() != null) {
-            customer.setPhone(request.getPhoneNumber());
+        if (request.getPhone() != null) {
+            customer.setPhone(request.getPhone());
         }
 
-        customer = customerRepository.save(customer);
-
-        logger.info("Profile updated successfully");
-
-        return mapToCustomerResponse(customer);
+        Customer updatedCustomer = customerRepository.save(customer);
+        return mapToCustomerResponse(updatedCustomer);
     }
 
     @Override
-    public void changePassword(Long customerId, PasswordChangeRequest request) {
-        logger.info("Changing password for customer: {}", customerId);
-
-        Customer customer = customerRepository.findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
-
-        // Verify current password
-        if (!verifyPassword(request.getCurrentPassword(), customer.getPassword())) {
-            throw new BadRequestException("Current password is incorrect");
-        }
-
-        // Validate new password
-        validatePassword(request.getNewPassword());
-
-        // Update password
-        customer.setPassword(hashPassword(request.getNewPassword()));
-        customerRepository.save(customer);
-
-        logger.info("Password changed successfully");
+    public List<CustomerResponse> getAllCustomers() {
+        logger.info("Fetching all customers");
+        List<Customer> customers = customerRepository.findAll();
+        return customers.stream()
+            .map(this::mapToCustomerResponse)
+            .collect(Collectors.toList());
     }
 
     @Override
-    public AddressResponse addAddress(Long customerId, AddressRequest request) {
-        logger.info("Adding address for customer: {}", customerId);
+    public CustomerResponse createCustomer(CustomerRegistrationRequest request) {
+        logger.info("Admin creating customer: {}", request.getEmail());
+        // Same as register but without email verification requirement
+        return register(request);
+    }
 
+    @Override
+    public CustomerResponse updateCustomer(Long customerId, CustomerUpdateRequest request) {
+        logger.info("Admin updating customer: {}", customerId);
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
 
-        // If this is the first address or marked as default, set all others to non-default
+        if (request.getFirstName() != null) {
+            customer.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null) {
+            customer.setLastName(request.getLastName());
+        }
+        if (request.getPhone() != null) {
+            customer.setPhone(request.getPhone());
+        }
+        if (request.getEmail() != null && !request.getEmail().equals(customer.getEmail())) {
+            if (customerRepository.existsByEmail(request.getEmail())) {
+                throw new BadRequestException("Email already exists: " + request.getEmail());
+            }
+            customer.setEmail(request.getEmail());
+        }
+        if (request.getStatus() != null) {
+            customer.setStatus(request.getStatus());
+        }
+
+        Customer updatedCustomer = customerRepository.save(customer);
+        return mapToCustomerResponse(updatedCustomer);
+    }
+
+    @Override
+    public void deleteCustomer(Long customerId) {
+        logger.info("Admin deleting customer: {}", customerId);
+        Customer customer = customerRepository.findById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
+        customerRepository.delete(customer);
+    }
+
+    @Override
+    public AddressResponse createAddress(Long customerId, AddressRequest request) {
+        logger.info("Creating address for customer: {}", customerId);
+        Customer customer = customerRepository.findById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
+
         if (Boolean.TRUE.equals(request.getIsDefault())) {
             List<Address> existingAddresses = addressRepository.findByCustomerId(customerId);
             existingAddresses.forEach(addr -> {
@@ -172,6 +219,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         Address address = new Address();
         address.setCustomer(customer);
+        address.setRecipientName(customer.getFirstName() + " " + customer.getLastName());
         address.setAddressLine1(request.getStreet());
         address.setCity(request.getCity());
         address.setState(request.getState());
@@ -179,9 +227,19 @@ public class CustomerServiceImpl implements CustomerService {
         address.setPostalCode(request.getPostalCode());
         address.setIsDefault(Boolean.TRUE.equals(request.getIsDefault()));
 
-        address = addressRepository.save(address);
+        Address savedAddress = addressRepository.save(address);
+        return mapToAddressResponse(savedAddress);
+    }
 
-        logger.info("Address added successfully");
+    @Override
+    public AddressResponse getAddressById(Long customerId, Long addressId) {
+        logger.info("Fetching address {} for customer: {}", addressId, customerId);
+        Address address = addressRepository.findById(addressId)
+            .orElseThrow(() -> new ResourceNotFoundException("Address", "id", addressId));
+
+        if (!address.getCustomer().getId().equals(customerId)) {
+            throw new BadRequestException("Address does not belong to this customer");
+        }
 
         return mapToAddressResponse(address);
     }
@@ -189,14 +247,11 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public List<AddressResponse> getAddresses(Long customerId) {
         logger.info("Fetching addresses for customer: {}", customerId);
-
-        // Verify customer exists
         if (!customerRepository.existsById(customerId)) {
             throw new ResourceNotFoundException("Customer", "id", customerId);
         }
 
         List<Address> addresses = addressRepository.findByCustomerId(customerId);
-
         return addresses.stream()
             .map(this::mapToAddressResponse)
             .collect(Collectors.toList());
@@ -205,16 +260,13 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public AddressResponse updateAddress(Long customerId, Long addressId, AddressRequest request) {
         logger.info("Updating address {} for customer {}", addressId, customerId);
-
         Address address = addressRepository.findById(addressId)
             .orElseThrow(() -> new ResourceNotFoundException("Address", "id", addressId));
 
-        // Verify address belongs to customer
         if (!address.getCustomer().getId().equals(customerId)) {
             throw new BadRequestException("Address does not belong to this customer");
         }
 
-        // If setting as default, unset other default addresses
         if (Boolean.TRUE.equals(request.getIsDefault()) && !address.getIsDefault()) {
             List<Address> addresses = addressRepository.findByCustomerId(customerId);
             addresses.forEach(addr -> {
@@ -232,21 +284,16 @@ public class CustomerServiceImpl implements CustomerService {
         address.setPostalCode(request.getPostalCode());
         address.setIsDefault(Boolean.TRUE.equals(request.getIsDefault()));
 
-        address = addressRepository.save(address);
-
-        logger.info("Address updated successfully");
-
-        return mapToAddressResponse(address);
+        Address updatedAddress = addressRepository.save(address);
+        return mapToAddressResponse(updatedAddress);
     }
 
     @Override
     public void deleteAddress(Long customerId, Long addressId) {
         logger.info("Deleting address {} for customer {}", addressId, customerId);
-
         Address address = addressRepository.findById(addressId)
             .orElseThrow(() -> new ResourceNotFoundException("Address", "id", addressId));
 
-        // Verify address belongs to customer
         if (!address.getCustomer().getId().equals(customerId)) {
             throw new BadRequestException("Address does not belong to this customer");
         }
@@ -254,7 +301,6 @@ public class CustomerServiceImpl implements CustomerService {
         boolean wasDefault = address.getIsDefault();
         addressRepository.delete(address);
 
-        // If deleted address was default, set first remaining address as default
         if (wasDefault) {
             List<Address> remainingAddresses = addressRepository.findByCustomerId(customerId);
             if (!remainingAddresses.isEmpty()) {
@@ -263,18 +309,20 @@ public class CustomerServiceImpl implements CustomerService {
                 addressRepository.save(firstAddress);
             }
         }
+    }
 
-        logger.info("Address deleted successfully");
+    @Override
+    public AddressResponse addAddress(Long customerId, AddressRequest request) {
+        // Alias for createAddress
+        return createAddress(customerId, request);
     }
 
     @Override
     public void setDefaultAddress(Long customerId, Long addressId) {
         logger.info("Setting default address {} for customer {}", addressId, customerId);
-
         Address address = addressRepository.findById(addressId)
             .orElseThrow(() -> new ResourceNotFoundException("Address", "id", addressId));
 
-        // Verify address belongs to customer
         if (!address.getCustomer().getId().equals(customerId)) {
             throw new BadRequestException("Address does not belong to this customer");
         }
@@ -285,14 +333,11 @@ public class CustomerServiceImpl implements CustomerService {
             addr.setIsDefault(addr.getId().equals(addressId));
             addressRepository.save(addr);
         });
-
-        logger.info("Default address set successfully");
     }
 
     @Override
     public CustomerResponse validateToken(String token) {
         logger.info("Validating JWT token");
-
         try {
             if (!jwtTokenProvider.validateToken(token)) {
                 throw new BadRequestException("Invalid or expired token");
@@ -300,7 +345,6 @@ public class CustomerServiceImpl implements CustomerService {
 
             Long customerId = jwtTokenProvider.getUserIdFromToken(token);
             return getCustomerById(customerId);
-
         } catch (Exception e) {
             logger.error("Token validation failed", e);
             throw new BadRequestException("Invalid or expired token");
@@ -308,29 +352,42 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public void deactivateAccount(Long customerId) {
-        logger.info("Deactivating account for customer: {}", customerId);
-
+    public void changePassword(Long customerId, PasswordChangeRequest request) {
+        logger.info("Changing password for customer: {}", customerId);
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
 
-        customer.setActive(false);
-        customerRepository.save(customer);
+        // Verify current password
+        if (!verifyPassword(request.getCurrentPassword(), customer.getPasswordHash())) {
+            throw new BadRequestException("Current password is incorrect");
+        }
 
-        logger.info("Account deactivated successfully");
+        // Validate new password
+        validatePassword(request.getNewPassword());
+
+        // Update password
+        customer.setPasswordHash(hashPassword(request.getNewPassword()));
+        customerRepository.save(customer);
+    }
+
+    @Override
+    public void deactivateAccount(Long customerId) {
+        logger.info("Deactivating account for customer: {}", customerId);
+        Customer customer = customerRepository.findById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
+
+        customer.setStatus("INACTIVE");
+        customerRepository.save(customer);
     }
 
     @Override
     public void activateAccount(Long customerId) {
         logger.info("Activating account for customer: {}", customerId);
-
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", customerId));
 
-        customer.setActive(true);
+        customer.setStatus("ACTIVE");
         customerRepository.save(customer);
-
-        logger.info("Account activated successfully");
     }
 
     // Helper methods
@@ -354,26 +411,16 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private String hashPassword(String password) {
-        // TODO: Implement proper password hashing (BCrypt)
-        // For now, this is a placeholder
-        return "hashed_" + password;
+        return org.mindrot.jbcrypt.BCrypt.hashpw(password, org.mindrot.jbcrypt.BCrypt.gensalt(12));
     }
 
     private boolean verifyPassword(String plainPassword, String hashedPassword) {
-        // TODO: Implement proper password verification (BCrypt)
-        // For now, this is a placeholder
-        return hashedPassword.equals("hashed_" + plainPassword);
-    }
-
-    private CustomerAuthResponse mapToAuthResponse(Customer customer, String token) {
-        CustomerAuthResponse response = new CustomerAuthResponse();
-        response.setId(customer.getId());
-        response.setEmail(customer.getEmail());
-        response.setFirstName(customer.getFirstName());
-        response.setLastName(customer.getLastName());
-        response.setPhoneNumber(customer.getPhone());
-        response.setToken(token);
-        return response;
+        try {
+            return org.mindrot.jbcrypt.BCrypt.checkpw(plainPassword, hashedPassword);
+        } catch (Exception e) {
+            logger.error("Error verifying password", e);
+            return false;
+        }
     }
 
     private CustomerResponse mapToCustomerResponse(Customer customer) {
@@ -382,17 +429,11 @@ public class CustomerServiceImpl implements CustomerService {
         response.setEmail(customer.getEmail());
         response.setFirstName(customer.getFirstName());
         response.setLastName(customer.getLastName());
-        response.setPhoneNumber(customer.getPhone());
-        response.setActive(customer.getActive());
+        response.setPhone(customer.getPhone());
+        response.setEmailVerified(customer.getEmailVerified());
+        response.setStatus(customer.getStatus());
+        response.setLastLoginAt(customer.getLastLoginAt());
         response.setCreatedAt(customer.getCreatedAt());
-        response.setUpdatedAt(customer.getUpdatedAt());
-
-        // Load addresses
-        List<Address> addresses = addressRepository.findByCustomerId(customer.getId());
-        response.setAddresses(addresses.stream()
-            .map(this::mapToAddressResponse)
-            .collect(Collectors.toList()));
-
         return response;
     }
 
