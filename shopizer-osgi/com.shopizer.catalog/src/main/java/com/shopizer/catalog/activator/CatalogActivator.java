@@ -30,9 +30,13 @@ import java.util.Hashtable;
  * FUNCTIONAL REQUIREMENTS:
  * - FR-001: Product CRUD operations (via ProductRepository)
  * - FR-002: Category CRUD operations (via CategoryRepository)
- * - FR-003: Search products by keyword
+ * - FR-003: Search products by keyword (case-insensitive)
  * - FR-004: Browse products by category
  * - FR-005: Track product stock levels
+ * - FR-006: Filter products by store (multi-store support)
+ * - FR-007: View only active products
+ * - FR-008: Product browsing with sorting
+ * - FR-009: Stock management and validation
  *
  * DEPENDENCIES:
  * - EntityManagerFactory from com.shopizer.common (OSGi service)
@@ -100,7 +104,7 @@ public class CatalogActivator implements BundleActivator {
             properties.put("service.description", "Catalog Service for Product and Category Management");
             properties.put("service.vendor", "Shopizer");
             properties.put("service.version", "1.0.0");
-            properties.put("functional.requirements", "FR-001,FR-002,FR-003,FR-004,FR-005");
+            properties.put("functional.requirements", "FR-001,FR-002,FR-003,FR-004,FR-005,FR-006,FR-007,FR-008,FR-009");
 
             serviceRegistration = context.registerService(
                     CatalogService.class,
@@ -111,7 +115,7 @@ public class CatalogActivator implements BundleActivator {
             logger.info("✅ Catalog Module started successfully. CatalogService registered in OSGi registry.");
             logger.info("   - ProductRepository: ACTIVE (Manual JPA Implementation)");
             logger.info("   - CategoryRepository: ACTIVE (Manual JPA Implementation)");
-            logger.info("   - CatalogService: READY (Functional Requirements: FR-001 to FR-005)");
+            logger.info("   - CatalogService: READY (Functional Requirements: FR-001 to FR-009)");
 
         } catch (Exception e) {
             logger.error("❌ Failed to start Catalog Module: {}", e.getMessage(), e);
