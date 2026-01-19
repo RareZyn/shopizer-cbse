@@ -15,5 +15,6 @@ com\shopizer\rest\servlet\CustomerServlet$MessageResponse.class
 com\shopizer\rest\servlet\CartServlet.class
 com\shopizer\rest\servlet\CatalogServlet.class
 com\shopizer\rest\servlet\SwaggerServlet.class
+com\shopizer\rest\servlet\CustomerServlet$LogoutRequest.class
 com\shopizer\rest\servlet\CartServlet$TotalResponse.class
 com\shopizer\rest\servlet\IndexServlet.class

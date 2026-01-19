@@ -1,19 +1,22 @@
 package com.shopizer.customer.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CustomerResponse {
     private Long id;
     private String email;
     private String firstName;
     private String lastName;
-    private String phoneNumber;
-    private Boolean active;
+    private String phone;
+    private Boolean emailVerified;
+    private String status;
+    private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private List<AddressResponse> addresses;
 }

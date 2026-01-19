@@ -5,6 +5,7 @@ com\shopizer\common\entity\Customer.class
 com\shopizer\common\entity\MerchantStore.class
 com\shopizer\common\entity\Address.class
 com\shopizer\common\entity\CartItem.class
+com\shopizer\common\entity\AddressInfo.class
 com\shopizer\common\entity\Product.class
 com\shopizer\common\entity\OrderItem.class
 com\shopizer\common\exception\BadRequestException.class

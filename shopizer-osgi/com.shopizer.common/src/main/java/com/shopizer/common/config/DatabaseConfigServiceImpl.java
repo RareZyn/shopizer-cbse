@@ -22,7 +22,7 @@ public class DatabaseConfigServiceImpl implements DatabaseConfigService {
      */
     private void loadProperties() {
         try (InputStream input = getClass().getClassLoader()
-                .getResourceAsStream("database.properties")) {
+                .getResourceAsStream("META-INF/database.properties")) {
 
             if (input == null) {
                 throw new RuntimeException("Unable to find database.properties");

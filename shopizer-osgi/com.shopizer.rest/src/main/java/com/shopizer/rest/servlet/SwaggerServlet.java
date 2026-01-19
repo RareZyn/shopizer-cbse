@@ -335,41 +335,506 @@ public class SwaggerServlet extends HttpServlet {
         }
       }
     },
-    "/customers/register": {
+    "/customers": {
+      "get": {
+        "tags": ["Customer"],
+        "summary": "Get all customers (Admin)",
+        "responses": {
+          "200": {
+            "description": "List of customers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/CustomerResponse" }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": ["Customer"],
-        "summary": "Register new customer",
+        "summary": "Create a customer (Admin)",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "email": { "type": "string" },
-                  "password": { "type": "string" },
-                  "firstName": { "type": "string" },
-                  "lastName": { "type": "string" }
-                }
-              }
+              "schema": { "$ref": "#/components/schemas/CustomerRegistrationRequest" }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Customer registered",
+            "description": "Customer created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CustomerResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customers/{id}": {
+      "get": {
+        "tags": ["Customer"],
+        "summary": "Get customer by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CustomerResponse" }
+              }
+            }
+          },
+          "404": { "description": "Customer not found" }
+        }
+      },
+      "put": {
+        "tags": ["Customer"],
+        "summary": "Update customer (Admin)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CustomerUpdateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CustomerResponse" }
+              }
+            }
+          },
+          "404": { "description": "Customer not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Customer"],
+        "summary": "Delete customer (Admin)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Customer deleted" },
+          "404": { "description": "Customer not found" }
+        }
+      }
+    },
+    "/customers/register": {
+      "post": {
+        "tags": ["Customer"],
+        "summary": "Register a new customer account",
+        "description": "FR-024: The system shall allow customers to register new account. Validates email format, password strength, and checks for duplicate accounts.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CustomerRegistrationRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Customer registered successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CustomerResponse" }
+              }
+            }
+          },
+          "400": { "description": "Bad request (email already exists or invalid data)" }
+        }
+      }
+    },
+    "/customers/login": {
+      "post": {
+        "tags": ["Customer"],
+        "summary": "Customer login",
+        "description": "FR-025: The system shall allow customers to login. Returns JWT access token and refresh token upon successful authentication.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CustomerLoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CustomerLoginResponse" }
+              }
+            }
+          },
+          "400": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/customers/{customerId}/logout": {
+      "post": {
+        "tags": ["Customer"],
+        "summary": "Customer logout",
+        "description": "FR-025: The system shall allow customers to logout. Client should discard tokens after this call.",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout successful",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "customer": { "$ref": "#/components/schemas/Customer" },
-                    "token": { "type": "string" }
+                    "message": { "type": "string" }
                   }
                 }
               }
             }
+          },
+          "404": { "description": "Customer not found" }
+        }
+      }
+    },
+    "/customers/email/{email}": {
+      "get": {
+        "tags": ["Customer"],
+        "summary": "Get customer by email",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "email" }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Customer" }
+              }
+            }
+          },
+          "404": { "description": "Customer not found" }
+        }
+      }
+    },
+    "/customers/{customerId}/profile": {
+      "get": {
+        "tags": ["Customer"],
+        "summary": "Get customer profile",
+        "description": "FR-026: The system shall allow customers to view their profile. Returns customer details including name, email, phone, and account status.",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CustomerResponse" }
+              }
+            }
+          },
+          "404": { "description": "Customer not found" }
+        }
+      },
+      "put": {
+        "tags": ["Customer"],
+        "summary": "Update customer profile",
+        "description": "FR-026: The system shall allow customers to update their profile. Allows updating first name, last name, and phone number.",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CustomerProfileUpdateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CustomerResponse" }
+              }
+            }
+          },
+          "404": { "description": "Customer not found" }
+        }
+      }
+    },
+    "/customers/{id}/change-password": {
+      "post": {
+        "tags": ["Customer"],
+        "summary": "Change customer password",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PasswordChangeRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid current password" },
+          "404": { "description": "Customer not found" }
+        }
+      }
+    },
+    "/customers/{id}/addresses": {
+      "get": {
+        "tags": ["Customer"],
+        "summary": "Get all addresses for customer",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of addresses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Address" }
+                }
+              }
+            }
+          },
+          "404": { "description": "Customer not found" }
+        }
+      },
+      "post": {
+        "tags": ["Customer"],
+        "summary": "Add new address",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AddressRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Address created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Address" }
+              }
+            }
+          },
+          "404": { "description": "Customer not found" }
+        }
+      }
+    },
+    "/customers/{id}/addresses/{addressId}": {
+      "get": {
+        "tags": ["Customer"],
+        "summary": "Get address by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "addressId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Address found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Address" }
+              }
+            }
+          },
+          "404": { "description": "Address not found" }
+        }
+      },
+      "put": {
+        "tags": ["Customer"],
+        "summary": "Update address",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "addressId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AddressRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Address updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Address" }
+              }
+            }
+          },
+          "404": { "description": "Address not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Customer"],
+        "summary": "Delete address",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "addressId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Address deleted" },
+          "404": { "description": "Address not found" }
+        }
+      }
+    },
+    "/customers/{id}/addresses/{addressId}/default": {
+      "put": {
+        "tags": ["Customer"],
+        "summary": "Set default address",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "addressId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default address set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Address not found" }
         }
       }
     },
@@ -465,8 +930,121 @@ public class SwaggerServlet extends HttpServlet {
         "properties": {
           "id": { "type": "integer", "format": "int64" },
           "email": { "type": "string" },
+          "passwordHash": { "type": "string" },
           "firstName": { "type": "string" },
-          "lastName": { "type": "string" }
+          "lastName": { "type": "string" },
+          "phone": { "type": "string" },
+          "status": { "type": "string" },
+          "emailVerified": { "type": "boolean" },
+          "lastLoginAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CustomerResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "email": { "type": "string" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "phone": { "type": "string" },
+          "emailVerified": { "type": "boolean" },
+          "status": { "type": "string" },
+          "lastLoginAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CustomerRegistrationRequest": {
+        "type": "object",
+        "required": ["email", "password", "confirmPassword", "firstName", "lastName"],
+        "properties": {
+          "email": { "type": "string" },
+          "password": { "type": "string" },
+          "confirmPassword": { "type": "string" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "phone": { "type": "string" }
+        }
+      },
+      "CustomerLoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "CustomerLoginResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": { "type": "string" },
+          "refreshToken": { "type": "string" },
+          "tokenType": { "type": "string" },
+          "expiresIn": { "type": "integer", "format": "int64" },
+          "customer": { "$ref": "#/components/schemas/CustomerResponse" }
+        }
+      },
+      "CustomerProfileUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "phone": { "type": "string" }
+        }
+      },
+      "CustomerUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "phone": { "type": "string" },
+          "email": { "type": "string" },
+          "status": { "type": "string" }
+        }
+      },
+      "CustomerAuthResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "email": { "type": "string", "format": "email" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "phoneNumber": { "type": "string" },
+          "token": { "type": "string" },
+          "tokenType": { "type": "string", "default": "Bearer" }
+        }
+      },
+      "PasswordChangeRequest": {
+        "type": "object",
+        "required": ["currentPassword", "newPassword"],
+        "properties": {
+          "currentPassword": { "type": "string", "format": "password" },
+          "newPassword": { "type": "string", "format": "password", "minLength": 8 }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "street": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "country": { "type": "string" },
+          "postalCode": { "type": "string" },
+          "isDefault": { "type": "boolean" }
+        }
+      },
+      "AddressRequest": {
+        "type": "object",
+        "required": ["street", "city", "state", "country", "postalCode"],
+        "properties": {
+          "street": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "country": { "type": "string" },
+          "postalCode": { "type": "string" },
+          "isDefault": { "type": "boolean", "default": false }
         }
       },
       "Order": {

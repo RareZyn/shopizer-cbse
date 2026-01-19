@@ -78,6 +78,13 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
+
+        <!-- BCrypt for password hashing -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -106,10 +113,14 @@
                             io.jsonwebtoken,
                             *
                         </Import-Package>
+                        <Embed-Dependency>
+                            jbcrypt;inline=true
+                        </Embed-Dependency>
                         <Private-Package>
                             com.shopizer.customer.impl,
                             com.shopizer.customer.repository,
-                            com.shopizer.customer.activator
+                            com.shopizer.customer.activator,
+                            org.mindrot.jbcrypt
                         </Private-Package>
                     </instructions>
                 </configuration>

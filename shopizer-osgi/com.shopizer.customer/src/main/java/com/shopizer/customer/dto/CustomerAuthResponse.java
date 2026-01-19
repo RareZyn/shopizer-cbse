@@ -1,8 +1,12 @@
 package com.shopizer.customer.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CustomerAuthResponse {
     private Long id;
     private String email;

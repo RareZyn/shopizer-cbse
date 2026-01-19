@@ -57,6 +57,9 @@ public class JpaConfig {
                 for (String key : jpaProps.stringPropertyNames()) {
                     properties.put(key, jpaProps.getProperty(key));
                 }
+                
+                // Disable Bean Validation (not available in OSGI)
+                properties.put("jakarta.persistence.validation.mode", "none");
 
                 entityManagerFactory = provider.createContainerEntityManagerFactory(
                     persistenceUnitInfo,

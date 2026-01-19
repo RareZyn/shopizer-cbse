@@ -1,13 +1,17 @@
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerAuthResponse.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\repository\AddressRepository.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerLoginRequest.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerResponse.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerUpdateRequest.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\activator\CustomerActivator.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\AddressResponse.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\api\CustomerService.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerRegistrationRequest.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\AddressRequest.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\repository\CustomerRepository.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\PasswordChangeRequest.java
-C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\impl\CustomerServiceImpl.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerLoginResponse.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\api\CustomerService.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\repository\AddressRepository.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\AddressRequest.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\repository\CustomerRepository.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\impl\CustomerServiceImpl.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerRegistrationRequest.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\repository\CustomerRepositoryImpl.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerAuthResponse.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\activator\CustomerActivator.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\PasswordChangeRequest.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\AddressResponse.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerUpdateRequest.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\repository\AddressRepositoryImpl.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerLoginRequest.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerProfileUpdateRequest.java
+C:\Users\HP\shopizer-cbse\shopizer-cbse\shopizer-osgi\com.shopizer.customer\src\main\java\com\shopizer\customer\dto\CustomerResponse.java
