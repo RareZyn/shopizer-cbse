@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1768320160690
+Build-Jdk-Spec: 21
+Bundle-Activator: com.shopizer.cart.activator.CartActivator
+Bundle-Description: Shopping Cart Management Module (FR-006 to FR-009)
+Bundle-ManifestVersion: 2
+Bundle-Name: Shopizer Cart Module
+Bundle-SymbolicName: com.shopizer.cart
+Bundle-Version: 1.0.0
+Created-By: Apache Maven Bundle Plugin 5.1.9
+Export-Package: com.shopizer.cart.api;version="1.0.0";uses:="com.shopize
+ r.cart.dto",com.shopizer.cart.dto;version="1.0.0"
+Import-Package: com.shopizer.common.entity;version="[1.0,2)",com.shopize
+ r.common.exception;version="[1.0,2)",com.shopizer.catalog.api;version="
+ [1.0,2)",org.springframework.data.jpa.repository;version="[1.0,2)",org.
+ osgi.framework;version="[1.10,2)",org.slf4j;version="[2.0,3)",com.shopi
+ zer.cart.api;version="[1.0,2)",com.shopizer.cart.dto;version="[1.0,2)",
+ com.shopizer.catalog.dto;version="[1.0,2)",java.lang,java.lang.invoke,j
+ ava.math,java.time,java.util,java.util.function,java.util.stream,org.os
+ gi.util.tracker;version="[1.5,2)",org.springframework.stereotype;versio
+ n="[1.0,2)",com.shopizer.common.dto;version="[1.0,2)",jakarta.persisten
+ ce;version="[3.1,4)"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=21))"
+Tool: Bnd-6.3.1.202206071316

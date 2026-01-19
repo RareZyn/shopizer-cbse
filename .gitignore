@@ -1,2 +1,5 @@
 notes/
 springboot/src/main/resources/application.properties
+.fake
+shopizer-osgi/com.shopizer.common/src/main/resources/database.properties
+shopizer-osgi/com.shopizer.common/target/classes/database.properties

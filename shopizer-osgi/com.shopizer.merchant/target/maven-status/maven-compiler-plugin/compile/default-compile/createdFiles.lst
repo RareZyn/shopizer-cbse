@@ -1,0 +1,15 @@
+com\shopizer\merchant\dto\MerchantStoreRequest.class
+com\shopizer\merchant\dto\SalesReportResponse.class
+com\shopizer\merchant\impl\MerchantServiceImpl.class
+com\shopizer\merchant\activator\MerchantActivator$1.class
+com\shopizer\merchant\repository\MerchantStoreRepository.class
+com\shopizer\merchant\dto\CategoryRevenueResponse.class
+com\shopizer\merchant\dto\DailySalesResponse.class
+com\shopizer\merchant\dto\MerchantStoreResponse.class
+com\shopizer\merchant\dto\ProductSalesResponse.class
+com\shopizer\merchant\api\MerchantService.class
+com\shopizer\merchant\activator\MerchantActivator$2.class
+com\shopizer\merchant\dto\RevenueAnalyticsResponse.class
+com\shopizer\merchant\dto\MonthlySalesResponse.class
+com\shopizer\merchant\activator\MerchantActivator.class
+com\shopizer\merchant\dto\InventoryItemResponse.class

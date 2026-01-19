@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class Merchant {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-incremented ID
     private Long id;
 
     @Column(nullable = false)
@@ -26,7 +26,7 @@ public class Merchant {
     @Column(name = "status")
     private String status = "ACTIVE";
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
