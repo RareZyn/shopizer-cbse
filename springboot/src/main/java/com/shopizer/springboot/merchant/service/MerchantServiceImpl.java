@@ -1,6 +1,6 @@
 package com.shopizer.springboot.merchant.service;
 
-import com.shopizer.springboot.common.util.JwtTokenProvider;
+import com.shopizer.springboot.common.util.JwtTokenProviderMerchant;
 import com.shopizer.springboot.merchant.dto.MerchantAuthResponse;
 import com.shopizer.springboot.merchant.dto.MerchantLoginRequest;
 import com.shopizer.springboot.merchant.dto.MerchantRegisterRequest;
@@ -56,9 +56,9 @@ public class MerchantServiceImpl implements MerchantService {
     private final MerchantReportRepository reportRepository;
     private final ProductViewEventRepository viewEventRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProviderMerchant jwtTokenProvider;
 
-    public MerchantServiceImpl(MerchantRepository merchantRepository, MerchantStoreRepository storeRepository, ProductRepository productRepository, MerchantReportRepository reportRepository, ProductViewEventRepository viewEventRepository, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
+    public MerchantServiceImpl(MerchantRepository merchantRepository, MerchantStoreRepository storeRepository, ProductRepository productRepository, MerchantReportRepository reportRepository, ProductViewEventRepository viewEventRepository, PasswordEncoder passwordEncoder, JwtTokenProviderMerchant jwtTokenProvider) {
         this.merchantRepository = merchantRepository;
         this.storeRepository = storeRepository;
         this.productRepository = productRepository;
