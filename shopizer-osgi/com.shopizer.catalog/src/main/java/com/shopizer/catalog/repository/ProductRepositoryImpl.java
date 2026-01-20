@@ -2,7 +2,6 @@ package com.shopizer.catalog.repository;
 
 import com.shopizer.common.entity.Product;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +29,7 @@ import java.util.Optional;
  * - Used by CatalogServiceImpl
  * - Injected via CatalogActivator from OSGi EntityManagerFactory
  */
+@SuppressWarnings({"null", "NullableProblems", "unchecked"})
 public class ProductRepositoryImpl implements ProductRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductRepositoryImpl.class);
@@ -125,7 +125,6 @@ public class ProductRepositoryImpl implements ProductRepository {
                 return entity;
             } else {
                 entityManager.getTransaction().begin();
-                @SuppressWarnings("unchecked")
                 S merged = (S) entityManager.merge(entity);
                 entityManager.flush();
                 entityManager.getTransaction().commit();
@@ -585,7 +584,6 @@ public class ProductRepositoryImpl implements ProductRepository {
                 query.setParameter("active", probe.getActive());
             }
 
-            @SuppressWarnings("unchecked")
             List<S> results = (List<S>) query.getResultList();
             logger.debug("Found {} products matching example with sort", results.size());
             return results;
@@ -632,7 +630,6 @@ public class ProductRepositoryImpl implements ProductRepository {
                 query.setParameter("active", probe.getActive());
             }
 
-            @SuppressWarnings("unchecked")
             List<S> results = (List<S>) query.getResultList();
             logger.debug("Found {} products matching example", results.size());
             return results;

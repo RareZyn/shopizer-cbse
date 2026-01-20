@@ -8,8 +8,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.shopizer.springboot.merchant.exception.InvalidCredentialsException;
-
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;

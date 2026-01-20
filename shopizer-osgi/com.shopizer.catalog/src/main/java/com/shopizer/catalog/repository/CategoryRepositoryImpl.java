@@ -31,6 +31,7 @@ import java.util.Optional;
  * Categories can have parent-child relationships forming a tree structure.
  * This allows nested categories like: Electronics > Computers > Laptops
  */
+@SuppressWarnings({"null", "NullableProblems", "unchecked"})
 public class CategoryRepositoryImpl implements CategoryRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(CategoryRepositoryImpl.class);
@@ -126,7 +127,6 @@ public class CategoryRepositoryImpl implements CategoryRepository {
                 return entity;
             } else {
                 entityManager.getTransaction().begin();
-                @SuppressWarnings("unchecked")
                 S merged = (S) entityManager.merge(entity);
                 entityManager.flush();
                 entityManager.getTransaction().commit();
@@ -569,10 +569,8 @@ public class CategoryRepositoryImpl implements CategoryRepository {
             StringBuilder jpql = new StringBuilder("SELECT c FROM Category c");
 
             // Add WHERE clause based on example probe (simplified)
-            boolean hasWhere = false;
             if (probe.getName() != null) {
                 jpql.append(" WHERE c.name = :name");
-                hasWhere = true;
             }
 
             TypedQuery<Category> query = entityManager.createQuery(jpql.toString(), Category.class);
@@ -582,7 +580,6 @@ public class CategoryRepositoryImpl implements CategoryRepository {
                 query.setParameter("name", probe.getName());
             }
 
-            @SuppressWarnings("unchecked")
             List<S> results = (List<S>) query.getResultList();
             logger.debug("Found {} categories matching example", results.size());
             return results;
@@ -614,10 +611,8 @@ public class CategoryRepositoryImpl implements CategoryRepository {
             StringBuilder jpql = new StringBuilder("SELECT c FROM Category c");
 
             // Add WHERE clause based on example probe (simplified)
-            boolean hasWhere = false;
             if (probe.getName() != null) {
                 jpql.append(" WHERE c.name = :name");
-                hasWhere = true;
             }
 
             // Add sorting
@@ -638,7 +633,6 @@ public class CategoryRepositoryImpl implements CategoryRepository {
                 query.setParameter("name", probe.getName());
             }
 
-            @SuppressWarnings("unchecked")
             List<S> results = (List<S>) query.getResultList();
             logger.debug("Found {} categories matching example with sort", results.size());
             return results;

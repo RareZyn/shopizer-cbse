@@ -8,6 +8,7 @@ import jakarta.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings({"null", "NullableProblems", "unchecked"})
 public class CustomerRepositoryImpl implements CustomerRepository {
 
     private final EntityManagerFactory entityManagerFactory;

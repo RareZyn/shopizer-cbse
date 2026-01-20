@@ -195,7 +195,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void clearCart(Long cartId) {
-        Cart cart = cartRepository.findById(cartId)
+        cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found with id: " + cartId));
         cartItemRepository.deleteByCartId(cartId);
     }
@@ -282,7 +282,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartItem updateCartItemQuantity(Long cartId, Long itemId, Integer quantity) {
         // Step 1: Validate cart exists
-        Cart cart = cartRepository.findById(cartId)
+        cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found with id: " + cartId));
 
         // Step 2: Validate cart item exists
@@ -325,7 +325,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public void removeItemFromCart(Long cartId, Long itemId) {
         // Validate cart exists
-        Cart cart = cartRepository.findById(cartId)
+        cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found with id: " + cartId));
 
         // Validate cart item exists
@@ -353,7 +353,7 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public BigDecimal getCartTotal(Long cartId) {
-        Cart cart = cartRepository.findById(cartId)
+        cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found with id: " + cartId));
 
         List<CartItem> items = cartItemRepository.findByCartId(cartId);

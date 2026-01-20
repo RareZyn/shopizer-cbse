@@ -166,22 +166,6 @@ public class CustomerServlet extends BaseServlet {
         }
     }
 
-    private void handleGetByEmail(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String email = request.getParameter("email");
-
-        if (email == null || email.isEmpty()) {
-            sendBadRequest(response, "Email is required");
-            return;
-        }
-
-        CustomerResponse customer = customerService.getCustomerByEmail(email);
-        if (customer != null) {
-            sendSuccess(response, customer);
-        } else {
-            sendNotFound(response, "Customer not found with email: " + email);
-        }
-    }
-
     private void handleGetById(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Long customerId = extractIdFromPath(request, "/api/v1/customers");
 
