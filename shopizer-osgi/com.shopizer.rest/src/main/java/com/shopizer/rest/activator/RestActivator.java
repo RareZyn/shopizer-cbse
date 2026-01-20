@@ -249,7 +249,9 @@ public class RestActivator implements BundleActivator {
         logger.info("  PUT    /customers/{id}     - Update profile");
         logger.info("");
         logger.info("Merchant API:");
-        logger.info("  POST   /merchants/stores   - Create store");
+        logger.info("  POST   /merchants/register  - Register merchant (FR-015)");
+        logger.info("  POST   /merchants/login     - Login merchant (FR-015)");
+        logger.info("  POST   /merchants/stores    - Create store");
         logger.info("  GET    /merchants/{id}/inventory - Get inventory");
         logger.info("  GET    /merchants/{id}/reports/sales - Get sales report");
         logger.info("  GET    /merchants/{id}/analytics/revenue - Get revenue analytics");

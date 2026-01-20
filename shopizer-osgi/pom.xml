@@ -34,6 +34,9 @@
         <lombok.version>1.18.30</lombok.version>
         <slf4j.version>2.0.9</slf4j.version>
 
+        <!-- Jackson -->
+        <jackson.version>2.16.1</jackson.version>
+
         <!-- JWT -->
         <jjwt.version>0.12.3</jjwt.version>
     </properties>
@@ -126,6 +129,13 @@
                 <artifactId>jjwt-jackson</artifactId>
                 <version>${jjwt.version}</version>
                 <scope>runtime</scope>
+            </dependency>
+
+            <!-- Jackson -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
 
             <!-- Lombok -->

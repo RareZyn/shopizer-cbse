@@ -7,6 +7,7 @@ import com.shopizer.common.exception.BadRequestException;
 import com.shopizer.common.exception.ResourceNotFoundException;
 import com.shopizer.merchant.api.MerchantService;
 import com.shopizer.merchant.dto.*;
+import com.shopizer.merchant.repository.MerchantRepository;
 import com.shopizer.merchant.repository.MerchantStoreRepository;
 import com.shopizer.order.api.OrderService;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,13 +23,91 @@ public class MerchantServiceImpl implements MerchantService {
 
     private static final Logger logger = LoggerFactory.getLogger(MerchantServiceImpl.class);
 
+    private final MerchantRepository merchantRepository;
     private final MerchantStoreRepository merchantStoreRepository;
     private final CatalogService catalogService;
-    public MerchantServiceImpl(MerchantStoreRepository merchantStoreRepository,
-                              CatalogService catalogService,
-                              OrderService orderService) {
+    public MerchantServiceImpl(MerchantRepository merchantRepository,
+                               MerchantStoreRepository merchantStoreRepository,
+                               CatalogService catalogService,
+                               OrderService orderService) {
+        this.merchantRepository = merchantRepository;
         this.merchantStoreRepository = merchantStoreRepository;
         this.catalogService = catalogService;
+    }
+
+    // ========== Store Management (FR-015) ==========
+
+    @Override
+    public MerchantProfileResponse registerMerchant(MerchantRegistrationRequest request) {
+        logger.info("Registering merchant: {}", request.getEmail());
+
+        if (request.getBusinessName() == null || request.getBusinessName().isBlank()) {
+            throw new BadRequestException("Business name is required");
+        }
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new BadRequestException("Email is required");
+        }
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new BadRequestException("Password is required");
+        }
+
+        merchantRepository.findByEmail(request.getEmail())
+            .ifPresent(existing -> { throw new BadRequestException("Email already registered"); });
+
+        Merchant merchant = new Merchant();
+        merchant.setBusinessName(request.getBusinessName());
+        merchant.setEmail(request.getEmail());
+        merchant.setPassword(request.getPassword());
+        merchant.setPhone(request.getPhone());
+        merchant.setStatus("ACTIVE");
+
+        merchant = merchantRepository.save(merchant);
+
+        MerchantProfileResponse response = new MerchantProfileResponse();
+        response.setId(merchant.getId());
+        response.setBusinessName(merchant.getBusinessName());
+        response.setEmail(merchant.getEmail());
+        response.setPhone(merchant.getPhone());
+        response.setActive("ACTIVE".equalsIgnoreCase(merchant.getStatus()));
+        response.setCreatedAt(merchant.getCreatedAt());
+
+        return response;
+    }
+
+    @Override
+    public AuthResponse login(LoginRequest request) {
+        logger.info("Merchant login: {}", request.getEmail());
+
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new BadRequestException("Email is required");
+        }
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new BadRequestException("Password is required");
+        }
+
+        Merchant merchant = merchantRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "email", request.getEmail()));
+
+        if (!merchant.getPassword().equals(request.getPassword())) {
+            throw new BadRequestException("Invalid credentials");
+        }
+
+        MerchantProfileResponse profile = new MerchantProfileResponse();
+        profile.setId(merchant.getId());
+        profile.setBusinessName(merchant.getBusinessName());
+        profile.setEmail(merchant.getEmail());
+        profile.setPhone(merchant.getPhone());
+        profile.setActive("ACTIVE".equalsIgnoreCase(merchant.getStatus()));
+        profile.setCreatedAt(merchant.getCreatedAt());
+
+        AuthResponse response = new AuthResponse();
+        response.setAccessToken("bearer-token-" + System.currentTimeMillis());
+        response.setTokenType("Bearer");
+        response.setExpiresAt(LocalDateTime.now().plusHours(24));
+        response.setMerchant(profile);
+
+        logger.info("Login successful for merchant: {}", merchant.getId());
+        return response;
     }
 
     // ========== Store Management (FR-015) ==========
@@ -37,8 +117,8 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Creating merchant store: {}", request.getStoreName());
 
         // Check if merchant already has a store
-        Optional<MerchantStore> existingStore = merchantStoreRepository.findByMerchantId(request.getMerchantId());
-        if (existingStore.isPresent()) {
+        List<MerchantStore> existingStores = merchantStoreRepository.findByMerchantId(request.getMerchantId());
+        if (!existingStores.isEmpty()) {
             throw new BadRequestException("Merchant already has a store");
         }
 
@@ -78,8 +158,11 @@ public class MerchantServiceImpl implements MerchantService {
     public MerchantStoreResponse getStoreByMerchantId(Long merchantId) {
         logger.info("Fetching merchant store for merchant: {}", merchantId);
 
-        MerchantStore store = merchantStoreRepository.findByMerchantId(merchantId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "merchantId", merchantId));
+        List<MerchantStore> stores = merchantStoreRepository.findByMerchantId(merchantId);
+        if (stores.isEmpty()) {
+            throw new ResourceNotFoundException("MerchantStore", "merchantId", merchantId);
+        }
+        MerchantStore store = stores.get(0);
 
         return mapToStoreResponse(store);
     }

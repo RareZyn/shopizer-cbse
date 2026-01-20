@@ -868,6 +868,58 @@ public class SwaggerServlet extends HttpServlet {
           }
         }
       }
+    },
+    "/merchants/register": {
+      "post": {
+        "tags": ["Merchant"],
+        "summary": "Register a new merchant account",
+        "description": "FR-015: The system shall allow merchants to register new account. Validates email, password, and checks for duplicate accounts.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MerchantRegistrationRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Merchant registered successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MerchantProfileResponse" }
+              }
+            }
+          },
+          "400": { "description": "Bad request (email already exists or invalid data)" }
+        }
+      }
+    },
+    "/merchants/login": {
+      "post": {
+        "tags": ["Merchant"],
+        "summary": "Merchant login",
+        "description": "FR-015: The system shall allow merchants to login. Returns JWT access token upon successful authentication.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+              }
+            }
+          },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
     }
   },
   "components": {
@@ -1055,6 +1107,44 @@ public class SwaggerServlet extends HttpServlet {
           "orderNumber": { "type": "string" },
           "status": { "type": "string" },
           "totalAmount": { "type": "number", "format": "double" }
+        }
+      },
+      "MerchantRegistrationRequest": {
+        "type": "object",
+        "required": ["name", "email", "password"],
+        "properties": {
+          "name": { "type": "string", "description": "Business name" },
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "format": "password" },
+          "phone": { "type": "string" }
+        }
+      },
+      "MerchantProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "businessName": { "type": "string" },
+          "email": { "type": "string" },
+          "phone": { "type": "string" },
+          "active": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": { "type": "string" },
+          "tokenType": { "type": "string" },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "merchant": { "$ref": "#/components/schemas/MerchantProfileResponse" }
         }
       }
     }

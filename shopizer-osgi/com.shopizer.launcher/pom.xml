@@ -77,6 +77,23 @@
             <version>9.7</version>
         </dependency>
 
+        <!-- Jackson Annotation Bundle (for JSON processing) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+
         <!-- All Module Dependencies (will be installed as bundles) -->
         <dependency>
             <groupId>com.shopizer</groupId>

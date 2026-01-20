@@ -13,6 +13,10 @@ import java.util.List;
 /**
  * REST Controller for Merchant Service
  *
+ * Authentication Endpoints (FR-015):
+ * POST   /api/v1/merchants/register    - Register new merchant account
+ * POST   /api/v1/merchants/login       - Authenticate merchant (returns JWT token)
+ *
  * Store Management Endpoints:
  * POST   /api/v1/merchants/stores                   - Create store
  * GET    /api/v1/merchants/stores/{id}              - Get store by ID
@@ -83,7 +87,13 @@ public class MerchantServlet extends BaseServlet {
         try {
             String pathInfo = request.getPathInfo();
 
-            if (pathInfo != null && pathInfo.equals("/stores")) {
+            if (pathInfo != null && pathInfo.equals("/register")) {
+                // POST /api/v1/merchants/register (FR-015)
+                handleMerchantRegister(request, response);
+            } else if (pathInfo != null && pathInfo.equals("/login")) {
+                // POST /api/v1/merchants/login (FR-015)
+                handleMerchantLogin(request, response);
+            } else if (pathInfo != null && pathInfo.equals("/stores")) {
                 // POST /api/v1/merchants/stores
                 MerchantStoreRequest storeRequest = readJsonBody(request, MerchantStoreRequest.class);
                 MerchantStoreResponse created = merchantService.createStore(storeRequest);
@@ -466,7 +476,106 @@ public class MerchantServlet extends BaseServlet {
         }
     }
 
+    // ========== FR-015: Authentication Handlers ==========
+
+    /**
+     * Handle merchant registration (FR-015)
+     * POST /api/v1/merchants/register
+     * 
+     * Request Body:
+     * {
+     *   "businessName": "Tech Store LLC",
+     *   "businessRegistrationNumber": "BRN-2025-001",
+     *   "email": "owner@techstore.com",
+     *   "password": "SecurePass123",
+     *   "phone": "+1-555-0100"
+     * }
+     */
+    private void handleMerchantRegister(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            MerchantRegistrationRequest regRequest = readJsonBody(request, MerchantRegistrationRequest.class);
+            
+            if (regRequest == null) {
+                sendBadRequest(response, "Request body is required");
+                return;
+            }
+
+            logger.info("Processing merchant registration for: {}", regRequest.getEmail());
+            
+            MerchantProfileResponse profile = merchantService.registerMerchant(regRequest);
+            
+            logger.info("Merchant registered successfully: {}", profile.getEmail());
+            sendCreated(response, profile);
+            
+        } catch (com.shopizer.common.exception.BadRequestException e) {
+            logger.warn("Registration failed: {}", e.getMessage());
+            sendBadRequest(response, e.getMessage());
+        } catch (Exception e) {
+            logger.error("Registration error", e);
+            sendInternalError(response, "Registration failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handle merchant login (FR-015)
+     * POST /api/v1/merchants/login
+     * 
+     * Request Body:
+     * {
+     *   "email": "owner@techstore.com",
+     *   "password": "SecurePass123"
+     * }
+     * 
+     * Response:
+     * {
+     *   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+     *   "tokenType": "Bearer",
+     *   "expiresAt": "2026-01-21T22:30:00",
+     *   "merchant": { ... }
+     * }
+     */
+    private void handleMerchantLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            LoginRequest loginRequest = readJsonBody(request, LoginRequest.class);
+            
+            if (loginRequest == null) {
+                sendBadRequest(response, "Request body is required");
+                return;
+            }
+
+            logger.info("Processing login for: {}", loginRequest.getEmail());
+            
+            AuthResponse authResponse = merchantService.login(loginRequest);
+            
+            logger.info("Login successful for: {}", loginRequest.getEmail());
+            sendSuccess(response, authResponse);
+            
+        } catch (com.shopizer.common.exception.BadRequestException e) {
+            logger.warn("Login failed: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            sendJsonResponse(response, new ErrorResponse(e.getMessage()), HttpServletResponse.SC_UNAUTHORIZED);
+        } catch (Exception e) {
+            logger.error("Login error", e);
+            sendInternalError(response, "Login failed: " + e.getMessage());
+        }
+    }
+
     // Helper DTOs
+    static class ErrorResponse {
+        private String error;
+        private long timestamp;
+
+        public ErrorResponse(String error) {
+            this.error = error;
+            this.timestamp = System.currentTimeMillis();
+        }
+
+        public String getError() { return error; }
+        public void setError(String error) { this.error = error; }
+        public long getTimestamp() { return timestamp; }
+        public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    }
+
     static class MessageResponse {
         private String message;
 

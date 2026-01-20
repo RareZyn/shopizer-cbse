@@ -11,14 +11,35 @@ import java.util.List;
  * Provides merchant store management, inventory, and sales reporting
  *
  * Functional Requirements:
- * - FR-015: Store Management
- * - FR-016: Inventory Management
- * - FR-017: Sales Reports
- * - FR-018: Revenue Analytics
+ * - FR-015: Merchant Management
+ * - FR-016: Store Management
+ * - FR-017: Inventory Management
+ * - FR-018: Report and Analytics
  */
 public interface MerchantService {
+// ========== Merchant Management (FR-015) ==========
 
-    // ========== Store Management (FR-015) ==========
+    /**
+     * Register a new merchant account
+     * FR-015: Merchant registration
+     *
+     * @param request Registration details (name, email, password, phone)
+     * @return Newly created merchant profile with id
+     */
+    MerchantProfileResponse registerMerchant(MerchantRegistrationRequest request);
+
+    /**
+     * Authenticate a merchant and issue an access token
+     * FR-015: Merchant login
+     *
+     * @param request Login credentials (email, password)
+     * @return Auth response containing JWT/token and merchant info
+     */
+    AuthResponse login(LoginRequest request);
+
+
+
+    // ========== Store and Inventory Management (FR-016) ==========
 
     /**
      * Create a new merchant store
@@ -73,11 +94,11 @@ public interface MerchantService {
      */
     void deactivateStore(Long storeId);
 
-    // ========== Inventory Management (FR-016) ==========
+    // ========== Inventory Management (FR-017) ==========
 
     /**
      * Get inventory for store
-     * FR-016: Inventory Management
+     * FR-017: Inventory Management
      *
      * @param storeId Store ID
      * @return List of inventory items
@@ -86,7 +107,7 @@ public interface MerchantService {
 
     /**
      * Get inventory item details
-     * FR-016: Inventory Management
+     * FR-017: Inventory Management
      *
      * @param storeId Store ID
      * @param productId Product ID
@@ -96,7 +117,7 @@ public interface MerchantService {
 
     /**
      * Update stock quantity
-     * FR-016: Inventory Management
+     * FR-017: Inventory Management
      *
      * @param storeId Store ID
      * @param productId Product ID
@@ -107,7 +128,7 @@ public interface MerchantService {
 
     /**
      * Add stock (increase quantity)
-     * FR-016: Inventory Management
+     * FR-017: Inventory Management
      *
      * @param storeId Store ID
      * @param productId Product ID
@@ -118,7 +139,7 @@ public interface MerchantService {
 
     /**
      * Remove stock (decrease quantity)
-     * FR-016: Inventory Management
+     * FR-017: Inventory Management
      *
      * @param storeId Store ID
      * @param productId Product ID
@@ -129,7 +150,7 @@ public interface MerchantService {
 
     /**
      * Get low stock items
-     * FR-016: Inventory Management
+     * FR-017: Inventory Management
      *
      * @param storeId Store ID
      * @param threshold Stock threshold
@@ -137,11 +158,10 @@ public interface MerchantService {
      */
     List<InventoryItemResponse> getLowStockItems(Long storeId, Integer threshold);
 
-    // ========== Sales Reports (FR-017) ==========
+    // ========== Reporting and Analytics (FR-018) ==========
 
     /**
      * Get sales report for date range
-     * FR-017: Sales Reports
      *
      * @param storeId Store ID
      * @param startDate Start date
@@ -152,7 +172,6 @@ public interface MerchantService {
 
     /**
      * Get daily sales summary
-     * FR-017: Sales Reports
      *
      * @param storeId Store ID
      * @param date Date
@@ -162,7 +181,6 @@ public interface MerchantService {
 
     /**
      * Get monthly sales summary
-     * FR-017: Sales Reports
      *
      * @param storeId Store ID
      * @param year Year
@@ -173,7 +191,6 @@ public interface MerchantService {
 
     /**
      * Get top selling products
-     * FR-017: Sales Reports
      *
      * @param storeId Store ID
      * @param startDate Start date
@@ -183,11 +200,8 @@ public interface MerchantService {
      */
     List<ProductSalesResponse> getTopSellingProducts(Long storeId, LocalDate startDate, LocalDate endDate, Integer limit);
 
-    // ========== Revenue Analytics (FR-018) ==========
-
     /**
      * Get revenue analytics
-     * FR-018: Revenue Analytics
      *
      * @param storeId Store ID
      * @param startDate Start date
@@ -198,7 +212,6 @@ public interface MerchantService {
 
     /**
      * Get revenue by category
-     * FR-018: Revenue Analytics
      *
      * @param storeId Store ID
      * @param startDate Start date
@@ -209,7 +222,6 @@ public interface MerchantService {
 
     /**
      * Get total revenue for store
-     * FR-018: Revenue Analytics
      *
      * @param storeId Store ID
      * @return Total revenue
@@ -218,7 +230,6 @@ public interface MerchantService {
 
     /**
      * Get revenue for period
-     * FR-018: Revenue Analytics
      *
      * @param storeId Store ID
      * @param startDate Start date

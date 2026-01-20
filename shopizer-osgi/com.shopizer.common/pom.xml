@@ -65,6 +65,23 @@
             <artifactId>jjwt-jackson</artifactId>
         </dependency>
 
+        <!-- Jackson (needed for DTO JSON processing) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -105,7 +122,10 @@
                             org.hibernate.*;-split-package:=merge-first,
                             org.springframework.*;-split-package:=merge-first,
                             io.jsonwebtoken.*;-split-package:=merge-first,
-                            org.postgresql.*;-split-package:=merge-first
+                            org.postgresql.*;-split-package:=merge-first,
+                            com.fasterxml.jackson.annotation.*;-split-package:=merge-first,
+                            com.fasterxml.jackson.core.*;-split-package:=merge-first,
+                            com.fasterxml.jackson.databind.*;-split-package:=merge-first
                         </Export-Package>
                         <Import-Package>
                             jakarta.persistence.*;resolution:=optional,
@@ -125,6 +145,9 @@
                             jjwt-impl,
                             jjwt-jackson,
                             jakarta.persistence-api,
+                            jackson-annotations,
+                            jackson-core,
+                            jackson-databind,
                             *;scope=compile|runtime;inline=false
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
