@@ -1,9 +1,13 @@
-com\shopizer\catalog\dto\CategoryResponse.class
 com\shopizer\catalog\impl\CatalogServiceImpl.class
 com\shopizer\catalog\dto\CategoryRequest.class
+com\shopizer\catalog\repository\ProductRepositoryImpl$1.class
+com\shopizer\catalog\repository\CategoryRepositoryImpl$1.class
 com\shopizer\catalog\dto\ProductResponse.class
 com\shopizer\catalog\repository\ProductRepository.class
+com\shopizer\catalog\repository\CategoryRepository.class
+com\shopizer\catalog\dto\CategoryResponse.class
+com\shopizer\catalog\repository\CategoryRepositoryImpl.class
+com\shopizer\catalog\repository\ProductRepositoryImpl.class
 com\shopizer\catalog\dto\ProductRequest.class
 com\shopizer\catalog\activator\CatalogActivator.class
 com\shopizer\catalog\api\CatalogService.class
-com\shopizer\catalog\repository\CategoryRepository.class
