@@ -1,5 +1,10 @@
 package com.shopizer.springboot.merchant.controller;
 
+import com.shopizer.springboot.merchant.dto.MerchantAuthResponse;
+import com.shopizer.springboot.merchant.dto.MerchantLoginRequest;
+import com.shopizer.springboot.merchant.dto.MerchantRegisterRequest;
+import com.shopizer.springboot.merchant.dto.ProductAnalyticsResponse;
+import com.shopizer.springboot.merchant.dto.ProductReportResponse;
 import com.shopizer.springboot.merchant.entity.Merchant;
 import com.shopizer.springboot.merchant.service.MerchantService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,9 +44,15 @@ public class MerchantController {
 
     //FR-015 Merchant management endpoints
     @PostMapping
-    @Operation(summary = "Create a new merchant", description = "FR-015: Create merchant")
-    public ResponseEntity<Merchant> createMerchant(@RequestBody Merchant merchant) {
-        return new ResponseEntity<>(merchantService.createMerchant(merchant), HttpStatus.CREATED);
+    @Operation(summary = "Register a new merchant", description = "FR-015: Merchant registration")
+    public ResponseEntity<MerchantAuthResponse> registerMerchant(@Valid @RequestBody MerchantRegisterRequest request) {
+        return new ResponseEntity<>(merchantService.register(request), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login")
+    @Operation(summary = "Merchant login", description = "FR-015: Login and receive JWT token")
+    public MerchantAuthResponse loginMerchant(@Valid @RequestBody MerchantLoginRequest request) {
+        return merchantService.login(request);
     }
 
     @GetMapping
@@ -164,6 +175,25 @@ public class MerchantController {
         return merchantService.updateProduct(merchantId, productId, req);
     }
 
+    @DeleteMapping("/{merchantId}/inventory/products/{productId}")
+    @Operation(summary = "Delete a product", description = "FR-017: The system shall allow merchants to manage inventory (Delete)")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProduct(
+            @PathVariable Long merchantId,
+            @PathVariable Long productId
+    ) {
+        merchantService.deleteProduct(merchantId, productId);
+    }
+
+    @GetMapping("/{merchantId}/inventory/low-stock")
+    @Operation(summary = "Get low stock products", description = "FR-018: Identify products needing restock")
+    public List<InventoryItemResponse> getLowStockProducts(
+            @PathVariable Long merchantId,
+            @RequestParam(required = false) Long storeId
+    ) {
+        return merchantService.getLowStockProducts(merchantId, storeId);
+    }
+
     //FR-018: Sales reports and analytics endpoints 
 
     // get Overview sales report
@@ -179,6 +209,46 @@ public class MerchantController {
             @RequestParam(required = false) LocalDate endDate
     ) {
         return merchantService.getSalesReport(merchantId, storeId, startDate, endDate);
+    }
+
+    @GetMapping("/{merchantId}/reports/products")
+    @Operation(
+            summary = "Get per-product sales report",
+            description = "FR-018: Sales/orders per product with optional filters"
+    )
+    public List<ProductReportResponse> getProductReport(
+            @PathVariable Long merchantId,
+            @RequestParam(required = false) Long storeId,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long productId,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate
+    ) {
+        return merchantService.getProductReport(merchantId, storeId, categoryId, productId, startDate, endDate);
+    }
+
+    @GetMapping("/{merchantId}/reports/products/{productId}")
+    @Operation(
+            summary = "Get detailed analytics for a product",
+            description = "FR-018: Detailed product analytics including sales by day and conversion"
+    )
+    public ProductAnalyticsResponse getProductAnalytics(
+            @PathVariable Long merchantId,
+            @PathVariable Long productId,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate
+    ) {
+        return merchantService.getProductAnalytics(merchantId, productId, startDate, endDate);
+    }
+
+    @PostMapping("/{merchantId}/products/{productId}/views")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @Operation(summary = "Record a product view", description = "FR-018: Capture product view events for conversion tracking")
+    public void recordProductView(
+            @PathVariable Long merchantId,
+            @PathVariable Long productId
+    ) {
+        merchantService.recordProductView(merchantId, productId);
     }
 
 

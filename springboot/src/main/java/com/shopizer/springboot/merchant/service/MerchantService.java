@@ -2,8 +2,13 @@ package com.shopizer.springboot.merchant.service;
 
 import com.shopizer.springboot.merchant.dto.InventoryItemResponse;
 import com.shopizer.springboot.merchant.dto.InventoryUpdateRequest;
+import com.shopizer.springboot.merchant.dto.MerchantAuthResponse;
+import com.shopizer.springboot.merchant.dto.MerchantLoginRequest;
+import com.shopizer.springboot.merchant.dto.MerchantRegisterRequest;
 import com.shopizer.springboot.merchant.dto.MerchantStoreRequest;
 import com.shopizer.springboot.merchant.dto.MerchantStoreResponse;
+import com.shopizer.springboot.merchant.dto.ProductAnalyticsResponse;
+import com.shopizer.springboot.merchant.dto.ProductReportResponse;
 import com.shopizer.springboot.merchant.dto.SalesReportResponse;
 import com.shopizer.springboot.merchant.entity.Merchant;
 import com.shopizer.springboot.merchant.dto.InventoryItemResponse;
@@ -26,6 +31,8 @@ public interface MerchantService {
     List<Merchant> getAllMerchants();
     Merchant updateMerchant(Long id, Merchant merchant);
     void deleteMerchant(Long id);
+    MerchantAuthResponse register(MerchantRegisterRequest req);
+    MerchantAuthResponse login(MerchantLoginRequest req);
     void deleteStore(Long merchantId, Long storeId);
     List<MerchantStoreResponse> listStores(Long merchantId);
     MerchantStoreResponse createStore(Long merchantId, MerchantStoreRequest req);
@@ -36,5 +43,10 @@ public interface MerchantService {
     List<InventoryItemResponse> getInventoryByStore(Long merchantId, Long storeId); //get inventory by store
     InventoryItemResponse updateProduct(Long merchantId, Long productId, InventoryUpdateRequest req);
     SalesReportResponse getSalesReport(Long merchantId, Long storeId, LocalDate startDate, LocalDate endDate); //get sales report
+    List<ProductReportResponse> getProductReport(Long merchantId, Long storeId, Long categoryId, Long productId, LocalDate startDate, LocalDate endDate);
+    ProductAnalyticsResponse getProductAnalytics(Long merchantId, Long productId, LocalDate startDate, LocalDate endDate);
+    void recordProductView(Long merchantId, Long productId);
+    void deleteProduct(Long merchantId, Long productId);
+    List<InventoryItemResponse> getLowStockProducts(Long merchantId, Long storeId);
     
 }
