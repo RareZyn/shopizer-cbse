@@ -30,6 +30,9 @@ public class CartItem {
     @Column(name = "unit_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal unitPrice;
 
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;  // Total price = unit_price * quantity
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -62,6 +65,9 @@ public class CartItem {
 
     public BigDecimal getUnitPrice() { return unitPrice; }
     public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
+
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

@@ -249,6 +249,7 @@ public class CartServiceImpl implements CartService {
             }
 
             item.setQuantity(newQuantity);
+            item.setPrice(item.getUnitPrice().multiply(new java.math.BigDecimal(newQuantity)));
             return cartItemRepository.save(item);
         } else {
             // Step 7: Create new cart item
@@ -257,6 +258,7 @@ public class CartServiceImpl implements CartService {
             newItem.setProductId(product.getId());
             newItem.setQuantity(request.getQuantity());
             newItem.setUnitPrice(product.getPrice());
+            newItem.setPrice(product.getPrice().multiply(new java.math.BigDecimal(request.getQuantity())));
 
             // Step 8: Save to database (FR-009)
             return cartItemRepository.save(newItem);
@@ -311,6 +313,7 @@ public class CartServiceImpl implements CartService {
 
         // Step 5: Update quantity
         item.setQuantity(quantity);
+        item.setPrice(item.getUnitPrice().multiply(new java.math.BigDecimal(quantity)));
 
         // Step 6: Save to database (FR-009)
         return cartItemRepository.save(item);
@@ -410,7 +413,9 @@ public class CartServiceImpl implements CartService {
             if (existingItem.isPresent()) {
                 // Product exists in customer cart - combine quantities
                 CartItem item = existingItem.get();
-                item.setQuantity(item.getQuantity() + guestItem.getQuantity());
+                int newQuantity = item.getQuantity() + guestItem.getQuantity();
+                item.setQuantity(newQuantity);
+                item.setPrice(item.getUnitPrice().multiply(new java.math.BigDecimal(newQuantity)));
                 cartItemRepository.save(item);
             } else {
                 // Add new item to customer cart
@@ -419,6 +424,7 @@ public class CartServiceImpl implements CartService {
                 newItem.setProductId(guestItem.getProductId());
                 newItem.setQuantity(guestItem.getQuantity());
                 newItem.setUnitPrice(guestItem.getUnitPrice());
+                newItem.setPrice(guestItem.getUnitPrice().multiply(new java.math.BigDecimal(guestItem.getQuantity())));
                 cartItemRepository.save(newItem);
             }
         }
@@ -472,9 +478,8 @@ public class CartServiceImpl implements CartService {
         response.setQuantity(item.getQuantity());
         response.setUnitPrice(item.getUnitPrice());
 
-        // Calculate subtotal (FR-007)
-        BigDecimal subtotal = item.getUnitPrice().multiply(new BigDecimal(item.getQuantity()));
-        response.setSubtotal(subtotal);
+        // Set subtotal from stored price (FR-007)
+        response.setSubtotal(item.getPrice());
 
         // Enrich with product details from Catalog module
         Optional<Product> productOpt = productRepository.findById(item.getProductId());
