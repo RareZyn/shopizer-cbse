@@ -1,10 +1,19 @@
 package com.shopizer.springboot.merchant.service;
 
+import com.shopizer.springboot.common.util.JwtTokenProviderMerchant;
+import com.shopizer.springboot.merchant.dto.MerchantAuthResponse;
+import com.shopizer.springboot.merchant.dto.MerchantLoginRequest;
+import com.shopizer.springboot.merchant.dto.MerchantRegisterRequest;
+import com.shopizer.springboot.merchant.dto.ProductAnalyticsResponse;
+import com.shopizer.springboot.merchant.dto.ProductReportResponse;
 import com.shopizer.springboot.merchant.entity.Merchant;
 import com.shopizer.springboot.merchant.entity.MerchantStore;
+import com.shopizer.springboot.merchant.entity.ProductViewEvent;
+import com.shopizer.springboot.merchant.exception.InvalidCredentialsException;
 import com.shopizer.springboot.merchant.repository.MerchantReportRepository;
 import com.shopizer.springboot.merchant.repository.MerchantRepository;
 import com.shopizer.springboot.merchant.repository.MerchantStoreRepository;
+import com.shopizer.springboot.merchant.repository.ProductViewEventRepository;
 import org.springframework.stereotype.Service;
 
 import com.shopizer.springboot.catalog.entity.Product;
@@ -23,6 +32,7 @@ import com.shopizer.springboot.merchant.exception.DuplicateResourceException;
 import com.shopizer.springboot.merchant.exception.ResourceNotFoundException;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,20 +53,58 @@ public class MerchantServiceImpl implements MerchantService {
     private final MerchantRepository merchantRepository;
     private final MerchantStoreRepository storeRepository;
     private final ProductRepository productRepository;// inject Aina's ProductRepository
-    private final MerchantReportRepository reportRepository; 
+    private final MerchantReportRepository reportRepository;
+    private final ProductViewEventRepository viewEventRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProviderMerchant jwtTokenProvider;
 
-
-
-    public MerchantServiceImpl(MerchantRepository merchantRepository, MerchantStoreRepository storeRepository, ProductRepository productRepository, MerchantReportRepository reportRepository) {
+    public MerchantServiceImpl(MerchantRepository merchantRepository, MerchantStoreRepository storeRepository, ProductRepository productRepository, MerchantReportRepository reportRepository, ProductViewEventRepository viewEventRepository, PasswordEncoder passwordEncoder, JwtTokenProviderMerchant jwtTokenProvider) {
         this.merchantRepository = merchantRepository;
         this.storeRepository = storeRepository;
         this.productRepository = productRepository;
         this.reportRepository = reportRepository;
+        this.viewEventRepository = viewEventRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Override
     public Merchant createMerchant(Merchant merchant) {
+        if (merchant.getPasswordHash() == null || merchant.getPasswordHash().isBlank()) {
+            throw new IllegalArgumentException("Password is required for merchant creation");
+        }
+        merchant.setPasswordHash(passwordEncoder.encode(merchant.getPasswordHash()));
         return merchantRepository.save(merchant);
+    }
+
+    @Override
+    public MerchantAuthResponse register(MerchantRegisterRequest req) {
+        if (merchantRepository.findByEmail(req.email()).isPresent()) {
+            throw new DuplicateResourceException("Merchant already exists with email: " + req.email());
+        }
+
+        Merchant merchant = new Merchant();
+        merchant.setName(req.name());
+        merchant.setEmail(req.email());
+        merchant.setPhone(req.phone());
+        merchant.setPasswordHash(passwordEncoder.encode(req.password()));
+
+        Merchant saved = merchantRepository.save(merchant);
+        String token = jwtTokenProvider.generateToken(saved.getId(), saved.getEmail());
+        return new MerchantAuthResponse(saved.getId(), saved.getName(), saved.getEmail(), token);
+    }
+
+    @Override
+    public MerchantAuthResponse login(MerchantLoginRequest req) {
+        Merchant merchant = merchantRepository.findByEmail(req.email())
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
+
+        if (!passwordEncoder.matches(req.password(), merchant.getPasswordHash())) {
+            throw new InvalidCredentialsException("Invalid email or password");
+        }
+
+        String token = jwtTokenProvider.generateToken(merchant.getId(), merchant.getEmail());
+        return new MerchantAuthResponse(merchant.getId(), merchant.getName(), merchant.getEmail(), token);
     }
 
     @Override
@@ -281,6 +329,59 @@ public class MerchantServiceImpl implements MerchantService {
         );
     }
 
+    @Override
+    @Transactional
+    public void deleteProduct(Long merchantId, Long productId) {
+        ensureMerchantExists(merchantId);
+
+        Product p = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+
+        // Ownership check
+        if (p.getStore() == null || p.getStore().getMerchant() == null ||
+                !p.getStore().getMerchant().getId().equals(merchantId)) {
+            throw new ResourceNotFoundException("Product not found for merchantId=" + merchantId);
+        }
+
+        productRepository.delete(p);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InventoryItemResponse> getLowStockProducts(Long merchantId, Long storeId) {
+        ensureMerchantExists(merchantId);
+
+        List<Product> products;
+        if (storeId != null) {
+            // Verify store ownership
+            storeRepository.findByIdAndMerchantId(storeId, merchantId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Store not found for merchantId=" + merchantId + ", storeId=" + storeId
+                    ));
+            products = productRepository.findByStoreId(storeId);
+        } else {
+            // Get all products for merchant across all stores
+            List<MerchantStore> stores = storeRepository.findByMerchantId(merchantId);
+            products = stores.stream()
+                    .flatMap(store -> productRepository.findByStoreId(store.getId()).stream())
+                    .toList();
+        }
+
+        // Filter for low stock: stockQuantity <= lowStockThreshold
+        return products.stream()
+                .filter(p -> p.getLowStockThreshold() != null && 
+                           p.getStockQuantity() <= p.getLowStockThreshold())
+                .map(p -> new InventoryItemResponse(
+                        p.getId(),
+                        p.getSku(),
+                        p.getName(),
+                        p.getPrice(),
+                        p.getStockQuantity(),
+                        p.getStore() != null ? p.getStore().getId() : null
+                ))
+                .toList();
+    }
+
     //get inventory by store
     @Override
     @Transactional(readOnly = true)
@@ -359,47 +460,145 @@ public class MerchantServiceImpl implements MerchantService {
 
     //get sales report
     @Override
-@Transactional(readOnly = true)
-public SalesReportResponse getSalesReport(Long merchantId, Long storeId, LocalDate startDate, LocalDate endDate) {
-    ensureMerchantExists(merchantId);
+    @Transactional(readOnly = true)
+    public SalesReportResponse getSalesReport(Long merchantId, Long storeId, LocalDate startDate, LocalDate endDate) {
+        ensureMerchantExists(merchantId);
 
-    if (storeId != null) {
-        storeRepository.findByIdAndMerchantId(storeId, merchantId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Store not found for merchantId=" + merchantId + ", storeId=" + storeId
-                ));
+        if (storeId != null) {
+            storeRepository.findByIdAndMerchantId(storeId, merchantId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Store not found for merchantId=" + merchantId + ", storeId=" + storeId
+                    ));
+        }
+
+        LocalDateTime startTs = (startDate == null) ? null : startDate.atStartOfDay();
+        LocalDateTime endTsExclusive = (endDate == null) ? null : endDate.plusDays(1).atStartOfDay();
+
+        long totalOrders = reportRepository.countOrders(merchantId, storeId, startTs, endTsExclusive);
+        BigDecimal totalRevenue = reportRepository.sumRevenue(merchantId, storeId, startTs, endTsExclusive);
+
+        BigDecimal avg = BigDecimal.ZERO;
+        if (totalOrders > 0) {
+            avg = totalRevenue.divide(BigDecimal.valueOf(totalOrders), 2, RoundingMode.HALF_UP);
+        }
+
+        var topProducts = reportRepository.topSellingProducts(merchantId, storeId, startTs, endTsExclusive, 5);
+        Map<String, BigDecimal> byDay = reportRepository.salesByDay(merchantId, storeId, startTs, endTsExclusive);
+
+        Map<String, BigDecimal> byCategory = Collections.emptyMap(); // category breakdown not implemented yet
+        Double conversionRate = null; // overall conversion not computed without visit data
+
+        return new SalesReportResponse(
+                storeId,
+                startDate,
+                endDate,
+                totalOrders,
+                totalRevenue,
+                avg,
+                topProducts,
+                byCategory,
+                byDay,
+                conversionRate
+        );
     }
 
-    LocalDateTime startTs = (startDate == null) ? null : startDate.atStartOfDay();
-    LocalDateTime endTsExclusive = (endDate == null) ? null : endDate.plusDays(1).atStartOfDay();
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductReportResponse> getProductReport(Long merchantId, Long storeId, Long categoryId, Long productId, LocalDate startDate, LocalDate endDate) {
+        ensureMerchantExists(merchantId);
+        if (productId != null) {
+            ensureProductOwned(merchantId, productId);
+        }
 
-    long totalOrders = reportRepository.countOrders(merchantId, storeId, startTs, endTsExclusive);
-    BigDecimal totalRevenue = reportRepository.sumRevenue(merchantId, storeId, startTs, endTsExclusive);
+        LocalDateTime startTs = (startDate == null) ? null : startDate.atStartOfDay();
+        LocalDateTime endTsExclusive = (endDate == null) ? null : endDate.plusDays(1).atStartOfDay();
 
-    BigDecimal avg = BigDecimal.ZERO;
-    if (totalOrders > 0) {
-        avg = totalRevenue.divide(BigDecimal.valueOf(totalOrders), 2, RoundingMode.HALF_UP);
+        var baseRows = reportRepository.productPerformance(merchantId, storeId, categoryId, productId, startTs, endTsExclusive);
+        var views = reportRepository.productViews(merchantId, storeId, categoryId, productId, startTs, endTsExclusive);
+
+        return baseRows.stream()
+                .map(row -> {
+                    long viewCount = views.getOrDefault(row.productId(), 0L);
+                    Double conversion = computeConversion(row.ordersCount(), viewCount);
+                    return new ProductReportResponse(
+                            row.productId(),
+                            row.productName(),
+                            row.productSku(),
+                            row.storeId(),
+                            row.categoryName(),
+                            row.stockQuantity(),
+                            row.lowStockThreshold(),
+                            row.ordersCount(),
+                            row.unitsSold(),
+                            row.totalRevenue(),
+                            viewCount,
+                            conversion
+                    );
+                })
+                .toList();
     }
 
-    var topProducts = reportRepository.topSellingProducts(merchantId, storeId, startTs, endTsExclusive, 5);
-    Map<String, BigDecimal> byDay = reportRepository.salesByDay(merchantId, storeId, startTs, endTsExclusive);
+    @Override
+    @Transactional(readOnly = true)
+    public ProductAnalyticsResponse getProductAnalytics(Long merchantId, Long productId, LocalDate startDate, LocalDate endDate) {
+        ensureMerchantExists(merchantId);
+        Product product = ensureProductOwned(merchantId, productId);
 
-    Map<String, BigDecimal> byCategory = Collections.emptyMap(); // skip for now
-    Double conversionRate = null; // not computable yet
+        LocalDateTime startTs = (startDate == null) ? null : startDate.atStartOfDay();
+        LocalDateTime endTsExclusive = (endDate == null) ? null : endDate.plusDays(1).atStartOfDay();
 
-    return new SalesReportResponse(
-            storeId,
-            startDate,
-            endDate,
-            totalOrders,
-            totalRevenue,
-            avg,
-            topProducts,
-            byCategory,
-            byDay,
-            conversionRate
-    );
-}
+        List<ProductReportResponse> summaryList = getProductReport(merchantId, product.getStore() != null ? product.getStore().getId() : null, null, productId, startDate, endDate);
+        if (summaryList.isEmpty()) {
+            throw new ResourceNotFoundException("No analytics available for product: " + productId);
+        }
+        ProductReportResponse summary = summaryList.get(0);
 
+        Map<String, BigDecimal> salesByDay = reportRepository.productSalesByDay(merchantId, productId, startTs, endTsExclusive);
 
+        return new ProductAnalyticsResponse(
+                summary.productId(),
+                summary.productName(),
+                summary.productSku(),
+                summary.storeId(),
+                summary.categoryName(),
+                summary.stockQuantity(),
+                summary.lowStockThreshold(),
+                summary.ordersCount(),
+                summary.unitsSold(),
+                summary.totalRevenue(),
+                salesByDay,
+                summary.viewCount(),
+                summary.conversionRate()
+        );
+    }
+
+    @Override
+    @Transactional
+    public void recordProductView(Long merchantId, Long productId) {
+        Product product = ensureProductOwned(merchantId, productId);
+        ProductViewEvent event = new ProductViewEvent();
+        event.setProduct(product);
+        event.setStoreId(product.getStore() != null ? product.getStore().getId() : null);
+        viewEventRepository.save(event);
+    }
+
+    private Product ensureProductOwned(Long merchantId, Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+
+        if (product.getStore() == null || product.getStore().getMerchant() == null ||
+                !product.getStore().getMerchant().getId().equals(merchantId)) {
+            throw new ResourceNotFoundException("Product not found for merchantId=" + merchantId);
+        }
+        return product;
+    }
+
+    private Double computeConversion(Long ordersCount, long viewCount) {
+        if (viewCount == 0) {
+            return null;
+        }
+        BigDecimal ratio = BigDecimal.valueOf(ordersCount)
+                .divide(BigDecimal.valueOf(viewCount), 4, RoundingMode.HALF_UP);
+        return ratio.doubleValue();
+    }
 }
