@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1768919520860
+Bnd-LastModified: 1768921715076
 Build-Jdk-Spec: 21
 Bundle-Activator: com.shopizer.rest.activator.RestActivator
 Bundle-ClassPath: .,jetty-server-11.0.18.jar,jetty-servlet-11.0.18.jar,j
