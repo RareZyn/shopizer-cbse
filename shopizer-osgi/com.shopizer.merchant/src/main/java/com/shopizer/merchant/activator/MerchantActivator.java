@@ -8,6 +8,12 @@ import com.shopizer.merchant.repository.MerchantRepository;
 import com.shopizer.merchant.repository.MerchantRepositoryImpl;
 import com.shopizer.merchant.repository.MerchantStoreRepository;
 import com.shopizer.merchant.repository.MerchantStoreRepositoryImpl;
+import com.shopizer.merchant.repository.OrderRepository;
+import com.shopizer.merchant.repository.OrderRepositoryImpl;
+import com.shopizer.merchant.repository.ProductRepository;
+import com.shopizer.merchant.repository.ProductRepositoryImpl;
+import com.shopizer.merchant.repository.ProductViewRepository;
+import com.shopizer.merchant.repository.ProductViewRepositoryImpl;
 import com.shopizer.order.api.OrderService;
 import jakarta.persistence.EntityManagerFactory;
 import org.osgi.framework.BundleActivator;
@@ -159,11 +165,17 @@ public class MerchantActivator implements BundleActivator {
             // Initialize JPA repositories using the shared EntityManagerFactory
             MerchantRepository merchantRepository = new MerchantRepositoryImpl(entityManagerFactory);
             MerchantStoreRepository merchantStoreRepository = new MerchantStoreRepositoryImpl(entityManagerFactory);
+            ProductRepository productRepository = new ProductRepositoryImpl(entityManagerFactory);
+            OrderRepository orderRepository = new OrderRepositoryImpl(entityManagerFactory);
+            ProductViewRepository productViewRepository = new ProductViewRepositoryImpl(entityManagerFactory);
 
             // Create service implementation
             MerchantService merchantService = new MerchantServiceImpl(
                 merchantRepository,
                 merchantStoreRepository,
+                productRepository,
+                orderRepository,
+                productViewRepository,
                 catalogService,
                 orderService
             );

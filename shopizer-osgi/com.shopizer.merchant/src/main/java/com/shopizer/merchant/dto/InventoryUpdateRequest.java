@@ -1,21 +1,16 @@
 package com.shopizer.merchant.dto;
 
 import lombok.Data;
-
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
-public class InventoryItemResponse {
-    private Long id;
+public class InventoryUpdateRequest {
     private String name;
-    private String sku;
     private String description;
     private BigDecimal price;
+    private String category;
     private Integer stockQuantity;
     private Integer lowStockThreshold;
     private Boolean isActive;
-    private Boolean isLowStock;
-    private LocalDateTime createdAt;    
-    private LocalDateTime updatedAt;
+    private Long categoryId;
 }

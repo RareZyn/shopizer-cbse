@@ -91,6 +91,13 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
         </dependency>
+
+        <!-- BCrypt for password hashing -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -123,10 +130,14 @@
                             com.fasterxml.jackson.annotation,
                             *
                         </Import-Package>
+                        <Embed-Dependency>
+                            jbcrypt;inline=true
+                        </Embed-Dependency>
                         <Private-Package>
                             com.shopizer.merchant.impl,
                             com.shopizer.merchant.repository,
-                            com.shopizer.merchant.activator
+                            com.shopizer.merchant.activator,
+                            org.mindrot.jbcrypt
                         </Private-Package>
                     </instructions>
                 </configuration>

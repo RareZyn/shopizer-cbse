@@ -920,6 +920,423 @@ public class SwaggerServlet extends HttpServlet {
           "401": { "description": "Invalid credentials" }
         }
       }
+    },
+    "/merchants/stores": {
+      "post": {
+        "tags": ["Merchant"],
+        "summary": "Create a new merchant store",
+        "description": "FR-016: The system shall allow merchants to manage store details (Create)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MerchantStoreRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Store created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MerchantStoreResponse" }
+              }
+            }
+          },
+          "400": { "description": "Bad request (merchant already has a store)" }
+        }
+      }
+    },
+    "/merchants/stores/{storeId}": {
+      "get": {
+        "tags": ["Merchant"],
+        "summary": "Get store details by ID",
+        "description": "FR-016: The system shall allow merchants to manage store details (View)",
+        "parameters": [
+          {
+            "name": "storeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Store details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MerchantStoreResponse" }
+              }
+            }
+          },
+          "404": { "description": "Store not found" }
+        }
+      },
+      "put": {
+        "tags": ["Merchant"],
+        "summary": "Update store details",
+        "description": "FR-016: The system shall allow merchants to manage store details (Update)",
+        "parameters": [
+          {
+            "name": "storeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MerchantStoreRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Store updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MerchantStoreResponse" }
+              }
+            }
+          },
+          "404": { "description": "Store not found" }
+        }
+      }
+    },
+    "/merchants/{merchantId}/stores": {
+      "get": {
+        "tags": ["Merchant"],
+        "summary": "List all stores for a merchant",
+        "description": "FR-016: The system shall allow merchants to manage store details (View)",
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of stores",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/MerchantStoreResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/merchants/{merchantId}/stores/{storeId}": {
+      "delete": {
+        "tags": ["Merchant"],
+        "summary": "Delete a store",
+        "description": "FR-016: The system shall allow merchants to manage store details (Delete)",
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "storeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Store deleted successfully" },
+          "404": { "description": "Store not found" }
+        }
+      }
+    },
+    "/merchants/{merchantId}/stores/{storeId}/products": {
+      "post": {
+        "tags": ["Merchant - Inventory"],
+        "summary": "Create a product under a store",
+        "description": "FR-017: The system shall allow merchants to manage inventory (Create)",
+        "operationId": "createProduct",
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "storeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MerchantProductCreateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InventoryItemResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/merchants/{merchantId}/inventory": {
+      "get": {
+        "tags": ["Merchant - Inventory"],
+        "summary": "Get inventory for a merchant (all stores)",
+        "description": "FR-017: The system shall allow merchants to manage inventory (Read)",
+        "operationId": "getInventory",
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of inventory items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/InventoryItemResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/merchants/{merchantId}/stores/{storeId}/inventory": {
+      "get": {
+        "tags": ["Merchant - Inventory"],
+        "summary": "Get inventory for a specific store",
+        "description": "FR-017: The system shall allow merchants to manage inventory (Read)",
+        "operationId": "getInventoryByStore",
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "storeId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of inventory items for the store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/InventoryItemResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/merchants/{merchantId}/inventory/products/{productId}": {
+      "put": {
+        "tags": ["Merchant - Inventory"],
+        "summary": "Update product details",
+        "description": "FR-017: The system shall allow merchants to manage inventory (Update)",
+        "operationId": "updateProduct",
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/InventoryUpdateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InventoryItemResponse" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Merchant - Inventory"],
+        "summary": "Delete a product",
+        "description": "FR-017: The system shall allow merchants to manage inventory (Delete)",
+        "operationId": "deleteProduct",
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Product deleted successfully" }
+        }
+      }
+    },
+    "/merchants/{merchantId}/inventory/low-stock": {
+      "get": {
+        "tags": ["Merchant - Inventory"],
+        "summary": "Get low stock products",
+        "description": "FR-018: Identify products needing restock",
+        "operationId": "getLowStockProducts",
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "storeId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of low stock products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/InventoryItemResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    ,
+    "/merchants/{merchantId}/reports/sales": {
+      "get": {
+        "tags": ["Merchant"],
+        "summary": "Get sales report for a merchant",
+        "parameters": [
+          { "name": "merchantId", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "storeId", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "startDate", "in": "query", "required": true, "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "required": true, "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sales report",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/SalesReportResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/merchants/{merchantId}/reports/products": {
+      "get": {
+        "tags": ["Merchant"],
+        "summary": "Get product sales report",
+        "parameters": [
+          { "name": "merchantId", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "storeId", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "categoryId", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "productId", "in": "query", "required": false, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "startDate", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product sales report",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ProductReportResponse" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/merchants/{merchantId}/reports/products/{productId}/analytics": {
+      "get": {
+        "tags": ["Merchant"],
+        "summary": "Get product analytics",
+        "parameters": [
+          { "name": "merchantId", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "productId", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "startDate", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } },
+          { "name": "endDate", "in": "query", "required": false, "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product analytics",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ProductAnalyticsResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/merchants/{merchantId}/products/{productId}/views": {
+      "post": {
+        "tags": ["Merchant"],
+        "summary": "Record product view",
+        "parameters": [
+          { "name": "merchantId", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } },
+          { "name": "productId", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } }
+        ],
+        "responses": {
+          "200": { "description": "Product view recorded" }
+        }
+      }
     }
   },
   "components": {
@@ -1145,6 +1562,144 @@ public class SwaggerServlet extends HttpServlet {
           "tokenType": { "type": "string" },
           "expiresAt": { "type": "string", "format": "date-time" },
           "merchant": { "$ref": "#/components/schemas/MerchantProfileResponse" }
+        }
+      },
+      "MerchantStoreRequest": {
+        "type": "object",
+        "required": ["storeName"],
+        "properties": {
+          "storeName": { "type": "string" },
+          "storeCode": { "type": "string" },
+          "logoUrl": { "type": "string" },
+          "description": { "type": "string" },
+          "storePhone": { "type": "string" },
+          "currency": { "type": "string" },
+          "defaultLanguage": { "type": "string" },
+          "isActive": { "type": "boolean" },
+          "email": { "type": "string", "format": "email" },
+          "address": { "type": "string" }
+        }
+      },
+      "MerchantStoreResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "merchantId": { "type": "integer", "format": "int64" },
+          "storeName": { "type": "string" },
+          "description": { "type": "string" },
+          "storeEmail": { "type": "string" },
+          "storePhone": { "type": "string" },
+          "currency": { "type": "string" },
+          "language": { "type": "string" },
+          "active": { "type": "boolean" },
+          "street": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "country": { "type": "string" },
+          "postalCode": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "MerchantProductCreateRequest": {
+        "type": "object",
+        "required": ["name", "sku", "price", "stockQuantity"],
+        "properties": {
+          "name": { "type": "string", "example": "Gaming Laptop" },
+          "sku": { "type": "string", "example": "LAP-001" },
+          "description": { "type": "string", "example": "High-performance gaming laptop" },
+          "price": { "type": "number", "format": "double", "example": 1299.99 },
+          "stockQuantity": { "type": "integer", "example": 50 },
+          "lowStockThreshold": { "type": "integer", "example": 10 },
+          "categoryId": { "type": "integer", "format": "int64", "example": 1 }
+        }
+      },
+      "InventoryItemResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "example": 1 },
+          "storeId": { "type": "integer", "format": "int64", "example": 1 },
+          "storeName": { "type": "string", "example": "Tech Store" },
+          "name": { "type": "string", "example": "Gaming Laptop" },
+          "sku": { "type": "string", "example": "LAP-001" },
+          "description": { "type": "string", "example": "High-performance gaming laptop" },
+          "price": { "type": "number", "format": "double", "example": 1299.99 },
+          "stockQuantity": { "type": "integer", "example": 50 },
+          "lowStockThreshold": { "type": "integer", "example": 10 },
+          "isLowStock": { "type": "boolean", "example": false },
+          "categoryId": { "type": "integer", "format": "int64", "example": 1 },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "InventoryUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "Gaming Laptop Pro" },
+          "description": { "type": "string", "example": "Updated description" },
+          "price": { "type": "number", "format": "double", "example": 1399.99 },
+          "stockQuantity": { "type": "integer", "example": 45 },
+          "lowStockThreshold": { "type": "integer", "example": 15 },
+          "categoryId": { "type": "integer", "format": "int64", "example": 1 }
+        }
+      },
+      "SalesReportResponse": {
+        "type": "object",
+        "properties": {
+          "storeId": { "type": "integer", "format": "int64" },
+          "storeName": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": { "type": "string", "format": "date" },
+          "totalOrders": { "type": "integer" },
+          "completedOrders": { "type": "integer" },
+          "cancelledOrders": { "type": "integer" },
+          "totalRevenue": { "type": "number", "format": "double" },
+          "averageOrderValue": { "type": "number", "format": "double" },
+          "topProducts": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ProductReportResponse" }
+          }
+        }
+      },
+      "ProductReportResponse": {
+        "type": "object",
+        "properties": {
+          "productId": { "type": "integer", "format": "int64" },
+          "productName": { "type": "string" },
+          "sku": { "type": "string" },
+          "unitsSold": { "type": "integer" },
+          "totalRevenue": { "type": "number", "format": "double" },
+          "orderCount": { "type": "integer" }
+        }
+      },
+      "ProductAnalyticsResponse": {
+        "type": "object",
+        "properties": {
+          "productId": { "type": "integer", "format": "int64" },
+          "productName": { "type": "string" },
+          "sku": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": { "type": "string", "format": "date" },
+          "totalUnitsSold": { "type": "integer" },
+          "totalRevenue": { "type": "number", "format": "double" },
+          "averageUnitPrice": { "type": "number", "format": "double" },
+          "totalOrders": { "type": "integer" },
+          "pageViews": { "type": "integer" },
+          "conversionRate": { "type": "number", "format": "double" },
+          "dailyMetrics": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DailySalesMetric" }
+          }
+        }
+      },
+      "DailySalesMetric": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string", "format": "date" },
+          "unitsSold": { "type": "integer" },
+          "revenue": { "type": "number", "format": "double" },
+          "orders": { "type": "integer" },
+          "views": { "type": "integer" }
         }
       }
     }

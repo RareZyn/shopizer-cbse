@@ -115,66 +115,64 @@ public interface MerchantService {
     // ========== Inventory Management (FR-017) ==========
 
     /**
-     * Get inventory for store
-     * FR-017: Inventory Management
+     * Create a product under a store
+     * FR-017: Inventory Management (Create)
      *
+     * @param merchantId Merchant ID
      * @param storeId Store ID
+     * @param request Product creation details
+     * @return Created inventory item
+     */
+    InventoryItemResponse createProduct(Long merchantId, Long storeId, MerchantProductCreateRequest request);
+
+    /**
+     * Get all inventory for a merchant (across all stores)
+     * FR-017: Inventory Management (Read)
+     *
+     * @param merchantId Merchant ID
      * @return List of inventory items
      */
-    List<InventoryItemResponse> getInventory(Long storeId);
+    List<InventoryItemResponse> getInventory(Long merchantId);
 
     /**
-     * Get inventory item details
-     * FR-017: Inventory Management
+     * Get inventory for a specific store
+     * FR-017: Inventory Management (Read)
      *
+     * @param merchantId Merchant ID
      * @param storeId Store ID
-     * @param productId Product ID
-     * @return Inventory item details
+     * @return List of inventory items for the store
      */
-    InventoryItemResponse getInventoryItem(Long storeId, Long productId);
+    List<InventoryItemResponse> getInventoryByStore(Long merchantId, Long storeId);
 
     /**
-     * Update stock quantity
-     * FR-017: Inventory Management
+     * Update product details
+     * FR-017: Inventory Management (Update)
      *
-     * @param storeId Store ID
+     * @param merchantId Merchant ID
      * @param productId Product ID
-     * @param quantity New quantity
+     * @param request Updated product details
      * @return Updated inventory item
      */
-    InventoryItemResponse updateStock(Long storeId, Long productId, Integer quantity);
+    InventoryItemResponse updateProduct(Long merchantId, Long productId, InventoryUpdateRequest request);
 
     /**
-     * Add stock (increase quantity)
-     * FR-017: Inventory Management
+     * Delete a product
+     * FR-017: Inventory Management (Delete)
      *
-     * @param storeId Store ID
+     * @param merchantId Merchant ID
      * @param productId Product ID
-     * @param quantity Quantity to add
-     * @return Updated inventory item
      */
-    InventoryItemResponse addStock(Long storeId, Long productId, Integer quantity);
+    void deleteProduct(Long merchantId, Long productId);
 
     /**
-     * Remove stock (decrease quantity)
-     * FR-017: Inventory Management
+     * Get low stock products
+     * FR-018: Identify products needing restock
      *
-     * @param storeId Store ID
-     * @param productId Product ID
-     * @param quantity Quantity to remove
-     * @return Updated inventory item
+     * @param merchantId Merchant ID
+     * @param storeId Store ID (optional, null = all stores)
+     * @return List of low stock products
      */
-    InventoryItemResponse removeStock(Long storeId, Long productId, Integer quantity);
-
-    /**
-     * Get low stock items
-     * FR-017: Inventory Management
-     *
-     * @param storeId Store ID
-     * @param threshold Stock threshold
-     * @return List of low stock items
-     */
-    List<InventoryItemResponse> getLowStockItems(Long storeId, Integer threshold);
+    List<InventoryItemResponse> getLowStockProducts(Long merchantId, Long storeId);
 
     // ========== Reporting and Analytics (FR-018) ==========
 
@@ -255,4 +253,44 @@ public interface MerchantService {
      * @return Revenue for period
      */
     BigDecimal getRevenue(Long storeId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * FR-018: Get sales report for merchant
+     * @param merchantId Merchant ID
+     * @param storeId Optional store ID filter
+     * @param startDate Optional start date
+     * @param endDate Optional end date
+     * @return Sales report
+     */
+    SalesReportResponse getSalesReport(Long merchantId, Long storeId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * FR-018: Get per-product sales report
+     * @param merchantId Merchant ID
+     * @param storeId Optional store ID filter
+     * @param categoryId Optional category ID filter
+     * @param productId Optional product ID filter
+     * @param startDate Optional start date
+     * @param endDate Optional end date
+     * @return List of product sales reports
+     */
+    List<ProductReportResponse> getProductReport(Long merchantId, Long storeId, Long categoryId, 
+                                                   Long productId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * FR-018: Get detailed product analytics
+     * @param merchantId Merchant ID
+     * @param productId Product ID
+     * @param startDate Optional start date
+     * @param endDate Optional end date
+     * @return Product analytics with daily breakdown
+     */
+    ProductAnalyticsResponse getProductAnalytics(Long merchantId, Long productId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * FR-018: Record product view for conversion tracking
+     * @param merchantId Merchant ID
+     * @param productId Product ID
+     */
+    void recordProductView(Long merchantId, Long productId);
 }
