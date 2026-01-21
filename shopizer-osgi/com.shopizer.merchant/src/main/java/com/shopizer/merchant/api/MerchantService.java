@@ -94,6 +94,24 @@ public interface MerchantService {
      */
     void deactivateStore(Long storeId);
 
+    /**
+     * List all stores for a merchant
+     * FR-016: Store Management
+     *
+     * @param merchantId Merchant ID
+     * @return List of stores
+     */
+    List<MerchantStoreResponse> listStores(Long merchantId);
+
+    /**
+     * Delete a store
+     * FR-016: Store Management
+     *
+     * @param merchantId Merchant ID
+     * @param storeId Store ID
+     */
+    void deleteStore(Long merchantId, Long storeId);
+
     // ========== Inventory Management (FR-017) ==========
 
     /**

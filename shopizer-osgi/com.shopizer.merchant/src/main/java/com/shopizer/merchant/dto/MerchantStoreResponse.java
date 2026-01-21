@@ -9,17 +9,14 @@ public class MerchantStoreResponse {
     private Long id;
     private Long merchantId;
     private String storeName;
+    private String storeCode;
     private String description;
+    private String logoUrl;
     private String storeEmail;
     private String storePhone;
     private String currency;
     private String language;
-    private Boolean active;
-    private String street;
-    private String city;
-    private String state;
-    private String country;
-    private String postalCode;
+    private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

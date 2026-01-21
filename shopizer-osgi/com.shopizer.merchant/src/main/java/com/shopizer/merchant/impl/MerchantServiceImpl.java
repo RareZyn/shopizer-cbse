@@ -57,7 +57,7 @@ public class MerchantServiceImpl implements MerchantService {
         Merchant merchant = new Merchant();
         merchant.setBusinessName(request.getBusinessName());
         merchant.setEmail(request.getEmail());
-        merchant.setPassword(request.getPassword());
+        merchant.setPassword(hashPassword(request.getPassword()));
         merchant.setPhone(request.getPhone());
         merchant.setStatus("ACTIVE");
 
@@ -88,7 +88,7 @@ public class MerchantServiceImpl implements MerchantService {
         Merchant merchant = merchantRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new ResourceNotFoundException("Merchant", "email", request.getEmail()));
 
-        if (!merchant.getPassword().equals(request.getPassword())) {
+        if (!verifyPassword(request.getPassword(), merchant.getPassword())) {
             throw new BadRequestException("Invalid credentials");
         }
 
@@ -114,33 +114,25 @@ public class MerchantServiceImpl implements MerchantService {
 
     @Override
     public MerchantStoreResponse createStore(MerchantStoreRequest request) {
-        logger.info("Creating merchant store: {}", request.getStoreName());
-
-        // Check if merchant already has a store
-        List<MerchantStore> existingStores = merchantStoreRepository.findByMerchantId(request.getMerchantId());
-        if (!existingStores.isEmpty()) {
-            throw new BadRequestException("Merchant already has a store");
+        if (request.getMerchantId() == null) {
+            throw new IllegalArgumentException("merchantId is required");
         }
+        Merchant merchant = merchantRepository.findById(request.getMerchantId())
+                .orElseThrow(() -> new RuntimeException("Merchant not found"));
 
         MerchantStore store = new MerchantStore();
-        Merchant merchant = new Merchant();
-        merchant.setId(request.getMerchantId());
         store.setMerchant(merchant);
-
         store.setStoreName(request.getStoreName());
+        store.setStoreCode(request.getStoreCode());
+        store.setLogoUrl(request.getLogoUrl());
         store.setDescription(request.getDescription());
-        store.setEmail(request.getStoreEmail());
-        store.setPhone(request.getStorePhone());
-        store.setActive(true);
-
-        store.setAddress(request.getStreet());
-        store.setCity(request.getCity());
-        store.setCountry(request.getCountry());
+        store.setCurrency(request.getCurrency());
+        store.setDefaultLanguage(request.getDefaultLanguage());
+        store.setIsActive(request.getIsActive());
+        store.setAddress(request.getAddress());
+        // storePhone/email not in entity; add mapping if you keep those columns
 
         store = merchantStoreRepository.save(store);
-
-        logger.info("Merchant store created successfully: {}", store.getStoreName());
-
         return mapToStoreResponse(store);
     }
 
@@ -177,24 +169,32 @@ public class MerchantServiceImpl implements MerchantService {
         if (request.getStoreName() != null) {
             store.setStoreName(request.getStoreName());
         }
+        if (request.getStoreCode() != null) {
+            store.setStoreCode(request.getStoreCode());
+        }
         if (request.getDescription() != null) {
             store.setDescription(request.getDescription());
+        // }
+        // if (request.getEmail() != null) {
+        //     store.setEmail(request.getEmail());
+        // }
+        // if (request.getStorePhone() != null) {
+        //     store.setPhone(request.getStorePhone());
         }
-        if (request.getStoreEmail() != null) {
-            store.setEmail(request.getStoreEmail());
+        if (request.getAddress() != null) {
+            store.setAddress(request.getAddress());
         }
-        if (request.getStorePhone() != null) {
-            store.setPhone(request.getStorePhone());
+        if (request.getLogoUrl() != null) {
+            store.setLogoUrl(request.getLogoUrl());
         }
-        // Update address if provided
-        if (request.getStreet() != null) {
-            store.setAddress(request.getStreet());
+        if (request.getCurrency() != null) {
+            store.setCurrency(request.getCurrency());
         }
-        if (request.getCity() != null) {
-            store.setCity(request.getCity());
+        if (request.getDefaultLanguage() != null) {
+            store.setDefaultLanguage(request.getDefaultLanguage());
         }
-        if (request.getCountry() != null) {
-            store.setCountry(request.getCountry());
+        if (request.getIsActive() != null) {
+            store.setIsActive(request.getIsActive());
         }
 
         store = merchantStoreRepository.save(store);
@@ -211,7 +211,7 @@ public class MerchantServiceImpl implements MerchantService {
         MerchantStore store = merchantStoreRepository.findById(storeId)
             .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
 
-        store.setActive(true);
+        store.setIsActive(true);
         merchantStoreRepository.save(store);
 
         logger.info("Merchant store activated successfully");
@@ -224,10 +224,35 @@ public class MerchantServiceImpl implements MerchantService {
         MerchantStore store = merchantStoreRepository.findById(storeId)
             .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
 
-        store.setActive(false);
+        store.setIsActive(false);
         merchantStoreRepository.save(store);
 
         logger.info("Merchant store deactivated successfully");
+    }
+
+    @Override
+    public List<MerchantStoreResponse> listStores(Long merchantId) {
+        logger.info("Listing stores for merchant: {}", merchantId);
+
+        List<MerchantStore> stores = merchantStoreRepository.findByMerchantId(merchantId);
+        
+        return stores.stream()
+                .map(this::mapToStoreResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteStore(Long merchantId, Long storeId) {
+        logger.info("Deleting store: {} for merchant: {}", storeId, merchantId);
+
+        // Verify the store belongs to the merchant
+        MerchantStore store = merchantStoreRepository.findByIdAndMerchantId(storeId, merchantId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Store not found for merchantId=" + merchantId + ", storeId=" + storeId));
+
+        merchantStoreRepository.delete(store);
+
+        logger.info("Store deleted successfully");
     }
 
     // ========== Inventory Management (FR-016) ==========
@@ -503,24 +528,18 @@ public class MerchantServiceImpl implements MerchantService {
     private MerchantStoreResponse mapToStoreResponse(MerchantStore store) {
         MerchantStoreResponse response = new MerchantStoreResponse();
         response.setId(store.getId());
-        response.setMerchantId(store.getMerchant().getId());
+        response.setMerchantId(store.getMerchant() != null ? store.getMerchant().getId() : null);
         response.setStoreName(store.getStoreName());
+            response.setStoreCode(store.getStoreCode());
         response.setDescription(store.getDescription());
-        response.setStoreEmail(store.getEmail());
-        response.setStorePhone(store.getPhone());
-        response.setCurrency(null);
-        response.setLanguage(null);
-        response.setActive(store.getActive());
+            response.setLogoUrl(store.getLogoUrl());
+        // response.setStoreEmail(store.getEmail());
+        // response.setStorePhone(store.getPhone());
+        response.setCurrency(store.getCurrency());
+        response.setLanguage(store.getDefaultLanguage());
+            response.setIsActive(store.getIsActive());
         response.setCreatedAt(store.getCreatedAt());
         response.setUpdatedAt(store.getUpdatedAt());
-
-        if (store.getAddress() != null) {
-            response.setStreet(store.getAddress());
-            response.setCity(store.getCity());
-            response.setState(null);
-            response.setCountry(store.getCountry());
-            response.setPostalCode(null);
-        }
 
         return response;
     }
@@ -536,5 +555,19 @@ public class MerchantServiceImpl implements MerchantService {
         response.setActive(product.getActive());
         response.setLastUpdated(product.getUpdatedAt());
         return response;
+    }
+
+    // Password hashing helpers
+    private String hashPassword(String plainPassword) {
+        return org.mindrot.jbcrypt.BCrypt.hashpw(plainPassword, org.mindrot.jbcrypt.BCrypt.gensalt(12));
+    }
+
+    private boolean verifyPassword(String plainPassword, String hashedPassword) {
+        try {
+            return org.mindrot.jbcrypt.BCrypt.checkpw(plainPassword, hashedPassword);
+        } catch (Exception e) {
+            logger.error("Error verifying password", e);
+            return false;
+        }
     }
 }
