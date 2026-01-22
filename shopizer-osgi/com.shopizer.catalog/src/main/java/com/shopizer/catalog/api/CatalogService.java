@@ -24,7 +24,6 @@ public interface CatalogService {
     CategoryResponse updateCategory(Long id, CategoryRequest request);
     void deleteCategory(Long id);
     List<CategoryResponse> getAllCategories();
-    List<CategoryResponse> getSubCategories(Long parentId);
 
     // Inventory Management
     void updateStock(Long productId, int quantity);

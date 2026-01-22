@@ -4,6 +4,8 @@ import com.shopizer.springboot.catalog.entity.Category;
 import com.shopizer.springboot.catalog.entity.Product;
 import com.shopizer.springboot.catalog.repository.CategoryRepository;
 import com.shopizer.springboot.catalog.repository.ProductRepository;
+import com.shopizer.springboot.merchant.entity.MerchantStore;
+import com.shopizer.springboot.merchant.repository.MerchantStoreRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +21,12 @@ public class CatalogServiceImpl implements CatalogService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final MerchantStoreRepository merchantStoreRepository;
 
-    public CatalogServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public CatalogServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository, MerchantStoreRepository merchantStoreRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.merchantStoreRepository = merchantStoreRepository;
     }
 
     // Product operations (FR-001)
@@ -80,6 +84,27 @@ public class CatalogServiceImpl implements CatalogService {
                 }
             }
             // If category ID is 0 or null, newProduct.category will remain null (default)
+        }
+        
+        // Handle store reference - REQUIRED field
+        // Store must be provided with an ID > 0
+        if (product.getStore() != null) {
+            Long storeId = product.getStore().getId();
+            
+            if (storeId != null && storeId > 0) {
+                // Store ID provided - fetch from database
+                Optional<MerchantStore> storeOpt = merchantStoreRepository.findById(storeId);
+                if (storeOpt.isPresent()) {
+                    // Use managed entity from database to avoid detached entity issues
+                    newProduct.setStore(storeOpt.get());
+                } else {
+                    throw new IllegalArgumentException("Store with id " + storeId + " not found");
+                }
+            } else {
+                throw new IllegalArgumentException("Store ID is required and must be greater than 0");
+            }
+        } else {
+            throw new IllegalArgumentException("Store is required for product creation");
         }
         
         // Save the product - use saveAndFlush to ensure immediate persistence
