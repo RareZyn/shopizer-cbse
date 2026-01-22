@@ -283,24 +283,45 @@ public class SwaggerServlet extends HttpServlet {
     "/cart": {
       "get": {
         "tags": ["Cart"],
-        "summary": "View cart",
+        "summary": "View cart contents",
+        "description": "FR-007: View cart contents. Returns the customer's shopping cart with all items, quantities, and calculated totals.",
         "parameters": [
           {
             "name": "customerId",
             "in": "query",
             "required": true,
+            "description": "Customer ID",
             "schema": { "type": "integer", "format": "int64" }
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "Cart retrieved successfully",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Cart" }
+                "schema": { "$ref": "#/components/schemas/CartResponse" }
               }
             }
+          },
+          "400": { "description": "customerId is required" }
+        }
+      },
+      "delete": {
+        "tags": ["Cart"],
+        "summary": "Clear cart",
+        "description": "FR-008: Clear entire cart. Removes all items from the customer's shopping cart.",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "query",
+            "required": true,
+            "description": "Customer ID",
+            "schema": { "type": "integer", "format": "int64" }
           }
+        ],
+        "responses": {
+          "204": { "description": "Cart cleared successfully" },
+          "400": { "description": "customerId is required" }
         }
       }
     },
@@ -308,18 +329,12 @@ public class SwaggerServlet extends HttpServlet {
       "post": {
         "tags": ["Cart"],
         "summary": "Add item to cart",
+        "description": "FR-006: Add item to cart. Validates product exists and has sufficient stock before adding.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "customerId": { "type": "integer", "format": "int64" },
-                  "productId": { "type": "integer", "format": "int64" },
-                  "quantity": { "type": "integer" }
-                }
-              }
+              "schema": { "$ref": "#/components/schemas/AddToCartRequest" }
             }
           }
         },
@@ -328,10 +343,204 @@ public class SwaggerServlet extends HttpServlet {
             "description": "Item added to cart",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Cart" }
+                "schema": { "$ref": "#/components/schemas/CartResponse" }
               }
             }
+          },
+          "400": { "description": "Invalid request or insufficient stock" }
+        }
+      }
+    },
+    "/cart/items/{itemId}": {
+      "put": {
+        "tags": ["Cart"],
+        "summary": "Update cart item quantity",
+        "description": "FR-008: Update cart item. Changes the quantity of an item in the cart.",
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "description": "Cart item ID",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "required": true,
+            "description": "Customer ID",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "quantity",
+            "in": "query",
+            "required": true,
+            "description": "New quantity",
+            "schema": { "type": "integer", "minimum": 1 }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cart item updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CartResponse" }
+              }
+            }
+          },
+          "400": { "description": "Invalid request or insufficient stock" },
+          "404": { "description": "Cart item not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Cart"],
+        "summary": "Remove item from cart",
+        "description": "FR-008: Remove item from cart. Deletes a specific item from the customer's cart.",
+        "parameters": [
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "description": "Cart item ID",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "required": true,
+            "description": "Customer ID",
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Item removed from cart" },
+          "400": { "description": "customerId is required" },
+          "404": { "description": "Cart item not found" }
+        }
+      }
+    },
+    "/cart/total": {
+      "get": {
+        "tags": ["Cart"],
+        "summary": "Calculate cart total",
+        "description": "FR-009: Calculate cart total. Returns the total price of all items in the cart.",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "query",
+            "required": true,
+            "description": "Customer ID",
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Total calculated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": { "type": "number", "format": "double" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "customerId is required" }
+        }
+      }
+    },
+    "/cart/count": {
+      "get": {
+        "tags": ["Cart"],
+        "summary": "Get cart item count",
+        "description": "Returns the total number of items in the cart (sum of quantities).",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "query",
+            "required": true,
+            "description": "Customer ID",
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Item count retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "customerId is required" }
+        }
+      }
+    },
+    "/cart/validate": {
+      "post": {
+        "tags": ["Cart"],
+        "summary": "Validate cart for checkout",
+        "description": "FR-009: Validate cart before checkout. Checks product availability, stock levels, and price changes.",
+        "parameters": [
+          {
+            "name": "customerId",
+            "in": "query",
+            "required": true,
+            "description": "Customer ID",
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validation result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CartValidationResponse" }
+              }
+            }
+          },
+          "400": { "description": "customerId is required" }
+        }
+      }
+    },
+    "/cart/merge": {
+      "post": {
+        "tags": ["Cart"],
+        "summary": "Merge anonymous cart with customer cart",
+        "description": "Merges an anonymous cart into a logged-in customer's cart. Used when a guest user logs in.",
+        "parameters": [
+          {
+            "name": "anonymousCartId",
+            "in": "query",
+            "required": true,
+            "description": "Anonymous cart ID to merge from",
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "required": true,
+            "description": "Customer ID to merge into",
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Carts merged successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CartResponse" }
+              }
+            }
+          },
+          "400": { "description": "Both anonymousCartId and customerId are required" }
         }
       }
     },
@@ -904,8 +1113,71 @@ public class SwaggerServlet extends HttpServlet {
           "description": { "type": "string" }
         }
       },
+      "CartResponse": {
+        "type": "object",
+        "description": "Shopping cart with items and totals",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "Cart ID" },
+          "customerId": { "type": "integer", "format": "int64", "description": "Customer ID" },
+          "items": {
+            "type": "array",
+            "description": "List of items in the cart",
+            "items": { "$ref": "#/components/schemas/CartItemResponse" }
+          },
+          "totalItems": { "type": "integer", "description": "Total number of items (sum of quantities)" },
+          "subtotal": { "type": "number", "format": "double", "description": "Subtotal before any discounts" },
+          "total": { "type": "number", "format": "double", "description": "Total amount" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CartItemResponse": {
+        "type": "object",
+        "description": "Individual cart item with product details",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "Cart item ID" },
+          "productId": { "type": "integer", "format": "int64", "description": "Product ID" },
+          "productName": { "type": "string", "description": "Product name" },
+          "productImageUrl": { "type": "string", "description": "Product image URL" },
+          "quantity": { "type": "integer", "description": "Quantity in cart" },
+          "price": { "type": "number", "format": "double", "description": "Unit price" },
+          "subtotal": { "type": "number", "format": "double", "description": "Line item subtotal (price * quantity)" },
+          "inStock": { "type": "boolean", "description": "Whether product is in stock" },
+          "availableStock": { "type": "integer", "description": "Available stock quantity" }
+        }
+      },
+      "AddToCartRequest": {
+        "type": "object",
+        "description": "Request to add item to cart",
+        "required": ["customerId", "productId", "quantity"],
+        "properties": {
+          "customerId": { "type": "integer", "format": "int64", "description": "Customer ID" },
+          "productId": { "type": "integer", "format": "int64", "description": "Product ID to add" },
+          "quantity": { "type": "integer", "minimum": 1, "description": "Quantity to add" },
+          "price": { "type": "number", "format": "double", "description": "Optional price override" }
+        }
+      },
+      "CartValidationResponse": {
+        "type": "object",
+        "description": "Cart validation result for checkout",
+        "properties": {
+          "valid": { "type": "boolean", "description": "Whether cart is valid for checkout" },
+          "errors": {
+            "type": "array",
+            "description": "List of validation errors (cart cannot proceed to checkout)",
+            "items": { "type": "string" }
+          },
+          "warnings": {
+            "type": "array",
+            "description": "List of warnings (cart can proceed but user should be aware)",
+            "items": { "type": "string" }
+          }
+        }
+      },
       "Cart": {
         "type": "object",
+        "deprecated": true,
+        "description": "Deprecated: Use CartResponse instead",
         "properties": {
           "cartId": { "type": "integer", "format": "int64" },
           "customerId": { "type": "integer", "format": "int64" },
@@ -918,6 +1190,8 @@ public class SwaggerServlet extends HttpServlet {
       },
       "CartItem": {
         "type": "object",
+        "deprecated": true,
+        "description": "Deprecated: Use CartItemResponse instead",
         "properties": {
           "id": { "type": "integer", "format": "int64" },
           "productId": { "type": "integer", "format": "int64" },
