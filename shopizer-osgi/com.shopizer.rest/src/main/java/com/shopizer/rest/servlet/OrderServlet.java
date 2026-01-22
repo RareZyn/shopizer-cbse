@@ -106,6 +106,8 @@ public class OrderServlet extends BaseServlet {
         }
     }
 
+    // ========== GET Helper Methods ==========
+
     private void handleGetById(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Long orderId = extractIdFromPath(request, "/api/v1/orders");
 
@@ -178,30 +180,7 @@ public class OrderServlet extends BaseServlet {
         }
     }
 
-    private void handleUpdateStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        String[] parts = pathInfo.split("/");
-
-        if (parts.length < 2) {
-            sendBadRequest(response, "Order ID is required");
-            return;
-        }
-
-        try {
-            Long orderId = Long.parseLong(parts[1]);
-            UpdateStatusRequest statusRequest = readJsonBody(request, UpdateStatusRequest.class);
-
-            if (statusRequest.getStatus() == null || statusRequest.getStatus().isEmpty()) {
-                sendBadRequest(response, "Status is required");
-                return;
-            }
-
-            OrderResponse updated = orderService.updateOrderStatus(orderId, statusRequest.getStatus());
-            sendSuccess(response, updated);
-        } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid order ID");
-        }
-    }
+    // ========== POST Helper Methods ==========
 
     private void handleCancelOrder(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
@@ -239,6 +218,33 @@ public class OrderServlet extends BaseServlet {
 
             PaymentResponse paymentResponse = orderService.processPayment(orderId, paymentRequest);
             sendSuccess(response, paymentResponse);
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid order ID");
+        }
+    }
+
+    // ========== PUT Helper Methods ==========
+
+    private void handleUpdateStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        if (parts.length < 2) {
+            sendBadRequest(response, "Order ID is required");
+            return;
+        }
+
+        try {
+            Long orderId = Long.parseLong(parts[1]);
+            UpdateStatusRequest statusRequest = readJsonBody(request, UpdateStatusRequest.class);
+
+            if (statusRequest.getStatus() == null || statusRequest.getStatus().isEmpty()) {
+                sendBadRequest(response, "Status is required");
+                return;
+            }
+
+            OrderResponse updated = orderService.updateOrderStatus(orderId, statusRequest.getStatus());
+            sendSuccess(response, updated);
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid order ID");
         }

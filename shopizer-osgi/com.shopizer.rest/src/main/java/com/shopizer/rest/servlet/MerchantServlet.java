@@ -180,7 +180,8 @@ public class MerchantServlet extends BaseServlet {
         }
     }
 
-    // Store Management Handlers
+    // ========== GET Helper Methods ==========
+
     private void handleGetStoreById(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
@@ -237,81 +238,48 @@ public class MerchantServlet extends BaseServlet {
         }
     }
 
-    private void handleDeleteStore(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void handleInventoryGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
 
-        if (parts.length < 4) {
-            sendBadRequest(response, "Merchant ID and Store ID are required");
+        if (parts.length < 2) {
+            sendBadRequest(response, "Merchant ID is required");
             return;
         }
 
         try {
             Long merchantId = Long.parseLong(parts[1]);
-            Long storeId = Long.parseLong(parts[3]);
-            merchantService.deleteStore(merchantId, storeId);
-            sendSuccess(response, new MessageResponse("Store deleted successfully"));
+
+            // GET /api/v1/merchants/{merchantId}/inventory/low-stock
+            if (pathInfo.contains("/low-stock")) {
+                String storeIdParam = request.getParameter("storeId");
+                Long storeId = storeIdParam != null ? Long.parseLong(storeIdParam) : null;
+                List<InventoryItemResponse> lowStock = merchantService.getLowStockProducts(merchantId, storeId);
+                sendSuccess(response, lowStock);
+                return;
+            }
+
+            // GET /api/v1/merchants/{merchantId}/stores/{storeId}/inventory
+            if (parts.length >= 4 && parts[3].equals("inventory")) {
+                Long storeId = Long.parseLong(parts[2]);
+                List<InventoryItemResponse> inventory = merchantService.getInventoryByStore(merchantId, storeId);
+                sendSuccess(response, inventory);
+                return;
+            }
+
+            // GET /api/v1/merchants/{merchantId}/inventory
+            if (pathInfo.endsWith("/inventory")) {
+                List<InventoryItemResponse> inventory = merchantService.getInventory(merchantId);
+                sendSuccess(response, inventory);
+                return;
+            }
+
+            sendBadRequest(response, "Invalid inventory endpoint");
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid merchant ID or store ID");
         }
     }
 
-    private void handleUpdateStore(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        String[] parts = pathInfo.split("/");
-
-        if (parts.length < 3) {
-            sendBadRequest(response, "Store ID is required");
-            return;
-        }
-
-        try {
-            Long storeId = Long.parseLong(parts[2]);
-            MerchantStoreRequest storeRequest = readJsonBody(request, MerchantStoreRequest.class);
-            MerchantStoreResponse updated = merchantService.updateStore(storeId, storeRequest);
-            sendSuccess(response, updated);
-        } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid store ID");
-        }
-    }
-
-    private void handleActivateStore(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        String[] parts = pathInfo.split("/");
-
-        if (parts.length < 3) {
-            sendBadRequest(response, "Store ID is required");
-            return;
-        }
-
-        try {
-            Long storeId = Long.parseLong(parts[2]);
-            merchantService.activateStore(storeId);
-            sendSuccess(response, new MessageResponse("Store activated successfully"));
-        } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid store ID");
-        }
-    }
-
-    private void handleDeactivateStore(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        String[] parts = pathInfo.split("/");
-
-        if (parts.length < 3) {
-            sendBadRequest(response, "Store ID is required");
-            return;
-        }
-
-        try {
-            Long storeId = Long.parseLong(parts[2]);
-            merchantService.deactivateStore(storeId);
-            sendSuccess(response, new MessageResponse("Store deactivated successfully"));
-        } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid store ID");
-        }
-    }
-
-    // Sales Reports Handlers
     private void handleReportsGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
@@ -420,12 +388,12 @@ public class MerchantServlet extends BaseServlet {
         }
     }
 
-    // ========== FR-015: Authentication Handlers ==========
+    // ========== POST Helper Methods ==========
 
     /**
      * Handle merchant registration (FR-015)
      * POST /api/v1/merchants/register
-     * 
+     *
      * Request Body:
      * {
      *   "businessName": "Tech Store LLC",
@@ -504,62 +472,41 @@ public class MerchantServlet extends BaseServlet {
         }
     }
 
-    // Helper DTOs
-    static class ErrorResponse {
-        private String error;
-        private long timestamp;
+    private void handleActivateStore(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
 
-        public ErrorResponse(String error) {
-            this.error = error;
-            this.timestamp = System.currentTimeMillis();
+        if (parts.length < 3) {
+            sendBadRequest(response, "Store ID is required");
+            return;
         }
 
-        public String getError() { return error; }
-        public void setError(String error) { this.error = error; }
-        public long getTimestamp() { return timestamp; }
-        public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-    }
-
-    static class MessageResponse {
-        private String message;
-
-        public MessageResponse(String message) { this.message = message; }
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-    }
-
-    // Utility: parse date parameter with optional fallback key
-    private LocalDate parseDateParam(HttpServletRequest request, String primaryKey, String fallbackKey) {
-        String value = request.getParameter(primaryKey);
-        if (value == null && fallbackKey != null) {
-            value = request.getParameter(fallbackKey);
-        }
-        if (value == null || value.isBlank()) {
-            return null;
-        }
         try {
-            return LocalDate.parse(value);
-        } catch (java.time.format.DateTimeParseException e) {
-            throw new IllegalArgumentException("Invalid date format. Use YYYY-MM-DD");
+            Long storeId = Long.parseLong(parts[2]);
+            merchantService.activateStore(storeId);
+            sendSuccess(response, new MessageResponse("Store activated successfully"));
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid store ID");
         }
     }
 
-    static class StockUpdateRequest {
-        private Integer quantity;
+    private void handleDeactivateStore(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
 
-        public Integer getQuantity() { return quantity; }
-        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+        if (parts.length < 3) {
+            sendBadRequest(response, "Store ID is required");
+            return;
+        }
+
+        try {
+            Long storeId = Long.parseLong(parts[2]);
+            merchantService.deactivateStore(storeId);
+            sendSuccess(response, new MessageResponse("Store deactivated successfully"));
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid store ID");
+        }
     }
-
-    static class TotalRevenueResponse {
-        private BigDecimal totalRevenue;
-
-        public TotalRevenueResponse(BigDecimal totalRevenue) { this.totalRevenue = totalRevenue; }
-        public BigDecimal getTotalRevenue() { return totalRevenue; }
-        public void setTotalRevenue(BigDecimal totalRevenue) { this.totalRevenue = totalRevenue; }
-    }
-
-    // ========== FR-017 Inventory Management Handlers ==========
 
     private void handleCreateProduct(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
@@ -583,45 +530,44 @@ public class MerchantServlet extends BaseServlet {
         }
     }
 
-    private void handleInventoryGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void handleRecordProductView(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
 
-        if (parts.length < 2) {
-            sendBadRequest(response, "Merchant ID is required");
+        // Path: /merchants/{merchantId}/products/{productId}/views
+        if (parts.length < 5) {
+            sendBadRequest(response, "Merchant ID and Product ID are required");
             return;
         }
 
         try {
             Long merchantId = Long.parseLong(parts[1]);
-
-            // GET /api/v1/merchants/{merchantId}/inventory/low-stock
-            if (pathInfo.contains("/low-stock")) {
-                String storeIdParam = request.getParameter("storeId");
-                Long storeId = storeIdParam != null ? Long.parseLong(storeIdParam) : null;
-                List<InventoryItemResponse> lowStock = merchantService.getLowStockProducts(merchantId, storeId);
-                sendSuccess(response, lowStock);
-                return;
-            }
-
-            // GET /api/v1/merchants/{merchantId}/stores/{storeId}/inventory
-            if (parts.length >= 4 && parts[3].equals("inventory")) {
-                Long storeId = Long.parseLong(parts[2]);
-                List<InventoryItemResponse> inventory = merchantService.getInventoryByStore(merchantId, storeId);
-                sendSuccess(response, inventory);
-                return;
-            }
-
-            // GET /api/v1/merchants/{merchantId}/inventory
-            if (pathInfo.endsWith("/inventory")) {
-                List<InventoryItemResponse> inventory = merchantService.getInventory(merchantId);
-                sendSuccess(response, inventory);
-                return;
-            }
-
-            sendBadRequest(response, "Invalid inventory endpoint");
+            Long productId = Long.parseLong(parts[3]);
+            merchantService.recordProductView(merchantId, productId);
+            sendSuccess(response, new MessageResponse("Product view recorded"));
         } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid merchant ID or store ID");
+            sendBadRequest(response, "Invalid merchant ID or product ID");
+        }
+    }
+
+    // ========== PUT Helper Methods ==========
+
+    private void handleUpdateStore(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        if (parts.length < 3) {
+            sendBadRequest(response, "Store ID is required");
+            return;
+        }
+
+        try {
+            Long storeId = Long.parseLong(parts[2]);
+            MerchantStoreRequest storeRequest = readJsonBody(request, MerchantStoreRequest.class);
+            MerchantStoreResponse updated = merchantService.updateStore(storeId, storeRequest);
+            sendSuccess(response, updated);
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid store ID");
         }
     }
 
@@ -647,6 +593,27 @@ public class MerchantServlet extends BaseServlet {
         }
     }
 
+    // ========== DELETE Helper Methods ==========
+
+    private void handleDeleteStore(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        if (parts.length < 4) {
+            sendBadRequest(response, "Merchant ID and Store ID are required");
+            return;
+        }
+
+        try {
+            Long merchantId = Long.parseLong(parts[1]);
+            Long storeId = Long.parseLong(parts[3]);
+            merchantService.deleteStore(merchantId, storeId);
+            sendSuccess(response, new MessageResponse("Store deleted successfully"));
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid merchant ID or store ID");
+        }
+    }
+
     private void handleDeleteProduct(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
@@ -668,24 +635,59 @@ public class MerchantServlet extends BaseServlet {
         }
     }
 
-    // FR-018: Record product view for conversion tracking
-    private void handleRecordProductView(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        String[] parts = pathInfo.split("/");
+    // ========== Helper Methods & DTOs ==========
 
-        // Path: /merchants/{merchantId}/products/{productId}/views
-        if (parts.length < 5) {
-            sendBadRequest(response, "Merchant ID and Product ID are required");
-            return;
+    // Utility: parse date parameter with optional fallback key
+    private LocalDate parseDateParam(HttpServletRequest request, String primaryKey, String fallbackKey) {
+        String value = request.getParameter(primaryKey);
+        if (value == null && fallbackKey != null) {
+            value = request.getParameter(fallbackKey);
         }
-
+        if (value == null || value.isBlank()) {
+            return null;
+        }
         try {
-            Long merchantId = Long.parseLong(parts[1]);
-            Long productId = Long.parseLong(parts[3]);
-            merchantService.recordProductView(merchantId, productId);
-            sendSuccess(response, new MessageResponse("Product view recorded"));
-        } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid merchant ID or product ID");
+            return LocalDate.parse(value);
+        } catch (java.time.format.DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid date format. Use YYYY-MM-DD");
         }
+    }
+
+    static class ErrorResponse {
+        private String error;
+        private long timestamp;
+
+        public ErrorResponse(String error) {
+            this.error = error;
+            this.timestamp = System.currentTimeMillis();
+        }
+
+        public String getError() { return error; }
+        public void setError(String error) { this.error = error; }
+        public long getTimestamp() { return timestamp; }
+        public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    }
+
+    static class MessageResponse {
+        private String message;
+
+        public MessageResponse(String message) { this.message = message; }
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+    }
+
+    static class StockUpdateRequest {
+        private Integer quantity;
+
+        public Integer getQuantity() { return quantity; }
+        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    }
+
+    static class TotalRevenueResponse {
+        private BigDecimal totalRevenue;
+
+        public TotalRevenueResponse(BigDecimal totalRevenue) { this.totalRevenue = totalRevenue; }
+        public BigDecimal getTotalRevenue() { return totalRevenue; }
+        public void setTotalRevenue(BigDecimal totalRevenue) { this.totalRevenue = totalRevenue; }
     }
 }

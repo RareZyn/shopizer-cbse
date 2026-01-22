@@ -29,9 +29,32 @@ The Cart module handles all shopping cart operations including adding items, upd
 
 ### Methods
 
-#### Cart Operations
+#### Cart Management Operations
 ```java
+// Create and retrieve carts
+Cart createCart(Cart cart)
+List<Cart> getAllCarts()
+Optional<Cart> getCartById(Long id)
+CartResponse getCartByCustomerId(Long customerId)
+
+// Delete operations
+void deleteCartById(Long id)
+void clearCartById(Long cartId)
+```
+
+#### Cart Item Operations (by Cart ID)
+```java
+// Add, update, remove items using cart ID
+CartResponse addItemToCart(Long cartId, CartItemRequest request)
+CartResponse updateCartItemById(Long cartId, Long itemId, Integer quantity)
+void removeItemFromCartById(Long cartId, Long itemId)
+```
+
+#### Cart Item Operations (by Customer ID - Legacy)
+```java
+// Customer-centric operations
 CartResponse addToCart(Long customerId, CartItemRequest request)
+CartResponse addItemToCustomerCart(Long customerId, CartItemRequest request)
 CartResponse viewCart(Long customerId)
 CartResponse updateCartItem(Long customerId, Long itemId, Integer quantity)
 void removeFromCart(Long customerId, Long itemId)
@@ -41,6 +64,7 @@ void clearCart(Long customerId)
 #### Cart Calculations
 ```java
 BigDecimal calculateTotal(Long customerId)
+BigDecimal getCartTotalById(Long cartId)
 Integer getCartItemCount(Long customerId)
 ```
 
@@ -210,7 +234,7 @@ com.shopizer.cart/
 ├── pom.xml                                      ✅
 └── src/main/java/com/shopizer/cart/
     ├── api/
-    │   └── CartService.java                     ✅ (9 methods)
+    │   └── CartService.java                     ✅ (20 methods - updated)
     ├── dto/
     │   ├── CartItemRequest.java                 ✅
     │   ├── CartItemResponse.java                ✅
@@ -218,15 +242,22 @@ com.shopizer.cart/
     │   └── CartValidationResponse.java          ✅
     ├── repository/
     │   ├── CartRepository.java                  ✅
-    │   └── CartItemRepository.java              ✅
+    │   ├── CartRepositoryImpl.java              ✅ (Manual JPA)
+    │   ├── CartItemRepository.java              ✅
+    │   └── CartItemRepositoryImpl.java          ✅ (Manual JPA)
     ├── impl/
-    │   └── CartServiceImpl.java                 ✅ (Full implementation)
+    │   └── CartServiceImpl.java                 ✅ (20 methods implemented)
     └── activator/
         └── CartActivator.java                   ✅ (OSGI lifecycle)
+
+com.shopizer.rest/
+└── src/main/java/com/shopizer/rest/servlet/
+    └── CartServlet.java                         ✅ (20 REST endpoints)
 ```
 
-**Total Files:** 9
-**Lines of Code:** ~600
+**Total Files:** 12
+**Lines of Code:** ~1200
+**REST Endpoints:** 20
 
 ## Build & Test
 
@@ -259,12 +290,37 @@ unzip -p target/com.shopizer.cart-1.0.0.jar META-INF/MANIFEST.MF
    - Validate cart before order creation
    - Clear cart after successful order
 
-2. **REST API Layer** will expose:
-   - `POST /api/v1/cart/items` - Add to cart
-   - `GET /api/v1/cart` - View cart
-   - `PUT /api/v1/cart/items/{id}` - Update quantity
-   - `DELETE /api/v1/cart/items/{id}` - Remove item
-   - `POST /api/v1/cart/validate` - Validate cart
+2. **REST API Layer** exposes (via CartServlet):
+
+   **Cart Management:**
+   - `GET /api/v1/cart` - Get all carts (Admin)
+   - `GET /api/v1/cart?customerId={id}` - View cart by customer ID
+   - `GET /api/v1/cart/{id}` - Get cart by ID
+   - `GET /api/v1/cart/customer/{customerId}` - Get cart by customer ID
+   - `POST /api/v1/cart` - Create new cart
+   - `DELETE /api/v1/cart/{id}` - Delete cart by ID
+   - `DELETE /api/v1/cart?customerId={id}` - Clear cart by customer ID
+   - `DELETE /api/v1/cart/{cartId}/clear` - Clear cart items by cart ID
+
+   **Cart Items (by cart ID):**
+   - `POST /api/v1/cart/{cartId}/items` - Add item by cart ID
+   - `POST /api/v1/cart/customer/{customerId}/items` - Add item by customer ID
+   - `PUT /api/v1/cart/{cartId}/items/{itemId}` - Update item by cart ID
+   - `DELETE /api/v1/cart/{cartId}/items/{itemId}` - Remove item by cart ID
+
+   **Cart Items (legacy - customer ID in params):**
+   - `POST /api/v1/cart/items` - Add item (customerId in body)
+   - `PUT /api/v1/cart/items/{itemId}?customerId={id}&quantity={qty}` - Update quantity
+   - `DELETE /api/v1/cart/items/{itemId}?customerId={id}` - Remove item
+
+   **Cart Calculations:**
+   - `GET /api/v1/cart/total?customerId={id}` - Get total by customer ID
+   - `GET /api/v1/cart/{cartId}/total` - Get total by cart ID
+   - `GET /api/v1/cart/count?customerId={id}` - Get item count
+
+   **Cart Validation & Merge:**
+   - `POST /api/v1/cart/validate?customerId={id}` - Validate cart
+   - `POST /api/v1/cart/merge?anonymousCartId={id}&customerId={id}` - Merge carts
 
 ## Testing Checklist
 
@@ -281,6 +337,8 @@ unzip -p target/com.shopizer.cart-1.0.0.jar META-INF/MANIFEST.MF
 
 ---
 
-**Status:** ✅ Complete
+**Status:** ✅ Complete (Feature Parity with SpringBoot)
 **Version:** 1.0.0
-**Last Updated:** 2026-01-13
+**Service Methods:** 20
+**REST Endpoints:** 20
+**Last Updated:** 2026-01-22

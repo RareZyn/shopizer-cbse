@@ -166,6 +166,8 @@ public class CustomerServlet extends BaseServlet {
         }
     }
 
+    // ========== GET Helper Methods ==========
+
     private void handleGetById(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Long customerId = extractIdFromPath(request, "/api/v1/customers");
 
@@ -196,7 +198,7 @@ public class CustomerServlet extends BaseServlet {
         }
     }
 
-    private void handleUpdateProfile(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void handleGetAddresses(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
 
@@ -207,37 +209,34 @@ public class CustomerServlet extends BaseServlet {
 
         try {
             Long customerId = Long.parseLong(parts[1]);
-            CustomerProfileUpdateRequest updateRequest = readJsonBody(request, CustomerProfileUpdateRequest.class);
-            CustomerResponse updated = customerService.updateProfile(customerId, updateRequest);
-            sendSuccess(response, updated);
+            List<AddressResponse> addresses = customerService.getAddresses(customerId);
+            sendSuccess(response, addresses);
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid customer ID");
         }
     }
 
-    private void handleUpdateCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Long customerId = extractIdFromPath(request, "/api/v1/customers");
+    // ========== POST Helper Methods ==========
 
-        if (customerId == null) {
-            sendBadRequest(response, "Invalid customer ID");
+    private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        if (parts.length < 2) {
+            sendBadRequest(response, "Customer ID is required");
             return;
         }
 
-        CustomerUpdateRequest updateRequest = readJsonBody(request, CustomerUpdateRequest.class);
-        CustomerResponse updated = customerService.updateCustomer(customerId, updateRequest);
-        sendSuccess(response, updated);
-    }
-
-    private void handleDeleteCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Long customerId = extractIdFromPath(request, "/api/v1/customers");
-
-        if (customerId == null) {
+        try {
+            Long customerId = Long.parseLong(parts[1]);
+            customerService.logout(customerId);
+            sendSuccess(response, new MessageResponse("Logout successful"));
+        } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid customer ID");
-            return;
+        } catch (Exception e) {
+            logger.error("Error during logout", e);
+            sendInternalError(response, "Error processing logout: " + e.getMessage());
         }
-
-        customerService.deleteCustomer(customerId);
-        sendNoContent(response);
     }
 
     private void handleChangePassword(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -278,7 +277,9 @@ public class CustomerServlet extends BaseServlet {
         }
     }
 
-    private void handleGetAddresses(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    // ========== PUT Helper Methods ==========
+
+    private void handleUpdateProfile(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
 
@@ -289,11 +290,25 @@ public class CustomerServlet extends BaseServlet {
 
         try {
             Long customerId = Long.parseLong(parts[1]);
-            List<AddressResponse> addresses = customerService.getAddresses(customerId);
-            sendSuccess(response, addresses);
+            CustomerProfileUpdateRequest updateRequest = readJsonBody(request, CustomerProfileUpdateRequest.class);
+            CustomerResponse updated = customerService.updateProfile(customerId, updateRequest);
+            sendSuccess(response, updated);
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid customer ID");
         }
+    }
+
+    private void handleUpdateCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Long customerId = extractIdFromPath(request, "/api/v1/customers");
+
+        if (customerId == null) {
+            sendBadRequest(response, "Invalid customer ID");
+            return;
+        }
+
+        CustomerUpdateRequest updateRequest = readJsonBody(request, CustomerUpdateRequest.class);
+        CustomerResponse updated = customerService.updateCustomer(customerId, updateRequest);
+        sendSuccess(response, updated);
     }
 
     private void handleUpdateAddress(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -311,25 +326,6 @@ public class CustomerServlet extends BaseServlet {
             AddressRequest addressRequest = readJsonBody(request, AddressRequest.class);
             AddressResponse updated = customerService.updateAddress(customerId, addressId, addressRequest);
             sendSuccess(response, updated);
-        } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid customer ID or address ID");
-        }
-    }
-
-    private void handleDeleteAddress(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        String[] parts = pathInfo.split("/");
-
-        if (parts.length < 4) {
-            sendBadRequest(response, "Customer ID and Address ID are required");
-            return;
-        }
-
-        try {
-            Long customerId = Long.parseLong(parts[1]);
-            Long addressId = Long.parseLong(parts[3]);
-            customerService.deleteAddress(customerId, addressId);
-            sendNoContent(response);
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid customer ID or address ID");
         }
@@ -354,24 +350,36 @@ public class CustomerServlet extends BaseServlet {
         }
     }
 
-    private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    // ========== DELETE Helper Methods ==========
+
+    private void handleDeleteCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Long customerId = extractIdFromPath(request, "/api/v1/customers");
+
+        if (customerId == null) {
+            sendBadRequest(response, "Invalid customer ID");
+            return;
+        }
+
+        customerService.deleteCustomer(customerId);
+        sendNoContent(response);
+    }
+
+    private void handleDeleteAddress(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
 
-        if (parts.length < 2) {
-            sendBadRequest(response, "Customer ID is required");
+        if (parts.length < 4) {
+            sendBadRequest(response, "Customer ID and Address ID are required");
             return;
         }
 
         try {
             Long customerId = Long.parseLong(parts[1]);
-            customerService.logout(customerId);
-            sendSuccess(response, new MessageResponse("Logout successful"));
+            Long addressId = Long.parseLong(parts[3]);
+            customerService.deleteAddress(customerId, addressId);
+            sendNoContent(response);
         } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid customer ID");
-        } catch (Exception e) {
-            logger.error("Error during logout", e);
-            sendInternalError(response, "Error processing logout: " + e.getMessage());
+            sendBadRequest(response, "Invalid customer ID or address ID");
         }
     }
 

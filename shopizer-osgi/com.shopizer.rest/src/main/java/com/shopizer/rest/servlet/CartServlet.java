@@ -124,6 +124,8 @@ public class CartServlet extends BaseServlet {
         }
     }
 
+    // ========== GET Helper Methods ==========
+
     private Long extractCustomerIdFromPath(String pathInfo) {
         // Extract customer ID from /customer/{customerId} or /customer/{customerId}/items
         if (pathInfo.startsWith("/customer/")) {
@@ -151,6 +153,8 @@ public class CartServlet extends BaseServlet {
         }
         return null;
     }
+
+    // ========== POST Methods ==========
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -233,6 +237,8 @@ public class CartServlet extends BaseServlet {
         }
     }
 
+    // ========== PUT Methods ==========
+
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
         enableCors(response);
@@ -280,6 +286,8 @@ public class CartServlet extends BaseServlet {
             sendInternalError(response, "Error updating cart item: " + e.getMessage());
         }
     }
+
+    // ========== DELETE Methods ==========
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {

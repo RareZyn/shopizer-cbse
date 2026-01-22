@@ -159,6 +159,8 @@ public class CatalogServlet extends BaseServlet {
         }
     }
 
+    // ========== GET Helper Methods ==========
+
     private void handleGetAll(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String servletPath = request.getServletPath();
 
