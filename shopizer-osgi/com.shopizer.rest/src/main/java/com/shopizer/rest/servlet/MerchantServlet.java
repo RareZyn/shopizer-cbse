@@ -60,8 +60,20 @@ public class MerchantServlet extends BaseServlet {
             String pathInfo = request.getPathInfo();
 
             if (pathInfo == null || pathInfo.equals("/")) {
-                // GET /api/v1/merchants?merchantId={id}
-                handleGetStoreByMerchantId(request, response);
+                // GET /api/v1/merchants OR /api/v1/merchants?merchantId={id}
+                String merchantIdParam = request.getParameter("merchantId");
+                if (merchantIdParam != null) {
+                    handleGetStoreByMerchantId(request, response);
+                } else {
+                    // GET /api/v1/merchants - Get all merchants
+                    handleGetAllMerchants(request, response);
+                }
+            } else if (pathInfo.matches("/\\d+")) {
+                // GET /api/v1/merchants/{id} - Get merchant by ID
+                handleGetMerchantById(request, response);
+            } else if (pathInfo.matches("/\\d+/stores/\\d+")) {
+                // GET /api/v1/merchants/{merchantId}/stores/{storeId} - Get specific store
+                handleGetStoreByMerchantAndStoreId(request, response);
             } else if (pathInfo.matches("/\\d+/stores")) {
                 // GET /api/v1/merchants/{merchantId}/stores - List all stores for merchant
                 handleListStoresByMerchant(request, response);
@@ -90,10 +102,13 @@ public class MerchantServlet extends BaseServlet {
         try {
             String pathInfo = request.getPathInfo();
 
-            if (pathInfo != null && pathInfo.equals("/register")) {
+            if (pathInfo == null || pathInfo.equals("/")) {
+                // POST /api/v1/merchants (register merchant - alias for /register)
+                handleMerchantRegister(request, response);
+            } else if (pathInfo.equals("/register")) {
                 // POST /api/v1/merchants/register (FR-015)
                 handleMerchantRegister(request, response);
-            } else if (pathInfo != null && pathInfo.equals("/login")) {
+            } else if (pathInfo.equals("/login")) {
                 // POST /api/v1/merchants/login (FR-015)
                 handleMerchantLogin(request, response);
             } else if (pathInfo != null && (pathInfo.equals("/stores") || pathInfo.matches("/\\d+/stores"))) {
@@ -143,7 +158,13 @@ public class MerchantServlet extends BaseServlet {
         try {
             String pathInfo = request.getPathInfo();
 
-            if (pathInfo != null && pathInfo.startsWith("/stores/") && !pathInfo.contains("/inventory")) {
+            if (pathInfo != null && pathInfo.matches("/\\d+")) {
+                // PUT /api/v1/merchants/{id} - Update merchant
+                handleUpdateMerchant(request, response);
+            } else if (pathInfo != null && pathInfo.matches("/\\d+/stores/\\d+")) {
+                // PUT /api/v1/merchants/{merchantId}/stores/{storeId} - Update store for merchant
+                handleUpdateStoreForMerchant(request, response);
+            } else if (pathInfo != null && pathInfo.startsWith("/stores/") && !pathInfo.contains("/inventory")) {
                 // PUT /api/v1/merchants/stores/{id}
                 handleUpdateStore(request, response);
             } else if (pathInfo != null && pathInfo.matches("/\\d+/inventory/products/\\d+")) {
@@ -165,7 +186,10 @@ public class MerchantServlet extends BaseServlet {
         try {
             String pathInfo = request.getPathInfo();
 
-            if (pathInfo != null && pathInfo.matches("/\\d+/stores/\\d+")) {
+            if (pathInfo != null && pathInfo.matches("/\\d+")) {
+                // DELETE /api/v1/merchants/{id} - Delete merchant
+                handleDeleteMerchant(request, response);
+            } else if (pathInfo != null && pathInfo.matches("/\\d+/stores/\\d+")) {
                 // DELETE /api/v1/merchants/{merchantId}/stores/{storeId}
                 handleDeleteStore(request, response);
             } else if (pathInfo != null && pathInfo.matches("/\\d+/inventory/products/\\d+")) {
@@ -181,6 +205,58 @@ public class MerchantServlet extends BaseServlet {
     }
 
     // ========== GET Helper Methods ==========
+
+    private void handleGetAllMerchants(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            List<MerchantProfileResponse> merchants = merchantService.getAllMerchants();
+            sendSuccess(response, merchants);
+        } catch (Exception e) {
+            logger.error("Error fetching merchants", e);
+            sendInternalError(response, "Error fetching merchants: " + e.getMessage());
+        }
+    }
+
+    private void handleGetMerchantById(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        if (parts.length < 2) {
+            sendBadRequest(response, "Merchant ID is required");
+            return;
+        }
+
+        try {
+            Long merchantId = Long.parseLong(parts[1]);
+            MerchantProfileResponse merchant = merchantService.getMerchantById(merchantId);
+            sendSuccess(response, merchant);
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid merchant ID");
+        } catch (com.shopizer.common.exception.ResourceNotFoundException e) {
+            sendNotFound(response, e.getMessage());
+        }
+    }
+
+    private void handleGetStoreByMerchantAndStoreId(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        // Path: /merchants/{merchantId}/stores/{storeId}
+        if (parts.length < 4) {
+            sendBadRequest(response, "Merchant ID and Store ID are required");
+            return;
+        }
+
+        try {
+            Long merchantId = Long.parseLong(parts[1]);
+            Long storeId = Long.parseLong(parts[3]);
+            MerchantStoreResponse store = merchantService.getStoreByMerchantIdAndStoreId(merchantId, storeId);
+            sendSuccess(response, store);
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid merchant ID or store ID");
+        } catch (com.shopizer.common.exception.ResourceNotFoundException e) {
+            sendNotFound(response, e.getMessage());
+        }
+    }
 
     private void handleGetStoreById(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
@@ -552,6 +628,50 @@ public class MerchantServlet extends BaseServlet {
 
     // ========== PUT Helper Methods ==========
 
+    private void handleUpdateMerchant(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        if (parts.length < 2) {
+            sendBadRequest(response, "Merchant ID is required");
+            return;
+        }
+
+        try {
+            Long merchantId = Long.parseLong(parts[1]);
+            MerchantUpdateRequest updateRequest = readJsonBody(request, MerchantUpdateRequest.class);
+            MerchantProfileResponse updated = merchantService.updateMerchant(merchantId, updateRequest);
+            sendSuccess(response, updated);
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid merchant ID");
+        } catch (com.shopizer.common.exception.ResourceNotFoundException e) {
+            sendNotFound(response, e.getMessage());
+        }
+    }
+
+    private void handleUpdateStoreForMerchant(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        // Path: /merchants/{merchantId}/stores/{storeId}
+        if (parts.length < 4) {
+            sendBadRequest(response, "Merchant ID and Store ID are required");
+            return;
+        }
+
+        try {
+            Long merchantId = Long.parseLong(parts[1]);
+            Long storeId = Long.parseLong(parts[3]);
+            MerchantStoreRequest storeRequest = readJsonBody(request, MerchantStoreRequest.class);
+            MerchantStoreResponse updated = merchantService.updateStoreForMerchant(merchantId, storeId, storeRequest);
+            sendSuccess(response, updated);
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid merchant ID or store ID");
+        } catch (com.shopizer.common.exception.ResourceNotFoundException e) {
+            sendNotFound(response, e.getMessage());
+        }
+    }
+
     private void handleUpdateStore(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
@@ -594,6 +714,26 @@ public class MerchantServlet extends BaseServlet {
     }
 
     // ========== DELETE Helper Methods ==========
+
+    private void handleDeleteMerchant(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        if (parts.length < 2) {
+            sendBadRequest(response, "Merchant ID is required");
+            return;
+        }
+
+        try {
+            Long merchantId = Long.parseLong(parts[1]);
+            merchantService.deleteMerchant(merchantId);
+            sendSuccess(response, new MessageResponse("Merchant deleted successfully"));
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid merchant ID");
+        } catch (com.shopizer.common.exception.ResourceNotFoundException e) {
+            sendNotFound(response, e.getMessage());
+        }
+    }
 
     private void handleDeleteStore(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();

@@ -1503,7 +1503,7 @@ public class SwaggerServlet extends HttpServlet {
     },
     "/merchants/{merchantId}/stores/{storeId}/products": {
       "post": {
-        "tags": ["Merchant - Inventory"],
+        "tags": ["Merchant"],
         "summary": "Create a product under a store",
         "description": "FR-017: The system shall allow merchants to manage inventory (Create)",
         "operationId": "createProduct",
@@ -1543,7 +1543,7 @@ public class SwaggerServlet extends HttpServlet {
     },
     "/merchants/{merchantId}/inventory": {
       "get": {
-        "tags": ["Merchant - Inventory"],
+        "tags": ["Merchant"],
         "summary": "Get inventory for a merchant (all stores)",
         "description": "FR-017: The system shall allow merchants to manage inventory (Read)",
         "operationId": "getInventory",
@@ -1572,7 +1572,7 @@ public class SwaggerServlet extends HttpServlet {
     },
     "/merchants/{merchantId}/stores/{storeId}/inventory": {
       "get": {
-        "tags": ["Merchant - Inventory"],
+        "tags": ["Merchant"],
         "summary": "Get inventory for a specific store",
         "description": "FR-017: The system shall allow merchants to manage inventory (Read)",
         "operationId": "getInventoryByStore",
@@ -1607,7 +1607,7 @@ public class SwaggerServlet extends HttpServlet {
     },
     "/merchants/{merchantId}/inventory/products/{productId}": {
       "put": {
-        "tags": ["Merchant - Inventory"],
+        "tags": ["Merchant"],
         "summary": "Update product details",
         "description": "FR-017: The system shall allow merchants to manage inventory (Update)",
         "operationId": "updateProduct",
@@ -1645,7 +1645,7 @@ public class SwaggerServlet extends HttpServlet {
         }
       },
       "delete": {
-        "tags": ["Merchant - Inventory"],
+        "tags": ["Merchant"],
         "summary": "Delete a product",
         "description": "FR-017: The system shall allow merchants to manage inventory (Delete)",
         "operationId": "deleteProduct",
@@ -1670,7 +1670,7 @@ public class SwaggerServlet extends HttpServlet {
     },
     "/merchants/{merchantId}/inventory/low-stock": {
       "get": {
-        "tags": ["Merchant - Inventory"],
+        "tags": ["Merchant"],
         "summary": "Get low stock products",
         "description": "FR-018: Identify products needing restock",
         "operationId": "getLowStockProducts",

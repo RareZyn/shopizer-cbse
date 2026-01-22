@@ -26,6 +26,7 @@ com\shopizer\merchant\dto\JsonAlias.class
 com\shopizer\merchant\activator\MerchantActivator$2.class
 com\shopizer\merchant\dto\InventoryUpdateRequest.class
 com\shopizer\merchant\dto\RevenueAnalyticsResponse.class
+com\shopizer\merchant\dto\MerchantUpdateRequest.class
 com\shopizer\merchant\activator\MerchantActivator.class
 com\shopizer\merchant\dto\MerchantProfileResponse.class
 com\shopizer\merchant\repository\MerchantRepositoryImpl.class

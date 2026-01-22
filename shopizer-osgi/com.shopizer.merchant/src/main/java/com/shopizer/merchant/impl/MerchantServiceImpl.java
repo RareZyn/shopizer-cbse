@@ -122,6 +122,71 @@ public class MerchantServiceImpl implements MerchantService {
         return response;
     }
 
+    @Override
+    public List<MerchantProfileResponse> getAllMerchants() {
+        logger.info("Fetching all merchants");
+
+        List<Merchant> merchants = merchantRepository.findAll();
+        return merchants.stream()
+            .map(this::mapToMerchantProfile)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public MerchantProfileResponse getMerchantById(Long merchantId) {
+        logger.info("Fetching merchant: {}", merchantId);
+
+        Merchant merchant = merchantRepository.findById(merchantId)
+            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
+
+        return mapToMerchantProfile(merchant);
+    }
+
+    @Override
+    public MerchantProfileResponse updateMerchant(Long merchantId, MerchantUpdateRequest request) {
+        logger.info("Updating merchant: {}", merchantId);
+
+        Merchant merchant = merchantRepository.findById(merchantId)
+            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
+
+        if (request.getBusinessName() != null) {
+            merchant.setBusinessName(request.getBusinessName());
+        }
+        if (request.getPhone() != null) {
+            merchant.setPhone(request.getPhone());
+        }
+        if (request.getStatus() != null) {
+            merchant.setStatus(request.getStatus());
+        }
+
+        merchant = merchantRepository.save(merchant);
+        logger.info("Merchant updated successfully: {}", merchantId);
+
+        return mapToMerchantProfile(merchant);
+    }
+
+    @Override
+    public void deleteMerchant(Long merchantId) {
+        logger.info("Deleting merchant: {}", merchantId);
+
+        Merchant merchant = merchantRepository.findById(merchantId)
+            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
+
+        merchantRepository.delete(merchant);
+        logger.info("Merchant deleted successfully: {}", merchantId);
+    }
+
+    private MerchantProfileResponse mapToMerchantProfile(Merchant merchant) {
+        MerchantProfileResponse profile = new MerchantProfileResponse();
+        profile.setId(merchant.getId());
+        profile.setBusinessName(merchant.getBusinessName());
+        profile.setEmail(merchant.getEmail());
+        profile.setPhone(merchant.getPhone());
+        profile.setActive("ACTIVE".equalsIgnoreCase(merchant.getStatus()));
+        profile.setCreatedAt(merchant.getCreatedAt());
+        return profile;
+    }
+
     // ========== Store Management (FR-016) ==========
 
     @Override
@@ -247,10 +312,84 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Listing stores for merchant: {}", merchantId);
 
         List<MerchantStore> stores = merchantStoreRepository.findByMerchantId(merchantId);
-        
+
         return stores.stream()
                 .map(this::mapToStoreResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public MerchantStoreResponse getStoreByMerchantIdAndStoreId(Long merchantId, Long storeId) {
+        logger.info("Fetching store {} for merchant: {}", storeId, merchantId);
+
+        MerchantStore store = merchantStoreRepository.findByIdAndMerchantId(storeId, merchantId)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Store not found for merchantId=" + merchantId + ", storeId=" + storeId));
+
+        return mapToStoreResponse(store);
+    }
+
+    @Override
+    public MerchantStoreResponse createStoreForMerchant(Long merchantId, MerchantStoreRequest request) {
+        logger.info("Creating store for merchant: {}", merchantId);
+
+        Merchant merchant = merchantRepository.findById(merchantId)
+            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
+
+        MerchantStore store = new MerchantStore();
+        store.setMerchant(merchant);
+        store.setStoreName(request.getStoreName());
+        store.setStoreCode(request.getStoreCode());
+        store.setLogoUrl(request.getLogoUrl());
+        store.setDescription(request.getDescription());
+        store.setCurrency(request.getCurrency());
+        store.setDefaultLanguage(request.getDefaultLanguage());
+        store.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
+        store.setAddress(request.getAddress());
+
+        store = merchantStoreRepository.save(store);
+        logger.info("Store created successfully for merchant: {}", merchantId);
+
+        return mapToStoreResponse(store);
+    }
+
+    @Override
+    public MerchantStoreResponse updateStoreForMerchant(Long merchantId, Long storeId, MerchantStoreRequest request) {
+        logger.info("Updating store {} for merchant: {}", storeId, merchantId);
+
+        MerchantStore store = merchantStoreRepository.findByIdAndMerchantId(storeId, merchantId)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Store not found for merchantId=" + merchantId + ", storeId=" + storeId));
+
+        if (request.getStoreName() != null) {
+            store.setStoreName(request.getStoreName());
+        }
+        if (request.getStoreCode() != null) {
+            store.setStoreCode(request.getStoreCode());
+        }
+        if (request.getDescription() != null) {
+            store.setDescription(request.getDescription());
+        }
+        if (request.getAddress() != null) {
+            store.setAddress(request.getAddress());
+        }
+        if (request.getLogoUrl() != null) {
+            store.setLogoUrl(request.getLogoUrl());
+        }
+        if (request.getCurrency() != null) {
+            store.setCurrency(request.getCurrency());
+        }
+        if (request.getDefaultLanguage() != null) {
+            store.setDefaultLanguage(request.getDefaultLanguage());
+        }
+        if (request.getIsActive() != null) {
+            store.setIsActive(request.getIsActive());
+        }
+
+        store = merchantStoreRepository.save(store);
+        logger.info("Store updated successfully for merchant: {}", merchantId);
+
+        return mapToStoreResponse(store);
     }
 
     @Override
