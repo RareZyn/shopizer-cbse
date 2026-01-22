@@ -447,6 +447,29 @@ public class ProductRepositoryImpl implements ProductRepository {
     // ========== Custom Query Methods ==========
 
     /**
+     * Find product by SKU (unique identifier)
+     * Used for duplicate checking and product lookup
+     */
+    @Override
+    public Optional<Product> findBySku(String sku) {
+        try {
+            TypedQuery<Product> query = entityManager.createQuery(
+                "SELECT p FROM Product p WHERE p.sku = :sku",
+                Product.class
+            );
+            query.setParameter("sku", sku);
+            List<Product> results = query.getResultList();
+            if (results.isEmpty()) {
+                return Optional.empty();
+            }
+            return Optional.of(results.get(0));
+        } catch (Exception e) {
+            logger.error("Error finding product by SKU '{}': {}", sku, e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
+
+    /**
      * FR-003: Search products by keyword
      * Case-insensitive partial match on product name
      */

@@ -29,7 +29,6 @@ import java.util.List;
  * POST   /api/v1/categories         - Create category
  * PUT    /api/v1/categories/{id}    - Update category
  * DELETE /api/v1/categories/{id}    - Delete category
- * GET    /api/v1/categories/{id}/subcategories - Get subcategories
  */
 public class CatalogServlet extends BaseServlet {
 
@@ -58,9 +57,6 @@ public class CatalogServlet extends BaseServlet {
             } else if (pathInfo.contains("/category/")) {
                 // GET /api/v1/products/category/{id}
                 handleGetByCategory(request, response);
-            } else if (pathInfo.contains("/subcategories")) {
-                // GET /api/v1/categories/{id}/subcategories
-                handleGetSubcategories(request, response);
             } else {
                 // GET /api/v1/products/{id} or /api/v1/categories/{id}
                 handleGetById(request, response);
@@ -229,24 +225,6 @@ public class CatalogServlet extends BaseServlet {
             sendSuccess(response, products);
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid category ID");
-        }
-    }
-
-    private void handleGetSubcategories(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        String[] parts = pathInfo.split("/");
-
-        if (parts.length < 2) {
-            sendBadRequest(response, "Parent category ID is required");
-            return;
-        }
-
-        try {
-            Long parentId = Long.parseLong(parts[1]);
-            List<CategoryResponse> subcategories = catalogService.getSubCategories(parentId);
-            sendSuccess(response, subcategories);
-        } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid parent category ID");
         }
     }
 

@@ -4,6 +4,8 @@ import com.shopizer.catalog.api.CatalogService;
 import com.shopizer.catalog.impl.CatalogServiceImpl;
 import com.shopizer.catalog.repository.CategoryRepository;
 import com.shopizer.catalog.repository.CategoryRepositoryImpl;
+import com.shopizer.catalog.repository.MerchantStoreRepository;
+import com.shopizer.catalog.repository.MerchantStoreRepositoryImpl;
 import com.shopizer.catalog.repository.ProductRepository;
 import com.shopizer.catalog.repository.ProductRepositoryImpl;
 import jakarta.persistence.EntityManager;
@@ -85,17 +87,19 @@ public class CatalogActivator implements BundleActivator {
             logger.info("Creating EntityManager instances for repositories...");
             EntityManager productEntityManager = entityManagerFactory.createEntityManager();
             EntityManager categoryEntityManager = entityManagerFactory.createEntityManager();
+            EntityManager storeEntityManager = entityManagerFactory.createEntityManager();
             logger.info("EntityManager instances created successfully");
 
             // Step 3: Instantiate manual JPA repository implementations
             logger.info("Initializing manual JPA repositories...");
             ProductRepository productRepository = new ProductRepositoryImpl(productEntityManager);
             CategoryRepository categoryRepository = new CategoryRepositoryImpl(categoryEntityManager);
-            logger.info("Repositories initialized: ProductRepositoryImpl, CategoryRepositoryImpl");
+            MerchantStoreRepository merchantStoreRepository = new MerchantStoreRepositoryImpl(storeEntityManager);
+            logger.info("Repositories initialized: ProductRepositoryImpl, CategoryRepositoryImpl, MerchantStoreRepositoryImpl");
 
             // Step 4: Create CatalogService implementation with working repositories
             logger.info("Creating CatalogService implementation...");
-            CatalogService catalogService = new CatalogServiceImpl(productRepository, categoryRepository);
+            CatalogService catalogService = new CatalogServiceImpl(productRepository, categoryRepository, merchantStoreRepository);
             logger.info("CatalogServiceImpl created successfully");
 
             // Step 5: Register CatalogService in OSGi service registry
@@ -115,6 +119,7 @@ public class CatalogActivator implements BundleActivator {
             logger.info("✅ Catalog Module started successfully. CatalogService registered in OSGi registry.");
             logger.info("   - ProductRepository: ACTIVE (Manual JPA Implementation)");
             logger.info("   - CategoryRepository: ACTIVE (Manual JPA Implementation)");
+            logger.info("   - MerchantStoreRepository: ACTIVE (Manual JPA Implementation)");
             logger.info("   - CatalogService: READY (Functional Requirements: FR-001 to FR-009)");
 
         } catch (Exception e) {

@@ -19,4 +19,5 @@ public class ProductRequest {
     private Long categoryId;
     private Long storeId;
     private Boolean active;
+    private Integer lowStockThreshold; // Maps to reorderLevel in Product entity
 }

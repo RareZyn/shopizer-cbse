@@ -466,33 +466,6 @@ public class SwaggerServlet extends HttpServlet {
           "204": { "description": "Category deleted" }
         }
       }
-    },
-    "/categories/{id}/subcategories": {
-      "get": {
-        "tags": ["Catalog"],
-        "summary": "Get subcategories",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "integer", "format": "int64" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Category" }
-                }
-              }
-            }
-          }
-        }
-      }
     },""";
     }
 
@@ -1802,19 +1775,50 @@ public class SwaggerServlet extends HttpServlet {
           "price": { "type": "number", "format": "double" },
           "stockQuantity": { "type": "integer" },
           "sku": { "type": "string" },
-          "categoryId": { "type": "integer", "format": "int64" }
+          "imageUrl": { "type": "string" },
+          "categoryId": { "type": "integer", "format": "int64" },
+          "categoryName": { "type": "string" },
+          "storeId": { "type": "integer", "format": "int64" },
+          "storeName": { "type": "string" },
+          "active": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ProductResponse": {
+        "type": "object",
+        "description": "Product response with full details",
+        "properties": {
+          "id": { "type": "integer", "format": "int64", "description": "Product ID" },
+          "name": { "type": "string", "description": "Product name" },
+          "description": { "type": "string", "description": "Product description" },
+          "price": { "type": "number", "format": "double", "description": "Product price" },
+          "stockQuantity": { "type": "integer", "description": "Current stock quantity" },
+          "sku": { "type": "string", "description": "Stock Keeping Unit" },
+          "imageUrl": { "type": "string", "description": "Product image URL" },
+          "categoryId": { "type": "integer", "format": "int64", "description": "Category ID" },
+          "categoryName": { "type": "string", "description": "Category name" },
+          "storeId": { "type": "integer", "format": "int64", "description": "Store ID" },
+          "storeName": { "type": "string", "description": "Store name" },
+          "active": { "type": "boolean", "description": "Whether product is active" },
+          "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" },
+          "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
         }
       },
       "ProductRequest": {
         "type": "object",
-        "required": ["name", "price", "stockQuantity", "sku"],
+        "required": ["name", "price", "sku", "storeId"],
         "properties": {
-          "name": { "type": "string" },
-          "description": { "type": "string" },
-          "price": { "type": "number", "format": "double" },
-          "stockQuantity": { "type": "integer" },
-          "sku": { "type": "string" },
-          "categoryId": { "type": "integer", "format": "int64" }
+          "name": { "type": "string", "description": "Product name" },
+          "description": { "type": "string", "description": "Product description" },
+          "price": { "type": "number", "format": "double", "description": "Product price", "minimum": 0 },
+          "stockQuantity": { "type": "integer", "description": "Stock quantity", "minimum": 0, "default": 0 },
+          "sku": { "type": "string", "description": "Stock Keeping Unit (unique identifier)" },
+          "imageUrl": { "type": "string", "description": "Product image URL" },
+          "categoryId": { "type": "integer", "format": "int64", "description": "Category ID (optional)" },
+          "storeId": { "type": "integer", "format": "int64", "description": "Store ID (required)" },
+          "active": { "type": "boolean", "description": "Whether product is active", "default": true },
+          "lowStockThreshold": { "type": "integer", "description": "Low stock threshold (reorder level)", "minimum": 0, "default": 10 }
         }
       },
       "Category": {
@@ -1833,9 +1837,9 @@ public class SwaggerServlet extends HttpServlet {
         "type": "object",
         "required": ["name"],
         "properties": {
-          "name": { "type": "string", "description": "Category name" },
-          "description": { "type": "string", "description": "Category description" },
-          "parentId": { "type": "integer", "format": "int64", "description": "Parent category ID for subcategories" }
+          "name": { "type": "string", "description": "Category name (required)" },
+          "description": { "type": "string", "description": "Category description (optional)" },
+          "parentId": { "type": "integer", "format": "int64", "description": "Parent category ID for subcategories (optional - omit for root categories)" }
         }
       },
       "CartResponse": {
