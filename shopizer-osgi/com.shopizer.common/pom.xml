@@ -39,6 +39,13 @@
             <version>3.1.0</version>
         </dependency>
 
+        <!-- Jakarta Validation API -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
         <!-- JPA & Hibernate -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
@@ -119,6 +126,7 @@
                             com.shopizer.common.dto;-noimport:=true,
                             com.shopizer.common.config;-noimport:=true,
                             jakarta.persistence.*;-split-package:=merge-first,
+                            jakarta.validation.*;-split-package:=merge-first,
                             org.hibernate.*;-split-package:=merge-first,
                             org.springframework.*;-split-package:=merge-first,
                             io.jsonwebtoken.*;-split-package:=merge-first,
@@ -129,6 +137,7 @@
                         </Export-Package>
                         <Import-Package>
                             jakarta.persistence.*;resolution:=optional,
+                            jakarta.validation.*;resolution:=optional,
                             org.hibernate.*;resolution:=optional,
                             org.springframework.*;resolution:=optional,
                             io.jsonwebtoken.*;resolution:=optional,

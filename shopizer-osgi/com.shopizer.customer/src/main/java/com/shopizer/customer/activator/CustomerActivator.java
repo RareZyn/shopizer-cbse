@@ -7,6 +7,8 @@ import com.shopizer.customer.repository.AddressRepository;
 import com.shopizer.customer.repository.AddressRepositoryImpl;
 import com.shopizer.customer.repository.CustomerRepository;
 import com.shopizer.customer.repository.CustomerRepositoryImpl;
+import com.shopizer.customer.repository.PaymentRepository;
+import com.shopizer.customer.repository.PaymentRepositoryImpl;
 import jakarta.persistence.EntityManagerFactory;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -40,6 +42,7 @@ public class CustomerActivator implements BundleActivator {
         // Initialize JPA repositories with EntityManagerFactory
         CustomerRepository customerRepository = new CustomerRepositoryImpl(entityManagerFactory);
         AddressRepository addressRepository = new AddressRepositoryImpl(entityManagerFactory);
+        PaymentRepository paymentRepository = new PaymentRepositoryImpl(entityManagerFactory);
         logger.info("Repository implementations created successfully");
 
         // Initialize JWT token provider
@@ -52,6 +55,7 @@ public class CustomerActivator implements BundleActivator {
         CustomerService customerService = new CustomerServiceImpl(
             customerRepository,
             addressRepository,
+            paymentRepository,
             jwtTokenProvider
         );
 

@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1768787092925
+Bnd-LastModified: 1769059406524
 Build-Jdk-Spec: 21
 Bundle-Activator: com.shopizer.customer.activator.CustomerActivator
 Bundle-Description: Customer management, authentication, and profile ser
@@ -17,10 +17,11 @@ Import-Package: com.shopizer.common.entity;version="[1.0,2)",com.shopize
  [1.0,2)",org.osgi.framework;version="[1.10,2)",org.slf4j;version="[2.0,
  3)",org.springframework.data.jpa.repository;version="[1.0,2)",jakarta.p
  ersistence;version="[3.1,4)",com.shopizer.customer.api,com.shopizer.cus
- tomer.dto,java.io,java.lang,java.lang.invoke,java.security,java.time,ja
- va.util,java.util.function,java.util.stream,org.springframework.data.do
- main;version="[1.0,2)",org.springframework.data.repository.query;versio
- n="[1.0,2)",org.springframework.stereotype;version="[1.0,2)",org.osgi.u
- til.tracker;version="[1.5,2)",io.jsonwebtoken;version="[0.12,1)"
+ tomer.dto,java.io,java.lang,java.lang.invoke,java.math,java.security,ja
+ va.time,java.util,java.util.function,java.util.stream,org.springframewo
+ rk.data.domain;version="[1.0,2)",org.springframework.data.repository.qu
+ ery;version="[1.0,2)",org.springframework.stereotype;version="[1.0,2)",
+ org.osgi.util.tracker;version="[1.5,2)",io.jsonwebtoken;version="[0.12,
+ 1)"
 Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=21))"
 Tool: Bnd-6.3.1.202206071316

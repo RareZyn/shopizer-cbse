@@ -3,3 +3,17 @@ springboot/src/main/resources/application.properties
 .fake
 shopizer-osgi/com.shopizer.common/src/main/resources/database.properties
 shopizer-osgi/com.shopizer.common/target/classes/database.properties
+
+# Build artifacts (Maven)
+**/target/
+
+# OSGi runtime cache
+**/felix-cache/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/

@@ -37,6 +37,41 @@ public interface MerchantService {
      */
     AuthResponse login(LoginRequest request);
 
+    /**
+     * Get all merchants
+     * FR-015: Merchant Management
+     *
+     * @return List of all merchant profiles
+     */
+    List<MerchantProfileResponse> getAllMerchants();
+
+    /**
+     * Get merchant by ID
+     * FR-015: Merchant Management
+     *
+     * @param merchantId Merchant ID
+     * @return Merchant profile
+     */
+    MerchantProfileResponse getMerchantById(Long merchantId);
+
+    /**
+     * Update merchant profile
+     * FR-015: Merchant Management
+     *
+     * @param merchantId Merchant ID
+     * @param request Updated merchant details
+     * @return Updated merchant profile
+     */
+    MerchantProfileResponse updateMerchant(Long merchantId, MerchantUpdateRequest request);
+
+    /**
+     * Delete merchant
+     * FR-015: Merchant Management
+     *
+     * @param merchantId Merchant ID
+     */
+    void deleteMerchant(Long merchantId);
+
 
 
     // ========== Store and Inventory Management (FR-016) ==========
@@ -102,6 +137,37 @@ public interface MerchantService {
      * @return List of stores
      */
     List<MerchantStoreResponse> listStores(Long merchantId);
+
+    /**
+     * Get specific store for a merchant
+     * FR-016: Store Management
+     *
+     * @param merchantId Merchant ID
+     * @param storeId Store ID
+     * @return Store details
+     */
+    MerchantStoreResponse getStoreByMerchantIdAndStoreId(Long merchantId, Long storeId);
+
+    /**
+     * Create store for specific merchant
+     * FR-016: Store Management
+     *
+     * @param merchantId Merchant ID
+     * @param request Store details
+     * @return Created store
+     */
+    MerchantStoreResponse createStoreForMerchant(Long merchantId, MerchantStoreRequest request);
+
+    /**
+     * Update store for specific merchant
+     * FR-016: Store Management
+     *
+     * @param merchantId Merchant ID
+     * @param storeId Store ID
+     * @param request Updated store details
+     * @return Updated store
+     */
+    MerchantStoreResponse updateStoreForMerchant(Long merchantId, Long storeId, MerchantStoreRequest request);
 
     /**
      * Delete a store

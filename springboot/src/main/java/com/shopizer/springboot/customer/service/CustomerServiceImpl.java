@@ -2,7 +2,9 @@ package com.shopizer.springboot.customer.service;
 
 import com.shopizer.springboot.common.util.JwtTokenProvider;
 import com.shopizer.springboot.customer.dto.*;
+import com.shopizer.springboot.customer.entity.Address;
 import com.shopizer.springboot.customer.entity.Customer;
+import com.shopizer.springboot.customer.repository.AddressRepository;
 import com.shopizer.springboot.customer.repository.CustomerRepository;
 import com.shopizer.springboot.payment.entity.Payment;
 import com.shopizer.springboot.payment.repository.PaymentRepository;
@@ -27,14 +29,17 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
     private final PaymentRepository paymentRepository;
+    private final AddressRepository addressRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final BCryptPasswordEncoder passwordEncoder;
 
     public CustomerServiceImpl(CustomerRepository customerRepository,
                                PaymentRepository paymentRepository,
+                               AddressRepository addressRepository,
                                JwtTokenProvider jwtTokenProvider) {
         this.customerRepository = customerRepository;
         this.paymentRepository = paymentRepository;
+        this.addressRepository = addressRepository;
         this.jwtTokenProvider = jwtTokenProvider;
         this.passwordEncoder = new BCryptPasswordEncoder();
     }
@@ -274,6 +279,156 @@ public class CustomerServiceImpl implements CustomerService {
         response.setStatus(customer.getStatus());
         response.setLastLoginAt(customer.getLastLoginAt());
         response.setCreatedAt(customer.getCreatedAt());
+        return response;
+    }
+
+    // ==================== Password Management ====================
+
+    @Override
+    @Transactional
+    public void changePassword(Long customerId, PasswordChangeRequest request) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+
+        // Verify current password
+        if (!passwordEncoder.matches(request.getCurrentPassword(), customer.getPasswordHash())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        // Validate new password
+        if (request.getNewPassword() == null || request.getNewPassword().length() < 8) {
+            throw new IllegalArgumentException("New password must be at least 8 characters");
+        }
+
+        // Verify new password confirmation
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("New password and confirmation do not match");
+        }
+
+        // Update password
+        customer.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        customerRepository.save(customer);
+    }
+
+    // ==================== Address Management ====================
+
+    @Override
+    @Transactional
+    public AddressResponse addAddress(Long customerId, AddressRequest request) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+
+        // If this is set as default, unset all other default addresses
+        if (Boolean.TRUE.equals(request.getIsDefault())) {
+            addressRepository.unsetDefaultForCustomer(customerId);
+        }
+
+        Address address = new Address();
+        address.setCustomer(customer);
+        address.setRecipientName(customer.getFirstName() + " " + customer.getLastName());
+        address.setAddressLine1(request.getStreet());
+        address.setAddressLine2(request.getStreet2());
+        address.setCity(request.getCity());
+        address.setState(request.getState());
+        address.setPostalCode(request.getPostalCode());
+        address.setCountry(request.getCountry());
+        address.setPhone(request.getPhone());
+        address.setIsDefault(Boolean.TRUE.equals(request.getIsDefault()));
+
+        Address savedAddress = addressRepository.save(address);
+        return mapToAddressResponse(savedAddress);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AddressResponse getAddressById(Long customerId, Long addressId) {
+        Address address = addressRepository.findByIdAndCustomerId(addressId, customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Address not found or does not belong to this customer"));
+        return mapToAddressResponse(address);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AddressResponse> getAddresses(Long customerId) {
+        if (!customerRepository.existsById(customerId)) {
+            throw new IllegalArgumentException("Customer not found");
+        }
+
+        List<Address> addresses = addressRepository.findByCustomerId(customerId);
+        return addresses.stream()
+                .map(this::mapToAddressResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public AddressResponse updateAddress(Long customerId, Long addressId, AddressRequest request) {
+        Address address = addressRepository.findByIdAndCustomerId(addressId, customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Address not found or does not belong to this customer"));
+
+        // If this is being set as default, unset all other default addresses
+        if (Boolean.TRUE.equals(request.getIsDefault()) && !address.getIsDefault()) {
+            addressRepository.unsetDefaultForCustomer(customerId);
+        }
+
+        address.setAddressLine1(request.getStreet());
+        address.setAddressLine2(request.getStreet2());
+        address.setCity(request.getCity());
+        address.setState(request.getState());
+        address.setPostalCode(request.getPostalCode());
+        address.setCountry(request.getCountry());
+        address.setPhone(request.getPhone());
+        address.setIsDefault(Boolean.TRUE.equals(request.getIsDefault()));
+
+        Address updatedAddress = addressRepository.save(address);
+        return mapToAddressResponse(updatedAddress);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAddress(Long customerId, Long addressId) {
+        Address address = addressRepository.findByIdAndCustomerId(addressId, customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Address not found or does not belong to this customer"));
+
+        boolean wasDefault = address.getIsDefault();
+        addressRepository.delete(address);
+
+        // If deleted address was default, set first remaining address as default
+        if (wasDefault) {
+            List<Address> remainingAddresses = addressRepository.findByCustomerId(customerId);
+            if (!remainingAddresses.isEmpty()) {
+                Address firstAddress = remainingAddresses.get(0);
+                firstAddress.setIsDefault(true);
+                addressRepository.save(firstAddress);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void setDefaultAddress(Long customerId, Long addressId) {
+        Address address = addressRepository.findByIdAndCustomerId(addressId, customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Address not found or does not belong to this customer"));
+
+        // Unset all other default addresses
+        addressRepository.unsetDefaultForCustomer(customerId);
+
+        // Set this address as default
+        address.setIsDefault(true);
+        addressRepository.save(address);
+    }
+
+    private AddressResponse mapToAddressResponse(Address address) {
+        AddressResponse response = new AddressResponse();
+        response.setId(address.getId());
+        response.setStreet(address.getAddressLine1());
+        response.setStreet2(address.getAddressLine2());
+        response.setCity(address.getCity());
+        response.setState(address.getState());
+        response.setPostalCode(address.getPostalCode());
+        response.setCountry(address.getCountry());
+        response.setPhone(address.getPhone());
+        response.setIsDefault(address.getIsDefault());
         return response;
     }
 }

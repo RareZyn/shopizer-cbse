@@ -3,6 +3,7 @@ package com.shopizer.springboot.cart.service;
 import com.shopizer.springboot.cart.dto.CartItemRequest;
 import com.shopizer.springboot.cart.dto.CartItemResponse;
 import com.shopizer.springboot.cart.dto.CartResponse;
+import com.shopizer.springboot.cart.dto.CartValidationResponse;
 import com.shopizer.springboot.cart.entity.Cart;
 import com.shopizer.springboot.cart.entity.CartItem;
 import com.shopizer.springboot.cart.repository.CartItemRepository;
@@ -195,7 +196,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void clearCart(Long cartId) {
-        Cart cart = cartRepository.findById(cartId)
+        cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found with id: " + cartId));
         cartItemRepository.deleteByCartId(cartId);
     }
@@ -249,6 +250,7 @@ public class CartServiceImpl implements CartService {
             }
 
             item.setQuantity(newQuantity);
+            item.setPrice(item.getUnitPrice().multiply(new java.math.BigDecimal(newQuantity)));
             return cartItemRepository.save(item);
         } else {
             // Step 7: Create new cart item
@@ -257,6 +259,7 @@ public class CartServiceImpl implements CartService {
             newItem.setProductId(product.getId());
             newItem.setQuantity(request.getQuantity());
             newItem.setUnitPrice(product.getPrice());
+            newItem.setPrice(product.getPrice().multiply(new java.math.BigDecimal(request.getQuantity())));
 
             // Step 8: Save to database (FR-009)
             return cartItemRepository.save(newItem);
@@ -280,7 +283,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartItem updateCartItemQuantity(Long cartId, Long itemId, Integer quantity) {
         // Step 1: Validate cart exists
-        Cart cart = cartRepository.findById(cartId)
+        cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found with id: " + cartId));
 
         // Step 2: Validate cart item exists
@@ -311,6 +314,7 @@ public class CartServiceImpl implements CartService {
 
         // Step 5: Update quantity
         item.setQuantity(quantity);
+        item.setPrice(item.getUnitPrice().multiply(new java.math.BigDecimal(quantity)));
 
         // Step 6: Save to database (FR-009)
         return cartItemRepository.save(item);
@@ -322,7 +326,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public void removeItemFromCart(Long cartId, Long itemId) {
         // Validate cart exists
-        Cart cart = cartRepository.findById(cartId)
+        cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found with id: " + cartId));
 
         // Validate cart item exists
@@ -350,7 +354,7 @@ public class CartServiceImpl implements CartService {
      */
     @Override
     public BigDecimal getCartTotal(Long cartId) {
-        Cart cart = cartRepository.findById(cartId)
+        cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found with id: " + cartId));
 
         List<CartItem> items = cartItemRepository.findByCartId(cartId);
@@ -379,6 +383,83 @@ public class CartServiceImpl implements CartService {
     public CartResponse getCartResponseByCustomerId(Long customerId) {
         Cart cart = getOrCreateCartByCustomerId(customerId);
         return mapToCartResponse(cart);
+    }
+
+    /**
+     * Validate cart before checkout
+     * FR-008: Validate product availability
+     */
+    @Override
+    public CartValidationResponse validateCart(Long customerId) {
+        CartValidationResponse validation = CartValidationResponse.valid();
+
+        try {
+            Cart cart = cartRepository.findByCustomerId(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for customer: " + customerId));
+
+            List<CartItem> items = cartItemRepository.findByCartId(cart.getId());
+
+            if (items.isEmpty()) {
+                validation.addError("Cart is empty");
+                return validation;
+            }
+
+            // Validate each item
+            for (CartItem item : items) {
+                try {
+                    Product product = productRepository.findById(item.getProductId())
+                        .orElse(null);
+
+                    if (product == null) {
+                        validation.addError(String.format("Product with ID %d no longer exists", item.getProductId()));
+                        continue;
+                    }
+
+                    // Check if product is active
+                    if (!product.getIsActive()) {
+                        validation.addError(String.format("Product '%s' is no longer available", product.getName()));
+                    }
+
+                    // Check stock availability
+                    if (product.getStockQuantity() < item.getQuantity()) {
+                        validation.addError(String.format(
+                            "Insufficient stock for '%s'. Available: %d, Required: %d",
+                            product.getName(),
+                            product.getStockQuantity(),
+                            item.getQuantity()
+                        ));
+                    }
+
+                    // Check for low stock warning
+                    if (product.getStockQuantity() < 10 && product.getStockQuantity() >= item.getQuantity()) {
+                        validation.addWarning(String.format(
+                            "Low stock for '%s'. Only %d items remaining",
+                            product.getName(),
+                            product.getStockQuantity()
+                        ));
+                    }
+
+                    // Check price changes
+                    if (item.getUnitPrice().compareTo(product.getPrice()) != 0) {
+                        validation.addWarning(String.format(
+                            "Price changed for '%s'. Cart price: %s, Current price: %s",
+                            product.getName(),
+                            item.getUnitPrice(),
+                            product.getPrice()
+                        ));
+                    }
+
+                } catch (Exception e) {
+                    validation.addError(String.format("Error validating product with ID %d: %s",
+                        item.getProductId(), e.getMessage()));
+                }
+            }
+
+        } catch (ResourceNotFoundException e) {
+            validation.addError("Cart not found");
+        }
+
+        return validation;
     }
 
     // ========== Cart Merge (Guest to Customer) ==========
@@ -410,7 +491,9 @@ public class CartServiceImpl implements CartService {
             if (existingItem.isPresent()) {
                 // Product exists in customer cart - combine quantities
                 CartItem item = existingItem.get();
-                item.setQuantity(item.getQuantity() + guestItem.getQuantity());
+                int newQuantity = item.getQuantity() + guestItem.getQuantity();
+                item.setQuantity(newQuantity);
+                item.setPrice(item.getUnitPrice().multiply(new java.math.BigDecimal(newQuantity)));
                 cartItemRepository.save(item);
             } else {
                 // Add new item to customer cart
@@ -419,6 +502,7 @@ public class CartServiceImpl implements CartService {
                 newItem.setProductId(guestItem.getProductId());
                 newItem.setQuantity(guestItem.getQuantity());
                 newItem.setUnitPrice(guestItem.getUnitPrice());
+                newItem.setPrice(guestItem.getUnitPrice().multiply(new java.math.BigDecimal(guestItem.getQuantity())));
                 cartItemRepository.save(newItem);
             }
         }
@@ -472,9 +556,8 @@ public class CartServiceImpl implements CartService {
         response.setQuantity(item.getQuantity());
         response.setUnitPrice(item.getUnitPrice());
 
-        // Calculate subtotal (FR-007)
-        BigDecimal subtotal = item.getUnitPrice().multiply(new BigDecimal(item.getQuantity()));
-        response.setSubtotal(subtotal);
+        // Set subtotal from stored price (FR-007)
+        response.setSubtotal(item.getPrice());
 
         // Enrich with product details from Catalog module
         Optional<Product> productOpt = productRepository.findById(item.getProductId());

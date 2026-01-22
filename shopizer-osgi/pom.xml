@@ -77,6 +77,14 @@
                 <scope>provided</scope>
             </dependency>
 
+            <!-- OSGI Util Tracker -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.util.tracker</artifactId>
+                <version>1.5.4</version>
+                <scope>provided</scope>
+            </dependency>
+
             <!-- Apache Felix Framework -->
             <dependency>
                 <groupId>org.apache.felix</groupId>

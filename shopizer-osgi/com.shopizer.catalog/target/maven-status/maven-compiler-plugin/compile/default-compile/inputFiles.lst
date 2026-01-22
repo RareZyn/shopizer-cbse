@@ -1,5 +1,7 @@
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.catalog\src\main\java\com\shopizer\catalog\impl\CatalogServiceImpl.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.catalog\src\main\java\com\shopizer\catalog\dto\CategoryResponse.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.catalog\src\main\java\com\shopizer\catalog\repository\ProductRepositoryImpl.java
+C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.catalog\src\main\java\com\shopizer\catalog\repository\CategoryRepositoryImpl.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.catalog\src\main\java\com\shopizer\catalog\activator\CatalogActivator.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.catalog\src\main\java\com\shopizer\catalog\api\CatalogService.java
 C:\Users\razin\OneDrive\Documents\WEBSITE LEARNING\shopizer\shopizer-cbse\shopizer-osgi\com.shopizer.catalog\src\main\java\com\shopizer\catalog\dto\ProductResponse.java

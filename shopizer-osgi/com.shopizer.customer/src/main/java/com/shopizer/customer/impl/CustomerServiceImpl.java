@@ -2,6 +2,7 @@ package com.shopizer.customer.impl;
 
 import com.shopizer.common.entity.Address;
 import com.shopizer.common.entity.Customer;
+import com.shopizer.common.entity.Payment;
 import com.shopizer.common.exception.BadRequestException;
 import com.shopizer.common.exception.ResourceNotFoundException;
 import com.shopizer.common.util.JwtTokenProvider;
@@ -9,6 +10,7 @@ import com.shopizer.customer.api.CustomerService;
 import com.shopizer.customer.dto.*;
 import com.shopizer.customer.repository.AddressRepository;
 import com.shopizer.customer.repository.CustomerRepository;
+import com.shopizer.customer.repository.PaymentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,13 +23,16 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
     private final AddressRepository addressRepository;
+    private final PaymentRepository paymentRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
     public CustomerServiceImpl(CustomerRepository customerRepository,
                               AddressRepository addressRepository,
+                              PaymentRepository paymentRepository,
                               JwtTokenProvider jwtTokenProvider) {
         this.customerRepository = customerRepository;
         this.addressRepository = addressRepository;
+        this.paymentRepository = paymentRepository;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -446,6 +451,36 @@ public class CustomerServiceImpl implements CustomerService {
         response.setCountry(address.getCountry());
         response.setPostalCode(address.getPostalCode());
         response.setIsDefault(address.getIsDefault());
+        return response;
+    }
+
+    @Override
+    public List<PaymentHistoryResponse> getPaymentHistory(Long customerId) {
+        logger.info("Fetching payment history for customer: {}", customerId);
+
+        // Verify customer exists
+        if (!customerRepository.existsById(customerId)) {
+            throw new ResourceNotFoundException("Customer", "id", customerId);
+        }
+
+        List<Payment> payments = paymentRepository.findByCustomerId(customerId);
+
+        return payments.stream()
+            .map(this::mapToPaymentHistoryResponse)
+            .collect(Collectors.toList());
+    }
+
+    private PaymentHistoryResponse mapToPaymentHistoryResponse(Payment payment) {
+        PaymentHistoryResponse response = new PaymentHistoryResponse();
+        response.setId(payment.getId());
+        response.setOrderId(payment.getOrder() != null ? payment.getOrder().getId() : null);
+        response.setPaymentMethod(payment.getPaymentMethod() != null ? payment.getPaymentMethod().toString() : null);
+        response.setGateway(payment.getPaymentMethod() != null ? payment.getPaymentMethod().toString() : null);
+        response.setTransactionId(payment.getTransactionId());
+        response.setAmount(payment.getAmount());
+        response.setCurrency("USD"); // Default currency, could be retrieved from order or payment
+        response.setStatus(payment.getStatus() != null ? payment.getStatus().toString() : null);
+        response.setCreatedAt(payment.getCreatedAt());
         return response;
     }
 }

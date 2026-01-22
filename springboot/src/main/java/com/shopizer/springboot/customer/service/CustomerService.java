@@ -39,4 +39,15 @@ public interface CustomerService {
     // Utility methods
     boolean existsByEmail(String email);
     CustomerResponse mapToResponse(Customer customer);
+
+    // Password management
+    void changePassword(Long customerId, PasswordChangeRequest request);
+
+    // Address management
+    AddressResponse addAddress(Long customerId, AddressRequest request);
+    AddressResponse getAddressById(Long customerId, Long addressId);
+    List<AddressResponse> getAddresses(Long customerId);
+    AddressResponse updateAddress(Long customerId, Long addressId, AddressRequest request);
+    void deleteAddress(Long customerId, Long addressId);
+    void setDefaultAddress(Long customerId, Long addressId);
 }

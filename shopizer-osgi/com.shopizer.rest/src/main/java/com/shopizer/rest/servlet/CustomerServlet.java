@@ -23,6 +23,7 @@ import java.util.List;
  * GET    /api/v1/customers/email/{email}        - Get customer by email
  * GET    /api/v1/customers/{customerId}/profile - Get customer profile (FR-026)
  * PUT    /api/v1/customers/{customerId}/profile - Update customer profile (FR-026)
+ * GET    /api/v1/customers/{customerId}/payments - Get payment history (FR-023)
  * POST   /api/v1/customers/{id}/change-password - Change password
  * POST   /api/v1/customers/{id}/addresses       - Add address
  * GET    /api/v1/customers/{id}/addresses       - Get addresses
@@ -60,6 +61,9 @@ public class CustomerServlet extends BaseServlet {
             } else if (pathInfo.contains("/profile")) {
                 // GET /api/v1/customers/{customerId}/profile
                 handleGetProfile(request, response);
+            } else if (pathInfo.contains("/payments")) {
+                // GET /api/v1/customers/{customerId}/payments
+                handleGetPaymentHistory(request, response);
             } else if (pathInfo.contains("/addresses")) {
                 // GET /api/v1/customers/{id}/addresses
                 handleGetAddresses(request, response);
@@ -166,21 +170,7 @@ public class CustomerServlet extends BaseServlet {
         }
     }
 
-    private void handleGetByEmail(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String email = request.getParameter("email");
-
-        if (email == null || email.isEmpty()) {
-            sendBadRequest(response, "Email is required");
-            return;
-        }
-
-        CustomerResponse customer = customerService.getCustomerByEmail(email);
-        if (customer != null) {
-            sendSuccess(response, customer);
-        } else {
-            sendNotFound(response, "Customer not found with email: " + email);
-        }
-    }
+    // ========== GET Helper Methods ==========
 
     private void handleGetById(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Long customerId = extractIdFromPath(request, "/api/v1/customers");
@@ -212,7 +202,7 @@ public class CustomerServlet extends BaseServlet {
         }
     }
 
-    private void handleUpdateProfile(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void handleGetAddresses(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
 
@@ -223,37 +213,52 @@ public class CustomerServlet extends BaseServlet {
 
         try {
             Long customerId = Long.parseLong(parts[1]);
-            CustomerProfileUpdateRequest updateRequest = readJsonBody(request, CustomerProfileUpdateRequest.class);
-            CustomerResponse updated = customerService.updateProfile(customerId, updateRequest);
-            sendSuccess(response, updated);
+            List<AddressResponse> addresses = customerService.getAddresses(customerId);
+            sendSuccess(response, addresses);
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid customer ID");
         }
     }
 
-    private void handleUpdateCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Long customerId = extractIdFromPath(request, "/api/v1/customers");
+    private void handleGetPaymentHistory(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
 
-        if (customerId == null) {
-            sendBadRequest(response, "Invalid customer ID");
+        if (parts.length < 2) {
+            sendBadRequest(response, "Customer ID is required");
             return;
         }
 
-        CustomerUpdateRequest updateRequest = readJsonBody(request, CustomerUpdateRequest.class);
-        CustomerResponse updated = customerService.updateCustomer(customerId, updateRequest);
-        sendSuccess(response, updated);
+        try {
+            Long customerId = Long.parseLong(parts[1]);
+            List<PaymentHistoryResponse> payments = customerService.getPaymentHistory(customerId);
+            sendSuccess(response, payments);
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid customer ID");
+        }
     }
 
-    private void handleDeleteCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Long customerId = extractIdFromPath(request, "/api/v1/customers");
+    // ========== POST Helper Methods ==========
 
-        if (customerId == null) {
-            sendBadRequest(response, "Invalid customer ID");
+    private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        if (parts.length < 2) {
+            sendBadRequest(response, "Customer ID is required");
             return;
         }
 
-        customerService.deleteCustomer(customerId);
-        sendNoContent(response);
+        try {
+            Long customerId = Long.parseLong(parts[1]);
+            customerService.logout(customerId);
+            sendSuccess(response, new MessageResponse("Logout successful"));
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid customer ID");
+        } catch (Exception e) {
+            logger.error("Error during logout", e);
+            sendInternalError(response, "Error processing logout: " + e.getMessage());
+        }
     }
 
     private void handleChangePassword(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -294,7 +299,9 @@ public class CustomerServlet extends BaseServlet {
         }
     }
 
-    private void handleGetAddresses(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    // ========== PUT Helper Methods ==========
+
+    private void handleUpdateProfile(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
 
@@ -305,11 +312,25 @@ public class CustomerServlet extends BaseServlet {
 
         try {
             Long customerId = Long.parseLong(parts[1]);
-            List<AddressResponse> addresses = customerService.getAddresses(customerId);
-            sendSuccess(response, addresses);
+            CustomerProfileUpdateRequest updateRequest = readJsonBody(request, CustomerProfileUpdateRequest.class);
+            CustomerResponse updated = customerService.updateProfile(customerId, updateRequest);
+            sendSuccess(response, updated);
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid customer ID");
         }
+    }
+
+    private void handleUpdateCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Long customerId = extractIdFromPath(request, "/api/v1/customers");
+
+        if (customerId == null) {
+            sendBadRequest(response, "Invalid customer ID");
+            return;
+        }
+
+        CustomerUpdateRequest updateRequest = readJsonBody(request, CustomerUpdateRequest.class);
+        CustomerResponse updated = customerService.updateCustomer(customerId, updateRequest);
+        sendSuccess(response, updated);
     }
 
     private void handleUpdateAddress(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -327,25 +348,6 @@ public class CustomerServlet extends BaseServlet {
             AddressRequest addressRequest = readJsonBody(request, AddressRequest.class);
             AddressResponse updated = customerService.updateAddress(customerId, addressId, addressRequest);
             sendSuccess(response, updated);
-        } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid customer ID or address ID");
-        }
-    }
-
-    private void handleDeleteAddress(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        String[] parts = pathInfo.split("/");
-
-        if (parts.length < 4) {
-            sendBadRequest(response, "Customer ID and Address ID are required");
-            return;
-        }
-
-        try {
-            Long customerId = Long.parseLong(parts[1]);
-            Long addressId = Long.parseLong(parts[3]);
-            customerService.deleteAddress(customerId, addressId);
-            sendNoContent(response);
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid customer ID or address ID");
         }
@@ -370,24 +372,36 @@ public class CustomerServlet extends BaseServlet {
         }
     }
 
-    private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    // ========== DELETE Helper Methods ==========
+
+    private void handleDeleteCustomer(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Long customerId = extractIdFromPath(request, "/api/v1/customers");
+
+        if (customerId == null) {
+            sendBadRequest(response, "Invalid customer ID");
+            return;
+        }
+
+        customerService.deleteCustomer(customerId);
+        sendNoContent(response);
+    }
+
+    private void handleDeleteAddress(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] parts = pathInfo.split("/");
 
-        if (parts.length < 2) {
-            sendBadRequest(response, "Customer ID is required");
+        if (parts.length < 4) {
+            sendBadRequest(response, "Customer ID and Address ID are required");
             return;
         }
 
         try {
             Long customerId = Long.parseLong(parts[1]);
-            customerService.logout(customerId);
-            sendSuccess(response, new MessageResponse("Logout successful"));
+            Long addressId = Long.parseLong(parts[3]);
+            customerService.deleteAddress(customerId, addressId);
+            sendNoContent(response);
         } catch (NumberFormatException e) {
-            sendBadRequest(response, "Invalid customer ID");
-        } catch (Exception e) {
-            logger.error("Error during logout", e);
-            sendInternalError(response, "Error processing logout: " + e.getMessage());
+            sendBadRequest(response, "Invalid customer ID or address ID");
         }
     }
 

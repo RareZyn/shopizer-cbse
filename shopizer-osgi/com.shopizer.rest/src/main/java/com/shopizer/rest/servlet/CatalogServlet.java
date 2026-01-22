@@ -22,6 +22,7 @@ import java.util.List;
  * DELETE /api/v1/products/{id}      - Delete product
  * GET    /api/v1/products/search?q={keyword} - Search products
  * GET    /api/v1/products/category/{id} - Get products by category
+ * GET    /api/v1/products/low-stock     - Get low stock products (FR-005)
  *
  * GET    /api/v1/categories         - Get all categories
  * GET    /api/v1/categories/{id}    - Get category by ID
@@ -51,6 +52,9 @@ public class CatalogServlet extends BaseServlet {
             } else if (pathInfo.contains("/search")) {
                 // GET /api/v1/products/search?q=keyword
                 handleSearch(request, response);
+            } else if (pathInfo.contains("/low-stock")) {
+                // GET /api/v1/products/low-stock
+                handleGetLowStock(request, response);
             } else if (pathInfo.contains("/category/")) {
                 // GET /api/v1/products/category/{id}
                 handleGetByCategory(request, response);
@@ -155,6 +159,8 @@ public class CatalogServlet extends BaseServlet {
         }
     }
 
+    // ========== GET Helper Methods ==========
+
     private void handleGetAll(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String servletPath = request.getServletPath();
 
@@ -242,5 +248,14 @@ public class CatalogServlet extends BaseServlet {
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid parent category ID");
         }
+    }
+
+    /**
+     * FR-005: Get low stock products
+     * Returns products where stockQuantity <= reorderLevel (low_stock_threshold)
+     */
+    private void handleGetLowStock(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        List<ProductResponse> products = catalogService.getLowStockProducts();
+        sendSuccess(response, products);
     }
 }
