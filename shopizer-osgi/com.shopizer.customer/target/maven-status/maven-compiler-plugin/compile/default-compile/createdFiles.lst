@@ -6,12 +6,15 @@ com\shopizer\customer\api\CustomerService.class
 com\shopizer\customer\dto\CustomerLoginRequest.class
 com\shopizer\customer\dto\CustomerResponse.class
 com\shopizer\customer\dto\CustomerAuthResponse.class
+com\shopizer\customer\repository\PaymentRepositoryImpl.class
+com\shopizer\customer\dto\PaymentHistoryResponse.class
 com\shopizer\customer\repository\AddressRepositoryImpl.class
 com\shopizer\customer\repository\CustomerRepositoryImpl.class
 com\shopizer\customer\dto\PasswordChangeRequest.class
 com\shopizer\customer\impl\CustomerServiceImpl.class
 com\shopizer\customer\dto\CustomerUpdateRequest.class
 com\shopizer\customer\dto\CustomerProfileUpdateRequest.class
+com\shopizer\customer\repository\PaymentRepository.class
 com\shopizer\customer\dto\CustomerLoginResponse.class
 com\shopizer\customer\dto\CustomerRegistrationRequest.class
 com\shopizer\customer\repository\AddressRepository.class

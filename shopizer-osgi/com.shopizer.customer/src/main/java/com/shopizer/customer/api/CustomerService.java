@@ -49,4 +49,7 @@ public interface CustomerService {
     void changePassword(Long customerId, PasswordChangeRequest request);
     void deactivateAccount(Long customerId);
     void activateAccount(Long customerId);
+
+    // FR-023: Payment History
+    List<PaymentHistoryResponse> getPaymentHistory(Long customerId);
 }

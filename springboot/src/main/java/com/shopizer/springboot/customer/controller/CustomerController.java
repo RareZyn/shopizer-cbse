@@ -135,4 +135,77 @@ public class CustomerController {
         customerService.deleteCustomer(id);
         return ResponseEntity.noContent().build();
     }
+
+    // ==================== Password Management ====================
+
+    @PostMapping("/{id}/change-password")
+    @Operation(summary = "Change customer password",
+            description = "Allows customer to change their password. Requires current password for verification.")
+    public ResponseEntity<Void> changePassword(
+            @PathVariable Long id,
+            @RequestBody PasswordChangeRequest request) {
+        customerService.changePassword(id, request);
+        return ResponseEntity.ok().build();
+    }
+
+    // ==================== Address Management ====================
+
+    @PostMapping("/{id}/addresses")
+    @Operation(summary = "Add customer address",
+            description = "Allows customer to add a new address. Can be set as default address.")
+    public ResponseEntity<AddressResponse> addAddress(
+            @PathVariable Long id,
+            @RequestBody AddressRequest request) {
+        AddressResponse response = customerService.addAddress(id, request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}/addresses")
+    @Operation(summary = "Get all customer addresses",
+            description = "Retrieves all addresses for a customer.")
+    public ResponseEntity<List<AddressResponse>> getAddresses(@PathVariable Long id) {
+        List<AddressResponse> addresses = customerService.getAddresses(id);
+        return ResponseEntity.ok(addresses);
+    }
+
+    @GetMapping("/{id}/addresses/{addressId}")
+    @Operation(summary = "Get specific address",
+            description = "Retrieves a specific address by ID for a customer.")
+    public ResponseEntity<AddressResponse> getAddress(
+            @PathVariable Long id,
+            @PathVariable Long addressId) {
+        AddressResponse address = customerService.getAddressById(id, addressId);
+        return ResponseEntity.ok(address);
+    }
+
+    @PutMapping("/{id}/addresses/{addressId}")
+    @Operation(summary = "Update customer address",
+            description = "Updates an existing address for a customer.")
+    public ResponseEntity<AddressResponse> updateAddress(
+            @PathVariable Long id,
+            @PathVariable Long addressId,
+            @RequestBody AddressRequest request) {
+        AddressResponse response = customerService.updateAddress(id, addressId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}/addresses/{addressId}")
+    @Operation(summary = "Delete customer address",
+            description = "Deletes an address for a customer. If it was the default address, another address will be set as default.")
+    public ResponseEntity<Void> deleteAddress(
+            @PathVariable Long id,
+            @PathVariable Long addressId) {
+        customerService.deleteAddress(id, addressId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/addresses/{addressId}/default")
+    @Operation(summary = "Set default address",
+            description = "Sets the specified address as the default address for the customer.")
+    public ResponseEntity<Void> setDefaultAddress(
+            @PathVariable Long id,
+            @PathVariable Long addressId) {
+        customerService.setDefaultAddress(id, addressId);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -23,6 +23,7 @@ import java.util.List;
  * GET    /api/v1/customers/email/{email}        - Get customer by email
  * GET    /api/v1/customers/{customerId}/profile - Get customer profile (FR-026)
  * PUT    /api/v1/customers/{customerId}/profile - Update customer profile (FR-026)
+ * GET    /api/v1/customers/{customerId}/payments - Get payment history (FR-023)
  * POST   /api/v1/customers/{id}/change-password - Change password
  * POST   /api/v1/customers/{id}/addresses       - Add address
  * GET    /api/v1/customers/{id}/addresses       - Get addresses
@@ -60,6 +61,9 @@ public class CustomerServlet extends BaseServlet {
             } else if (pathInfo.contains("/profile")) {
                 // GET /api/v1/customers/{customerId}/profile
                 handleGetProfile(request, response);
+            } else if (pathInfo.contains("/payments")) {
+                // GET /api/v1/customers/{customerId}/payments
+                handleGetPaymentHistory(request, response);
             } else if (pathInfo.contains("/addresses")) {
                 // GET /api/v1/customers/{id}/addresses
                 handleGetAddresses(request, response);
@@ -211,6 +215,24 @@ public class CustomerServlet extends BaseServlet {
             Long customerId = Long.parseLong(parts[1]);
             List<AddressResponse> addresses = customerService.getAddresses(customerId);
             sendSuccess(response, addresses);
+        } catch (NumberFormatException e) {
+            sendBadRequest(response, "Invalid customer ID");
+        }
+    }
+
+    private void handleGetPaymentHistory(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String pathInfo = request.getPathInfo();
+        String[] parts = pathInfo.split("/");
+
+        if (parts.length < 2) {
+            sendBadRequest(response, "Customer ID is required");
+            return;
+        }
+
+        try {
+            Long customerId = Long.parseLong(parts[1]);
+            List<PaymentHistoryResponse> payments = customerService.getPaymentHistory(customerId);
+            sendSuccess(response, payments);
         } catch (NumberFormatException e) {
             sendBadRequest(response, "Invalid customer ID");
         }
