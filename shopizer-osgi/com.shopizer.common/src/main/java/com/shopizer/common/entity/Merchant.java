@@ -20,25 +20,22 @@ public class Merchant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String businessName;
-
-    @Column(unique = true, nullable = false)
-    private String businessRegistrationNumber;
 
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String password;
 
     private String phone;
 
+    @Column(nullable = false)
+    private String status = "ACTIVE";
+
     @OneToMany(mappedBy = "merchant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MerchantStore> stores = new ArrayList<>();
-
-    @Column(nullable = false)
-    private Boolean active = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

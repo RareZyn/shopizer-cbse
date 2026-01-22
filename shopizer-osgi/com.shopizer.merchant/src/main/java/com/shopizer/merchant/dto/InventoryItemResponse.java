@@ -7,12 +7,15 @@ import java.time.LocalDateTime;
 
 @Data
 public class InventoryItemResponse {
-    private Long productId;
-    private String productName;
+    private Long id;
+    private String name;
     private String sku;
-    private Integer stockQuantity;
+    private String description;
     private BigDecimal price;
-    private String categoryName;
-    private Boolean active;
-    private LocalDateTime lastUpdated;
+    private Integer stockQuantity;
+    private Integer lowStockThreshold;
+    private Boolean isActive;
+    private Boolean isLowStock;
+    private LocalDateTime createdAt;    
+    private LocalDateTime updatedAt;
 }

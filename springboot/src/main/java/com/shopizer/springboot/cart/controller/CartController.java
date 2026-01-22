@@ -107,7 +107,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/cart")
-@Tag(name = "Cart Management", description = "Shopping Cart APIs for managing cart items and checkout (FR-006 to FR-009)")
+@Tag(name = "Cart", description = "Shopping Cart APIs for managing cart items and checkout (FR-006 to FR-009)")
 public class CartController {
 
     private final CartService cartService;

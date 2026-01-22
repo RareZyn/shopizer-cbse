@@ -5,6 +5,7 @@ com\shopizer\rest\servlet\CustomerServlet.class
 com\shopizer\rest\servlet\MerchantServlet$StockUpdateRequest.class
 com\shopizer\rest\servlet\OrderServlet$CancelOrderRequest.class
 com\shopizer\rest\servlet\MerchantServlet.class
+com\shopizer\rest\servlet\MerchantServlet$ErrorResponse.class
 com\shopizer\rest\servlet\MerchantServlet$MessageResponse.class
 com\shopizer\rest\servlet\OrderServlet$UpdateStatusRequest.class
 com\shopizer\rest\servlet\CartServlet$CountResponse.class

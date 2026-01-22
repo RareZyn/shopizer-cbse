@@ -22,21 +22,21 @@
         <dependency>
             <groupId>com.shopizer</groupId>
             <artifactId>com.shopizer.common</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.0</version>
         </dependency>
 
         <!-- Catalog Module (for product management) -->
         <dependency>
             <groupId>com.shopizer</groupId>
             <artifactId>com.shopizer.catalog</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.0</version>
         </dependency>
 
         <!-- Order Module (for sales reports) -->
         <dependency>
             <groupId>com.shopizer</groupId>
             <artifactId>com.shopizer.order</artifactId>
-            <version>${project.version}</version>
+            <version>1.0.0</version>
         </dependency>
 
         <!-- OSGI Core -->
@@ -78,6 +78,26 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
+
+        <!-- Jackson for JSON processing -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+
+        <!-- PostgreSQL JDBC (for Supabase direct JDBC fallback) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+
+        <!-- BCrypt for password hashing -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -97,6 +117,7 @@
                         <Import-Package>
                             com.shopizer.common.entity,
                             com.shopizer.common.exception,
+                            com.shopizer.common.util,
                             com.shopizer.catalog.api,
                             com.shopizer.catalog.dto,
                             com.shopizer.order.api,
@@ -106,12 +127,17 @@
                             org.slf4j,
                             org.springframework.data.jpa.repository,
                             jakarta.persistence,
+                            com.fasterxml.jackson.annotation,
                             *
                         </Import-Package>
+                        <Embed-Dependency>
+                            jbcrypt;inline=true
+                        </Embed-Dependency>
                         <Private-Package>
                             com.shopizer.merchant.impl,
                             com.shopizer.merchant.repository,
-                            com.shopizer.merchant.activator
+                            com.shopizer.merchant.activator,
+                            org.mindrot.jbcrypt
                         </Private-Package>
                     </instructions>
                 </configuration>

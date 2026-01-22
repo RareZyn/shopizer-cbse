@@ -21,6 +21,7 @@
         <class>com.shopizer.common.entity.ShippingOption</class>
         <class>com.shopizer.common.entity.Merchant</class>
         <class>com.shopizer.common.entity.MerchantStore</class>
+        <class>com.shopizer.common.entity.ProductView</class>
 
         <!-- Exclude unlisted classes -->
         <exclude-unlisted-classes>false</exclude-unlisted-classes>

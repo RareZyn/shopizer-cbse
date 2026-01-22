@@ -95,7 +95,8 @@ public class JpaConfig {
             "com.shopizer.common.entity.Payment",
             "com.shopizer.common.entity.ShippingOption",
             "com.shopizer.common.entity.Merchant",
-            "com.shopizer.common.entity.MerchantStore"
+            "com.shopizer.common.entity.MerchantStore",
+            "com.shopizer.common.entity.ProductView"
         );
     }
 
