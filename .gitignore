@@ -1,2 +1,4 @@
 notes/
 springboot/src/main/resources/application.properties
+springboot/.gitignore
+shopizer-osgi/com.shopizer.common/src/main/resources/database.properties
