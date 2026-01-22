@@ -119,7 +119,19 @@ public class SwaggerServlet extends HttpServlet {
     }
 
     private String generateOpenAPIJson(OpenAPI openAPI) {
-        // Simplified OpenAPI JSON generation
+        // Build JSON using StringBuilder to avoid "constant string too long" error
+        StringBuilder json = new StringBuilder();
+        json.append(getOpenAPIHeader());
+        json.append(getCatalogPaths());
+        json.append(getCartPaths());
+        json.append(getCustomerPaths());
+        json.append(getOrderPaths());
+        json.append(getMerchantPaths());
+        json.append(getSchemas());
+        return json.toString();
+    }
+
+    private String getOpenAPIHeader() {
         return """
 {
   "openapi": "3.0.3",
@@ -149,7 +161,11 @@ public class SwaggerServlet extends HttpServlet {
     { "name": "Customer", "description": "Customer authentication and profiles" },
     { "name": "Merchant", "description": "Store management and analytics" }
   ],
-  "paths": {
+  "paths": {""";
+    }
+
+    private String getCatalogPaths() {
+        return """
     "/products": {
       "get": {
         "tags": ["Catalog"],
@@ -261,6 +277,85 @@ public class SwaggerServlet extends HttpServlet {
         }
       }
     },
+    "/products/search": {
+      "get": {
+        "tags": ["Catalog"],
+        "summary": "Search products by keyword",
+        "description": "FR-003: Search products by keyword.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Search keyword",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Product" }
+                }
+              }
+            }
+          },
+          "400": { "description": "Search keyword is required" }
+        }
+      }
+    },
+    "/products/category/{categoryId}": {
+      "get": {
+        "tags": ["Catalog"],
+        "summary": "Browse products by category",
+        "description": "FR-004: Get all products in a specific category.",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Product" }
+                }
+              }
+            }
+          },
+          "404": { "description": "Category not found" }
+        }
+      }
+    },
+    "/products/low-stock": {
+      "get": {
+        "tags": ["Catalog"],
+        "summary": "Get low stock products",
+        "description": "FR-005: Get products with low stock levels.",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Product" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/categories": {
       "get": {
         "tags": ["Catalog"],
@@ -278,8 +373,132 @@ public class SwaggerServlet extends HttpServlet {
             }
           }
         }
+      },
+      "post": {
+        "tags": ["Catalog"],
+        "summary": "Create a new category",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CategoryRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Category created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Category" }
+              }
+            }
+          }
+        }
       }
     },
+    "/categories/{id}": {
+      "get": {
+        "tags": ["Catalog"],
+        "summary": "Get category by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Category" }
+              }
+            }
+          },
+          "404": { "description": "Category not found" }
+        }
+      },
+      "put": {
+        "tags": ["Catalog"],
+        "summary": "Update category",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CategoryRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Category" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Catalog"],
+        "summary": "Delete category",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Category deleted" }
+        }
+      }
+    },
+    "/categories/{id}/subcategories": {
+      "get": {
+        "tags": ["Catalog"],
+        "summary": "Get subcategories",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Category" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },""";
+    }
+
+    private String getCartPaths() {
+        return """
+
     "/cart": {
       "get": {
         "tags": ["Cart"],
@@ -543,7 +762,12 @@ public class SwaggerServlet extends HttpServlet {
           "400": { "description": "Both anonymousCartId and customerId are required" }
         }
       }
-    },
+    },""";
+    }
+
+    private String getCustomerPaths() {
+        return """
+
     "/customers": {
       "get": {
         "tags": ["Customer"],
@@ -1046,7 +1270,12 @@ public class SwaggerServlet extends HttpServlet {
           "404": { "description": "Address not found" }
         }
       }
-    },
+    },""";
+    }
+
+    private String getOrderPaths() {
+        return """
+
     "/orders": {
       "post": {
         "tags": ["Order"],
@@ -1077,7 +1306,12 @@ public class SwaggerServlet extends HttpServlet {
           }
         }
       }
-    },
+    },""";
+    }
+
+    private String getMerchantPaths() {
+        return """
+
     "/merchants/register": {
       "post": {
         "tags": ["Merchant"],
@@ -1547,7 +1781,16 @@ public class SwaggerServlet extends HttpServlet {
         }
       }
     }
-  },
+  },""";
+    }
+
+    private String getSchemas() {
+        return getSchemasPart1() + getSchemasPart2();
+    }
+
+    private String getSchemasPart1() {
+        return """
+
   "components": {
     "schemas": {
       "Product": {
@@ -1579,7 +1822,20 @@ public class SwaggerServlet extends HttpServlet {
         "properties": {
           "id": { "type": "integer", "format": "int64" },
           "name": { "type": "string" },
-          "description": { "type": "string" }
+          "description": { "type": "string" },
+          "parentId": { "type": "integer", "format": "int64" },
+          "parentName": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CategoryRequest": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "description": "Category name" },
+          "description": { "type": "string", "description": "Category description" },
+          "parentId": { "type": "integer", "format": "int64", "description": "Parent category ID for subcategories" }
         }
       },
       "CartResponse": {
@@ -1717,7 +1973,12 @@ public class SwaggerServlet extends HttpServlet {
           "email": { "type": "string" },
           "password": { "type": "string" }
         }
-      },
+      },""";
+    }
+
+    private String getSchemasPart2() {
+        return """
+
       "CustomerLoginResponse": {
         "type": "object",
         "properties": {

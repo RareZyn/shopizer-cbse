@@ -29,4 +29,10 @@ public interface CatalogService {
     // Inventory Management
     void updateStock(Long productId, int quantity);
     boolean checkStock(Long productId, int quantity);
+
+    /**
+     * FR-005: Get products with low stock levels
+     * Returns products where stockQuantity <= reorderLevel (low_stock_threshold)
+     */
+    List<ProductResponse> getLowStockProducts();
 }

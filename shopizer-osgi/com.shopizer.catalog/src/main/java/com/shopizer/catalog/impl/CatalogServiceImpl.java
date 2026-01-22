@@ -209,6 +209,15 @@ public class CatalogServiceImpl implements CatalogService {
         return product.getStockQuantity() >= quantity;
     }
 
+    @Override
+    public List<ProductResponse> getLowStockProducts() {
+        logger.info("Fetching low stock products");
+        List<Product> products = productRepository.findLowStockProducts();
+        return products.stream()
+                .map(this::mapToProductResponse)
+                .collect(Collectors.toList());
+    }
+
     // Helper methods
     private ProductResponse mapToProductResponse(Product product) {
         ProductResponse response = new ProductResponse();

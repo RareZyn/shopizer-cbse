@@ -529,6 +529,27 @@ public class ProductRepositoryImpl implements ProductRepository {
         }
     }
 
+    /**
+     * FR-005: Find products with low stock
+     * Returns products where stockQuantity <= reorderLevel (low_stock_threshold)
+     * If reorderLevel is null, uses default threshold of 10
+     */
+    @Override
+    public List<Product> findLowStockProducts() {
+        try {
+            TypedQuery<Product> query = entityManager.createQuery(
+                "SELECT p FROM Product p WHERE p.stockQuantity <= COALESCE(p.reorderLevel, 10) ORDER BY p.stockQuantity ASC",
+                Product.class
+            );
+            List<Product> results = query.getResultList();
+            logger.debug("Found {} low stock products", results.size());
+            return results;
+        } catch (Exception e) {
+            logger.error("Error finding low stock products: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to retrieve low stock products", e);
+        }
+    }
+
     // ========== Spring Data JPA Query By Example Methods ==========
 
     /**

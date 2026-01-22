@@ -12,4 +12,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategoryId(Long categoryId);
     List<Product> findByStoreId(Long storeId);
     List<Product> findByActiveTrue();
+
+    /**
+     * FR-005: Find products with low stock
+     * Returns products where stockQuantity <= reorderLevel (low_stock_threshold)
+     */
+    List<Product> findLowStockProducts();
 }
