@@ -3,6 +3,7 @@ package com.shopizer.springboot.cart.service;
 import com.shopizer.springboot.cart.dto.CartItemRequest;
 import com.shopizer.springboot.cart.dto.CartItemResponse;
 import com.shopizer.springboot.cart.dto.CartResponse;
+import com.shopizer.springboot.cart.dto.CartValidationResponse;
 import com.shopizer.springboot.cart.entity.Cart;
 import com.shopizer.springboot.cart.entity.CartItem;
 import com.shopizer.springboot.cart.repository.CartItemRepository;
@@ -382,6 +383,83 @@ public class CartServiceImpl implements CartService {
     public CartResponse getCartResponseByCustomerId(Long customerId) {
         Cart cart = getOrCreateCartByCustomerId(customerId);
         return mapToCartResponse(cart);
+    }
+
+    /**
+     * Validate cart before checkout
+     * FR-008: Validate product availability
+     */
+    @Override
+    public CartValidationResponse validateCart(Long customerId) {
+        CartValidationResponse validation = CartValidationResponse.valid();
+
+        try {
+            Cart cart = cartRepository.findByCustomerId(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for customer: " + customerId));
+
+            List<CartItem> items = cartItemRepository.findByCartId(cart.getId());
+
+            if (items.isEmpty()) {
+                validation.addError("Cart is empty");
+                return validation;
+            }
+
+            // Validate each item
+            for (CartItem item : items) {
+                try {
+                    Product product = productRepository.findById(item.getProductId())
+                        .orElse(null);
+
+                    if (product == null) {
+                        validation.addError(String.format("Product with ID %d no longer exists", item.getProductId()));
+                        continue;
+                    }
+
+                    // Check if product is active
+                    if (!product.getIsActive()) {
+                        validation.addError(String.format("Product '%s' is no longer available", product.getName()));
+                    }
+
+                    // Check stock availability
+                    if (product.getStockQuantity() < item.getQuantity()) {
+                        validation.addError(String.format(
+                            "Insufficient stock for '%s'. Available: %d, Required: %d",
+                            product.getName(),
+                            product.getStockQuantity(),
+                            item.getQuantity()
+                        ));
+                    }
+
+                    // Check for low stock warning
+                    if (product.getStockQuantity() < 10 && product.getStockQuantity() >= item.getQuantity()) {
+                        validation.addWarning(String.format(
+                            "Low stock for '%s'. Only %d items remaining",
+                            product.getName(),
+                            product.getStockQuantity()
+                        ));
+                    }
+
+                    // Check price changes
+                    if (item.getUnitPrice().compareTo(product.getPrice()) != 0) {
+                        validation.addWarning(String.format(
+                            "Price changed for '%s'. Cart price: %s, Current price: %s",
+                            product.getName(),
+                            item.getUnitPrice(),
+                            product.getPrice()
+                        ));
+                    }
+
+                } catch (Exception e) {
+                    validation.addError(String.format("Error validating product with ID %d: %s",
+                        item.getProductId(), e.getMessage()));
+                }
+            }
+
+        } catch (ResourceNotFoundException e) {
+            validation.addError("Cart not found");
+        }
+
+        return validation;
     }
 
     // ========== Cart Merge (Guest to Customer) ==========

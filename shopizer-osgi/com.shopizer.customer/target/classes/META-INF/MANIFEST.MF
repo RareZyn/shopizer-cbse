@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1769051377951
+Bnd-LastModified: 1769052793189
 Build-Jdk-Spec: 21
 Bundle-Activator: com.shopizer.customer.activator.CustomerActivator
 Bundle-Description: Customer management, authentication, and profile ser

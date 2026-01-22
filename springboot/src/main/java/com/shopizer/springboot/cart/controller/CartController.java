@@ -1,8 +1,10 @@
 package com.shopizer.springboot.cart.controller;
 
 import com.shopizer.springboot.cart.dto.CartItemRequest;
+import com.shopizer.springboot.cart.dto.CartItemRequestWithCustomer;
 import com.shopizer.springboot.cart.dto.CartRequest;
 import com.shopizer.springboot.cart.dto.CartResponse;
+import com.shopizer.springboot.cart.dto.CartValidationResponse;
 import com.shopizer.springboot.cart.entity.Cart;
 import com.shopizer.springboot.cart.entity.CartItem;
 import com.shopizer.springboot.cart.service.CartService;
@@ -17,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * Cart REST Controller
@@ -119,18 +120,25 @@ public class CartController {
     // ========== Cart Management Endpoints ==========
 
     /**
-     * UC05: View Cart - List all carts (Admin function)
+     * UC05: View Cart - List all carts or get cart by customer ID (query param)
      */
     @GetMapping
     @Operation(
-        summary = "Get all carts",
-        description = "FR-006: Retrieve all carts (Admin function). Returns list of all carts in the system."
+        summary = "Get all carts or cart by customer ID",
+        description = "FR-006: Retrieve all carts (Admin function) or get cart by customerId query parameter. Returns list of all carts or single cart."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved all carts"),
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved carts"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseEntity<List<Cart>> getAllCarts() {
+    public ResponseEntity<?> getCarts(
+        @Parameter(description = "Customer ID (optional)", required = false)
+        @RequestParam(required = false) Long customerId
+    ) {
+        if (customerId != null) {
+            CartResponse response = cartService.getCartResponseByCustomerId(customerId);
+            return ResponseEntity.ok(response);
+        }
         return ResponseEntity.ok(cartService.getAllCarts());
     }
 
@@ -222,7 +230,7 @@ public class CartController {
     }
 
     /**
-     * UC06: Update Cart - Clear all items from cart
+     * UC06: Update Cart - Clear all items from cart or delete cart by customer ID
      */
     @DeleteMapping("/{cartId}/clear")
     @Operation(
@@ -239,6 +247,28 @@ public class CartController {
         @PathVariable Long cartId
     ) {
         cartService.clearCart(cartId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * UC06: Clear cart by customer ID (query parameter variant)
+     */
+    @DeleteMapping(params = "customerId")
+    @Operation(
+        summary = "Clear cart by customer ID",
+        description = "UC06: Update Cart. FR-006: Clear all items from customer's cart using query parameter."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Cart cleared successfully"),
+        @ApiResponse(responseCode = "404", description = "Cart not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<Void> clearCartByCustomerId(
+        @Parameter(description = "Customer ID", required = true)
+        @RequestParam Long customerId
+    ) {
+        Cart cart = cartService.getOrCreateCartByCustomerId(customerId);
+        cartService.clearCart(cart.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -345,10 +375,87 @@ public class CartController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * UC04: Add to Cart - Add item (customer ID in body - legacy OSGi compatibility)
+     */
+    @PostMapping("/items")
+    @Operation(
+        summary = "Add item to cart (legacy)",
+        description = "UC04: Add to Cart. FR-006: Add product to customer's cart. OSGi compatibility endpoint with customerId in request body."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Item added successfully"),
+        @ApiResponse(responseCode = "404", description = "Product not found"),
+        @ApiResponse(responseCode = "400", description = "Product not active or customerId missing"),
+        @ApiResponse(responseCode = "409", description = "Insufficient stock"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<CartItem> addItemLegacy(
+        @Parameter(description = "Cart item request with customerId, productId and quantity", required = true)
+        @Valid @RequestBody CartItemRequestWithCustomer request
+    ) {
+        CartItem item = cartService.addItemToCustomerCart(request.getCustomerId(),
+            new CartItemRequest(request.getProductId(), request.getQuantity()));
+        return new ResponseEntity<>(item, HttpStatus.CREATED);
+    }
+
+    /**
+     * UC06: Update Cart - Update item quantity (customer ID in query - legacy OSGi compatibility)
+     */
+    @PutMapping("/items/{itemId}")
+    @Operation(
+        summary = "Update cart item quantity (legacy)",
+        description = "UC06: Update Cart. FR-006: Update item quantity. OSGi compatibility endpoint with customerId in query parameter."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Item updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Item not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid quantity or customerId missing"),
+        @ApiResponse(responseCode = "409", description = "Insufficient stock"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<CartItem> updateCartItemLegacy(
+        @Parameter(description = "Cart Item ID", required = true)
+        @PathVariable Long itemId,
+        @Parameter(description = "Customer ID", required = true)
+        @RequestParam Long customerId,
+        @Parameter(description = "New quantity (must be >= 1)", required = true)
+        @RequestParam Integer quantity
+    ) {
+        Cart cart = cartService.getOrCreateCartByCustomerId(customerId);
+        CartItem item = cartService.updateCartItemQuantity(cart.getId(), itemId, quantity);
+        return ResponseEntity.ok(item);
+    }
+
+    /**
+     * UC06: Update Cart - Remove item (customer ID in query - legacy OSGi compatibility)
+     */
+    @DeleteMapping("/items/{itemId}")
+    @Operation(
+        summary = "Remove item from cart (legacy)",
+        description = "UC06: Update Cart. FR-006: Remove specific item from cart. OSGi compatibility endpoint with customerId in query parameter."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Item removed successfully"),
+        @ApiResponse(responseCode = "404", description = "Item not found"),
+        @ApiResponse(responseCode = "400", description = "customerId missing"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<Void> removeItemFromCartLegacy(
+        @Parameter(description = "Cart Item ID", required = true)
+        @PathVariable Long itemId,
+        @Parameter(description = "Customer ID", required = true)
+        @RequestParam Long customerId
+    ) {
+        Cart cart = cartService.getOrCreateCartByCustomerId(customerId);
+        cartService.removeItemFromCart(cart.getId(), itemId);
+        return ResponseEntity.noContent().build();
+    }
+
     // ========== Cart Calculations Endpoints ==========
 
     /**
-     * FR-007: Get cart total
+     * FR-007: Get cart total by cart ID
      */
     @GetMapping("/{cartId}/total")
     @Operation(
@@ -366,6 +473,73 @@ public class CartController {
     ) {
         BigDecimal total = cartService.getCartTotal(cartId);
         return ResponseEntity.ok(total);
+    }
+
+    /**
+     * FR-007: Get cart total by customer ID (query parameter - legacy OSGi compatibility)
+     */
+    @GetMapping(value = "/total", params = "customerId")
+    @Operation(
+        summary = "Get cart total by customer ID",
+        description = "FR-007: Calculate and return cart total for customer. OSGi compatibility endpoint."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Total calculated successfully"),
+        @ApiResponse(responseCode = "404", description = "Cart not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<BigDecimal> getCartTotalByCustomerId(
+        @Parameter(description = "Customer ID", required = true)
+        @RequestParam Long customerId
+    ) {
+        Cart cart = cartService.getOrCreateCartByCustomerId(customerId);
+        BigDecimal total = cartService.getCartTotal(cart.getId());
+        return ResponseEntity.ok(total);
+    }
+
+    /**
+     * FR-007: Get cart item count by customer ID (legacy OSGi compatibility)
+     */
+    @GetMapping(value = "/count", params = "customerId")
+    @Operation(
+        summary = "Get cart item count",
+        description = "FR-007: Get total count of items in customer's cart. OSGi compatibility endpoint."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Count retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "Cart not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<Integer> getCartItemCount(
+        @Parameter(description = "Customer ID", required = true)
+        @RequestParam Long customerId
+    ) {
+        CartResponse response = cartService.getCartResponseByCustomerId(customerId);
+        int count = response.getItems().stream()
+            .mapToInt(item -> item.getQuantity())
+            .sum();
+        return ResponseEntity.ok(count);
+    }
+
+    /**
+     * FR-008: Validate cart before checkout (legacy OSGi compatibility)
+     */
+    @PostMapping(value = "/validate", params = "customerId")
+    @Operation(
+        summary = "Validate cart",
+        description = "FR-008: Validate cart items for checkout. Checks product availability and stock. OSGi compatibility endpoint."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Validation completed"),
+        @ApiResponse(responseCode = "404", description = "Cart not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<CartValidationResponse> validateCart(
+        @Parameter(description = "Customer ID", required = true)
+        @RequestParam Long customerId
+    ) {
+        CartValidationResponse validation = cartService.validateCart(customerId);
+        return ResponseEntity.ok(validation);
     }
 
     // ========== Cart Merge Endpoint ==========

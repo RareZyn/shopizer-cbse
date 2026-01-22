@@ -2,6 +2,7 @@ package com.shopizer.springboot.cart.service;
 
 import com.shopizer.springboot.cart.dto.CartItemRequest;
 import com.shopizer.springboot.cart.dto.CartResponse;
+import com.shopizer.springboot.cart.dto.CartValidationResponse;
 import com.shopizer.springboot.cart.entity.Cart;
 import com.shopizer.springboot.cart.entity.CartItem;
 
@@ -171,6 +172,13 @@ public interface CartService {
      * FR-007: Display cart total
      */
     CartResponse getCartResponseByCustomerId(Long customerId);
+
+    /**
+     * Validate cart before checkout
+     * FR-008: Validate product availability
+     * Checks for product availability, stock levels, and price changes
+     */
+    CartValidationResponse validateCart(Long customerId);
 
     // ========== Cart Merge (Guest to Customer) ==========
 

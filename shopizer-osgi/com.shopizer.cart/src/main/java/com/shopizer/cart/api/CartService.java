@@ -1,7 +1,10 @@
 package com.shopizer.cart.api;
 
 import com.shopizer.cart.dto.*;
+import com.shopizer.common.entity.Cart;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -10,13 +13,97 @@ import java.math.BigDecimal;
  */
 public interface CartService {
 
+    // ========== Cart Management ==========
+
     /**
-     * Add item to cart (FR-006)
+     * Create a new cart
+     * @param cart Cart entity to create
+     * @return Created cart
+     */
+    Cart createCart(Cart cart);
+
+    /**
+     * Get all carts (Admin function)
+     * @return List of all carts
+     */
+    List<Cart> getAllCarts();
+
+    /**
+     * Get cart by ID
+     * @param id Cart ID
+     * @return Cart if found
+     */
+    Optional<Cart> getCartById(Long id);
+
+    /**
+     * Delete cart by ID
+     * @param id Cart ID
+     */
+    void deleteCartById(Long id);
+
+    /**
+     * Clear all items from cart by cart ID
+     * @param cartId Cart ID
+     */
+    void clearCartById(Long cartId);
+
+    /**
+     * Get cart by customer ID
+     * @param customerId Customer ID
+     * @return CartResponse for the customer
+     */
+    CartResponse getCartByCustomerId(Long customerId);
+
+    /**
+     * Get cart total by cart ID
+     * @param cartId Cart ID
+     * @return Total amount
+     */
+    BigDecimal getCartTotalById(Long cartId);
+
+    // ========== Cart Item Management by Cart ID ==========
+
+    /**
+     * Add item to cart by cart ID (FR-006)
+     * @param cartId Cart ID
+     * @param request Cart item request with product details
+     * @return Updated cart response
+     */
+    CartResponse addItemToCart(Long cartId, CartItemRequest request);
+
+    /**
+     * Update cart item quantity by cart ID
+     * @param cartId Cart ID
+     * @param itemId Cart item ID
+     * @param quantity New quantity
+     * @return Updated cart response
+     */
+    CartResponse updateCartItemById(Long cartId, Long itemId, Integer quantity);
+
+    /**
+     * Remove item from cart by cart ID
+     * @param cartId Cart ID
+     * @param itemId Cart item ID
+     */
+    void removeItemFromCartById(Long cartId, Long itemId);
+
+    // ========== Customer-centric Operations ==========
+
+    /**
+     * Add item to cart by customer ID (FR-006)
      * @param customerId Customer ID
      * @param request Cart item request with product details
      * @return Updated cart response
      */
     CartResponse addToCart(Long customerId, CartItemRequest request);
+
+    /**
+     * Add item to customer cart (alias for addToCart)
+     * @param customerId Customer ID
+     * @param request Cart item request with product details
+     * @return Updated cart response
+     */
+    CartResponse addItemToCustomerCart(Long customerId, CartItemRequest request);
 
     /**
      * View cart contents (FR-007)

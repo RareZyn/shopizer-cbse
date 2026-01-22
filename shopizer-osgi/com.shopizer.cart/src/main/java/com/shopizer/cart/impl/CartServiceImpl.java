@@ -37,6 +37,175 @@ public class CartServiceImpl implements CartService {
         this.catalogService = catalogService;
     }
 
+    // ========== Cart Management ==========
+
+    @Override
+    public Cart createCart(Cart cart) {
+        logger.info("Creating new cart");
+        return cartRepository.save(cart);
+    }
+
+    @Override
+    public List<Cart> getAllCarts() {
+        logger.info("Getting all carts");
+        return cartRepository.findAll();
+    }
+
+    @Override
+    public Optional<Cart> getCartById(Long id) {
+        logger.info("Getting cart by ID: {}", id);
+        return cartRepository.findById(id);
+    }
+
+    @Override
+    public void deleteCartById(Long id) {
+        logger.info("Deleting cart by ID: {}", id);
+        Cart cart = cartRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Cart", "id", id));
+        cartRepository.delete(cart);
+    }
+
+    @Override
+    public void clearCartById(Long cartId) {
+        logger.info("Clearing cart by ID: {}", cartId);
+        cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("Cart", "id", cartId));
+        cartItemRepository.deleteByCartId(cartId);
+    }
+
+    @Override
+    public CartResponse getCartByCustomerId(Long customerId) {
+        logger.info("Getting cart by customer ID: {}", customerId);
+        Cart cart = getOrCreateCart(customerId);
+        return mapToCartResponse(cart);
+    }
+
+    @Override
+    public BigDecimal getCartTotalById(Long cartId) {
+        logger.info("Getting cart total by cart ID: {}", cartId);
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("Cart", "id", cartId));
+
+        List<CartItem> items = cartItemRepository.findByCartId(cart.getId());
+        return items.stream()
+            .map(CartItem::getSubtotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    // ========== Cart Item Management by Cart ID ==========
+
+    @Override
+    public CartResponse addItemToCart(Long cartId, CartItemRequest request) {
+        logger.info("Adding item to cart ID: {}, product: {}", cartId, request.getProductId());
+
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("Cart", "id", cartId));
+
+        // Validate product exists and has stock
+        ProductResponse product = catalogService.getProductById(request.getProductId());
+        if (!catalogService.checkStock(request.getProductId(), request.getQuantity())) {
+            throw new InsufficientStockException(
+                product.getName(),
+                request.getQuantity(),
+                product.getStockQuantity()
+            );
+        }
+
+        // Check if item already exists in cart
+        Optional<CartItem> existingItem = cartItemRepository
+            .findByCartIdAndProductId(cart.getId(), request.getProductId());
+
+        if (existingItem.isPresent()) {
+            // Update quantity
+            CartItem item = existingItem.get();
+            int newQuantity = item.getQuantity() + request.getQuantity();
+
+            if (!catalogService.checkStock(request.getProductId(), newQuantity)) {
+                throw new InsufficientStockException(
+                    product.getName(),
+                    newQuantity,
+                    product.getStockQuantity()
+                );
+            }
+
+            item.setQuantity(newQuantity);
+            cartItemRepository.save(item);
+        } else {
+            // Create new cart item
+            CartItem newItem = new CartItem();
+            newItem.setCart(cart);
+
+            Product productEntity = new Product();
+            productEntity.setId(request.getProductId());
+            newItem.setProduct(productEntity);
+
+            newItem.setQuantity(request.getQuantity());
+            newItem.setPrice(request.getPrice() != null ? request.getPrice() : product.getPrice());
+
+            cartItemRepository.save(newItem);
+        }
+
+        return mapToCartResponseByCartId(cartId);
+    }
+
+    @Override
+    public CartResponse updateCartItemById(Long cartId, Long itemId, Integer quantity) {
+        logger.info("Updating cart item {} in cart {} to quantity {}", itemId, cartId, quantity);
+
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("Cart", "id", cartId));
+
+        CartItem item = cartItemRepository.findById(itemId)
+            .orElseThrow(() -> new ResourceNotFoundException("CartItem", "id", itemId));
+
+        if (!item.getCart().getId().equals(cart.getId())) {
+            throw new BadRequestException("Cart item does not belong to this cart");
+        }
+
+        if (quantity <= 0) {
+            throw new BadRequestException("Quantity must be greater than 0");
+        }
+
+        // Check stock availability
+        if (!catalogService.checkStock(item.getProduct().getId(), quantity)) {
+            ProductResponse product = catalogService.getProductById(item.getProduct().getId());
+            throw new InsufficientStockException(
+                product.getName(),
+                quantity,
+                product.getStockQuantity()
+            );
+        }
+
+        item.setQuantity(quantity);
+        cartItemRepository.save(item);
+
+        return mapToCartResponseByCartId(cartId);
+    }
+
+    @Override
+    public void removeItemFromCartById(Long cartId, Long itemId) {
+        logger.info("Removing cart item {} from cart {}", itemId, cartId);
+
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("Cart", "id", cartId));
+
+        CartItem item = cartItemRepository.findById(itemId)
+            .orElseThrow(() -> new ResourceNotFoundException("CartItem", "id", itemId));
+
+        if (!item.getCart().getId().equals(cart.getId())) {
+            throw new BadRequestException("Cart item does not belong to this cart");
+        }
+
+        cartItemRepository.delete(item);
+    }
+
+    @Override
+    public CartResponse addItemToCustomerCart(Long customerId, CartItemRequest request) {
+        return addToCart(customerId, request);
+    }
+
+    // ========== Customer-centric Operations ==========
+
     @Override
     public CartResponse addToCart(Long customerId, CartItemRequest request) {
         logger.info("Adding item to cart for customer: {}, product: {}", customerId, request.getProductId());
@@ -314,7 +483,7 @@ public class CartServiceImpl implements CartService {
     private CartResponse mapToCartResponse(Cart cart) {
         CartResponse response = new CartResponse();
         response.setId(cart.getId());
-        response.setCustomerId(cart.getCustomer().getId());
+        response.setCustomerId(cart.getCustomer() != null ? cart.getCustomer().getId() : null);
         response.setCreatedAt(cart.getCreatedAt());
         response.setUpdatedAt(cart.getUpdatedAt());
 
@@ -334,6 +503,12 @@ public class CartServiceImpl implements CartService {
         response.setTotal(subtotal);
 
         return response;
+    }
+
+    private CartResponse mapToCartResponseByCartId(Long cartId) {
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new ResourceNotFoundException("Cart", "id", cartId));
+        return mapToCartResponse(cart);
     }
 
     private CartItemResponse mapToCartItemResponse(CartItem item) {
