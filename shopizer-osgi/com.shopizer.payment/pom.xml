@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.shopizer</groupId>
+        <artifactId>shopizer-osgi-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>com.shopizer.payment</artifactId>
+    <packaging>bundle</packaging>
+
+    <name>Shopizer OSGI - Payment Module</name>
+    <description>Payment processing, payment methods, and refund management</description>
+
+    <dependencies>
+        <!-- Common Module -->
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.common</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- Order Module (for payment processing) -->
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.order</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- Customer Module (for payment methods) -->
+        <dependency>
+            <groupId>com.shopizer</groupId>
+            <artifactId>com.shopizer.customer</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <!-- OSGI Core -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+        </dependency>
+
+        <!-- OSGI Compendium -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.component.annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.component</artifactId>
+        </dependency>
+
+        <!-- Spring Data JPA -->
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Hibernate -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <!-- SLF4J -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- Jackson for JSON processing -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.15.2</version>
+        </dependency>
+
+        <!-- PostgreSQL JDBC -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <Bundle-Activator>com.shopizer.payment.activator.PaymentActivator</Bundle-Activator>
+                        <Export-Package>
+                            com.shopizer.payment.api,
+                            com.shopizer.payment.dto,
+                            com.shopizer.payment.entity
+                        </Export-Package>
+                        <Import-Package>
+                            com.shopizer.common.entity,
+                            com.shopizer.common.exception,
+                            com.shopizer.common.util,
+                            com.shopizer.order.api,
+                            com.shopizer.order.dto,
+                            com.shopizer.customer.api,
+                            com.shopizer.customer.dto,
+                            org.osgi.framework,
+                            org.osgi.util.tracker,
+                            org.slf4j,
+                            org.springframework.data.jpa.repository,
+                            jakarta.persistence,
+                            com.fasterxml.jackson.annotation,
+                            *
+                        </Import-Package>
+                        <Private-Package>
+                            com.shopizer.payment.impl,
+                            com.shopizer.payment.repository,
+                            com.shopizer.payment.service,
+                            com.shopizer.payment.activator
+                        </Private-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
