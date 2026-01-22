@@ -4,6 +4,7 @@ import com.shopizer.common.entity.MerchantStore;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,14 +25,14 @@ public class MerchantStoreRepositoryImpl implements MerchantStoreRepository {
     }
 
     @Override
-    public MerchantStore save(MerchantStore store) {
+    public @NonNull <S extends MerchantStore> S save(@NonNull S store) {
         EntityManager em = em();
         try {
             em.getTransaction().begin();
             if (store.getId() == null) {
                 em.persist(store);
             } else {
-                store = em.merge(store);
+                store = (S) em.merge(store);
             }
             em.getTransaction().commit();
             return store;
@@ -46,7 +47,7 @@ public class MerchantStoreRepositoryImpl implements MerchantStoreRepository {
     }
 
     @Override
-    public Optional<MerchantStore> findById(Long id) {
+    public @NonNull Optional<MerchantStore> findById(@NonNull Long id) {
         EntityManager em = em();
         try {
             return Optional.ofNullable(em.find(MerchantStore.class, id));
@@ -87,7 +88,7 @@ public class MerchantStoreRepositoryImpl implements MerchantStoreRepository {
     }
 
     @Override
-    public List<MerchantStore> findAll() {
+    public @NonNull List<MerchantStore> findAll() {
         EntityManager em = em();
         try {
             return em.createQuery("SELECT s FROM MerchantStore s", MerchantStore.class).getResultList();
@@ -107,12 +108,12 @@ public class MerchantStoreRepositoryImpl implements MerchantStoreRepository {
     }
 
     @Override
-    public boolean existsById(Long id) {
+    public boolean existsById(@NonNull Long id) {
         return findById(id).isPresent();
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(@NonNull Long id) {
         EntityManager em = em();
         try {
             em.getTransaction().begin();
@@ -132,7 +133,7 @@ public class MerchantStoreRepositoryImpl implements MerchantStoreRepository {
     }
 
     @Override
-    public void delete(MerchantStore entity) {
+    public void delete(@NonNull MerchantStore entity) {
         deleteById(entity.getId());
     }
 
@@ -158,65 +159,71 @@ public class MerchantStoreRepositoryImpl implements MerchantStoreRepository {
     public void flush() { /* no-op */ }
 
     @Override
-    public <S extends MerchantStore> S saveAndFlush(S entity) { return (S) save(entity); }
+    public @NonNull <S extends MerchantStore> S saveAndFlush(@NonNull S entity) { return save(entity); }
 
     @Override
-    public <S extends MerchantStore> List<S> saveAllAndFlush(Iterable<S> entities) { throw new UnsupportedOperationException(); }
+    public @NonNull <S extends MerchantStore> List<S> saveAllAndFlush(@NonNull Iterable<S> entities) { throw new UnsupportedOperationException(); }
 
     @Override
-    public void deleteAllInBatch(Iterable<MerchantStore> entities) { throw new UnsupportedOperationException(); }
+    public void deleteAllInBatch(@NonNull Iterable<MerchantStore> entities) { throw new UnsupportedOperationException(); }
 
     @Override
-    public void deleteAllByIdInBatch(Iterable<Long> longs) { throw new UnsupportedOperationException(); }
+    public void deleteAllByIdInBatch(@NonNull Iterable<Long> longs) { throw new UnsupportedOperationException(); }
 
     @Override
     public void deleteAllInBatch() { throw new UnsupportedOperationException(); }
 
     @Override
-    public MerchantStore getOne(Long aLong) { return findById(aLong).orElse(null); }
+    public @NonNull MerchantStore getOne(@NonNull Long aLong) {
+        return findById(aLong).orElseThrow(() ->
+            new jakarta.persistence.EntityNotFoundException("MerchantStore not found with id: " + aLong));
+    }
 
     @Override
-    public MerchantStore getById(Long aLong) { return findById(aLong).orElse(null); }
+    public @NonNull MerchantStore getById(@NonNull Long aLong) {
+        return findById(aLong).orElseThrow(() ->
+            new jakarta.persistence.EntityNotFoundException("MerchantStore not found with id: " + aLong));
+    }
 
     @Override
-    public MerchantStore getReferenceById(Long aLong) { return getById(aLong); }
+    public @NonNull MerchantStore getReferenceById(@NonNull Long aLong) { return getById(aLong); }
 
     @Override
-    public <S extends MerchantStore> List<S> findAll(org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
+    public @NonNull <S extends MerchantStore> List<S> findAll(@NonNull org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
 
     @Override
-    public <S extends MerchantStore> List<S> findAll(org.springframework.data.domain.Example<S> example, org.springframework.data.domain.Sort sort) { throw new UnsupportedOperationException(); }
+    public @NonNull <S extends MerchantStore> List<S> findAll(@NonNull org.springframework.data.domain.Example<S> example, @NonNull org.springframework.data.domain.Sort sort) { throw new UnsupportedOperationException(); }
 
     @Override
-    public <S extends MerchantStore> List<S> saveAll(Iterable<S> entities) { throw new UnsupportedOperationException(); }
+    public @NonNull <S extends MerchantStore> List<S> saveAll(@NonNull Iterable<S> entities) { throw new UnsupportedOperationException(); }
 
     @Override
-    public List<MerchantStore> findAllById(Iterable<Long> ids) { throw new UnsupportedOperationException(); }
+    public @NonNull List<MerchantStore> findAllById(@NonNull Iterable<Long> ids) { throw new UnsupportedOperationException(); }
 
     @Override
-    public List<MerchantStore> findAll(org.springframework.data.domain.Sort sort) { throw new UnsupportedOperationException(); }
+    public @NonNull List<MerchantStore> findAll(@NonNull org.springframework.data.domain.Sort sort) { throw new UnsupportedOperationException(); }
 
     @Override
-    public org.springframework.data.domain.Page<MerchantStore> findAll(org.springframework.data.domain.Pageable pageable) { throw new UnsupportedOperationException(); }
+    public @NonNull org.springframework.data.domain.Page<MerchantStore> findAll(@NonNull org.springframework.data.domain.Pageable pageable) { throw new UnsupportedOperationException(); }
 
     @Override
-    public <S extends MerchantStore> Optional<S> findOne(org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
+    public @NonNull <S extends MerchantStore> Optional<S> findOne(@NonNull org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
 
     @Override
-    public <S extends MerchantStore> org.springframework.data.domain.Page<S> findAll(org.springframework.data.domain.Example<S> example, org.springframework.data.domain.Pageable pageable) { throw new UnsupportedOperationException(); }
+    public @NonNull <S extends MerchantStore> org.springframework.data.domain.Page<S> findAll(@NonNull org.springframework.data.domain.Example<S> example, @NonNull org.springframework.data.domain.Pageable pageable) { throw new UnsupportedOperationException(); }
 
     @Override
-    public <S extends MerchantStore> long count(org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
+    public <S extends MerchantStore> long count(@NonNull org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
 
     @Override
-    public <S extends MerchantStore> boolean exists(org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
+    public <S extends MerchantStore> boolean exists(@NonNull org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
 
     @Override
-    public <S extends MerchantStore, R> R findBy(org.springframework.data.domain.Example<S> example, java.util.function.Function<org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery<S>, R> queryFunction) { throw new UnsupportedOperationException(); }
+    public @NonNull <S extends MerchantStore, R> R findBy(@NonNull org.springframework.data.domain.Example<S> example, @NonNull java.util.function.Function<org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery<S>, R> queryFunction) { throw new UnsupportedOperationException(); }
 
     @Override
-    public void deleteAll(Iterable<? extends MerchantStore> entities) { throw new UnsupportedOperationException(); }
+    public void deleteAll(@NonNull Iterable<? extends MerchantStore> entities) { throw new UnsupportedOperationException(); }
 
     @Override
-    public void deleteAllById(Iterable<? extends Long> ids) { throw new UnsupportedOperationException(); }
+    public void deleteAllById(@NonNull Iterable<? extends Long> ids) { throw new UnsupportedOperationException(); }
 }

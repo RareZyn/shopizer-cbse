@@ -3,8 +3,6 @@ package com.shopizer.merchant.repository;
 import com.shopizer.common.entity.MerchantStore;
 import com.shopizer.common.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

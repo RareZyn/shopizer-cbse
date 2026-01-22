@@ -4,6 +4,7 @@ import com.shopizer.common.entity.Order;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
+import org.springframework.lang.NonNull;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -46,7 +47,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public Optional<Order> findById(Long id) {
+    public @NonNull Optional<Order> findById(@NonNull Long id) {
         EntityManager em = em();
         try {
             return Optional.ofNullable(em.find(Order.class, id));
@@ -77,7 +78,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public List<Order> findAll() {
+    public @NonNull List<Order> findAll() {
         EntityManager em = em();
         try {
             return em.createQuery("SELECT o FROM Order o", Order.class).getResultList();
@@ -87,7 +88,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(@NonNull Long id) {
         EntityManager em = em();
         try {
             em.getTransaction().begin();
@@ -107,7 +108,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public void delete(Order entity) {
+    public void delete(@NonNull Order entity) {
         deleteById(entity.getId());
     }
 
@@ -130,28 +131,36 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     // Unsupported operations required by JpaRepository
     @Override public void flush() { /* no-op */ }
-    @Override public <S extends Order> S saveAndFlush(S entity) { return (S) save(entity); }
-    @Override public <S extends Order> List<S> saveAllAndFlush(Iterable<S> entities) { throw new UnsupportedOperationException(); }
-    @Override public void deleteAllInBatch(Iterable<Order> entities) { throw new UnsupportedOperationException(); }
-    @Override public void deleteAllByIdInBatch(Iterable<Long> longs) { throw new UnsupportedOperationException(); }
+    @Override public @NonNull <S extends Order> S saveAndFlush(@NonNull S entity) { return save(entity); }
+    @Override public @NonNull <S extends Order> List<S> saveAllAndFlush(@NonNull Iterable<S> entities) { throw new UnsupportedOperationException(); }
+    @Override public void deleteAllInBatch(@NonNull Iterable<Order> entities) { throw new UnsupportedOperationException(); }
+    @Override public void deleteAllByIdInBatch(@NonNull Iterable<Long> longs) { throw new UnsupportedOperationException(); }
     @Override public void deleteAllInBatch() { throw new UnsupportedOperationException(); }
-    @Override public Order getOne(Long aLong) { return findById(aLong).orElse(null); }
-    @Override public Order getById(Long aLong) { return findById(aLong).orElse(null); }
-    @Override public Order getReferenceById(Long aLong) { return getById(aLong); }
-    @Override public <S extends Order> List<S> findAll(org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
-    @Override public <S extends Order> List<S> findAll(org.springframework.data.domain.Example<S> example, org.springframework.data.domain.Sort sort) { throw new UnsupportedOperationException(); }
-    @Override public <S extends Order> S save(S entity) { return (S) doSave((Order) entity); }
-    @Override public <S extends Order> List<S> saveAll(Iterable<S> entities) { throw new UnsupportedOperationException(); }
-    @Override public List<Order> findAllById(Iterable<Long> ids) { throw new UnsupportedOperationException(); }
-    @Override public List<Order> findAll(org.springframework.data.domain.Sort sort) { throw new UnsupportedOperationException(); }
-    @Override public org.springframework.data.domain.Page<Order> findAll(org.springframework.data.domain.Pageable pageable) { throw new UnsupportedOperationException(); }
-    @Override public <S extends Order> Optional<S> findOne(org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
-    @Override public <S extends Order> org.springframework.data.domain.Page<S> findAll(org.springframework.data.domain.Example<S> example, org.springframework.data.domain.Pageable pageable) { throw new UnsupportedOperationException(); }
-    @Override public <S extends Order> long count(org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
-    @Override public <S extends Order> boolean exists(org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
-    @Override public <S extends Order, R> R findBy(org.springframework.data.domain.Example<S> example, java.util.function.Function<org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery<S>, R> queryFunction) { throw new UnsupportedOperationException(); }
+    @Override public @NonNull Order getOne(@NonNull Long aLong) {
+        return findById(aLong).orElseThrow(() ->
+            new jakarta.persistence.EntityNotFoundException("Order not found with id: " + aLong));
+    }
+    @Override public @NonNull Order getById(@NonNull Long aLong) {
+        return findById(aLong).orElseThrow(() ->
+            new jakarta.persistence.EntityNotFoundException("Order not found with id: " + aLong));
+    }
+    @Override public @NonNull Order getReferenceById(@NonNull Long aLong) { return getById(aLong); }
+    @Override public @NonNull <S extends Order> List<S> findAll(@NonNull org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
+    @Override public @NonNull <S extends Order> List<S> findAll(@NonNull org.springframework.data.domain.Example<S> example, @NonNull org.springframework.data.domain.Sort sort) { throw new UnsupportedOperationException(); }
+    @Override
+    @SuppressWarnings("unchecked")
+    public @NonNull <S extends Order> S save(@NonNull S entity) { return (S) doSave((Order) entity); }
+    @Override public @NonNull <S extends Order> List<S> saveAll(@NonNull Iterable<S> entities) { throw new UnsupportedOperationException(); }
+    @Override public @NonNull List<Order> findAllById(@NonNull Iterable<Long> ids) { throw new UnsupportedOperationException(); }
+    @Override public @NonNull List<Order> findAll(@NonNull org.springframework.data.domain.Sort sort) { throw new UnsupportedOperationException(); }
+    @Override public @NonNull org.springframework.data.domain.Page<Order> findAll(@NonNull org.springframework.data.domain.Pageable pageable) { throw new UnsupportedOperationException(); }
+    @Override public @NonNull <S extends Order> Optional<S> findOne(@NonNull org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
+    @Override public @NonNull <S extends Order> org.springframework.data.domain.Page<S> findAll(@NonNull org.springframework.data.domain.Example<S> example, @NonNull org.springframework.data.domain.Pageable pageable) { throw new UnsupportedOperationException(); }
+    @Override public <S extends Order> long count(@NonNull org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
+    @Override public <S extends Order> boolean exists(@NonNull org.springframework.data.domain.Example<S> example) { throw new UnsupportedOperationException(); }
+    @Override public @NonNull <S extends Order, R> R findBy(@NonNull org.springframework.data.domain.Example<S> example, @NonNull java.util.function.Function<org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery<S>, R> queryFunction) { throw new UnsupportedOperationException(); }
     @Override public long count() { return findAll().size(); }
-    @Override public boolean existsById(Long aLong) { return findById(aLong).isPresent(); }
+    @Override public boolean existsById(@NonNull Long aLong) { return findById(aLong).isPresent(); }
     @Override public List<Order> findByCustomerId(Long customerId) { return queryList("SELECT o FROM Order o WHERE o.customer.id = :customerId", "customerId", customerId); }
     
     @Override
@@ -188,7 +197,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public void deleteAllById(Iterable<? extends Long> ids) {
+    public void deleteAllById(@NonNull Iterable<? extends Long> ids) {
         EntityManager em = em();
         try {
             em.getTransaction().begin();
@@ -210,7 +219,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public void deleteAll(Iterable<? extends Order> entities) {
+    public void deleteAll(@NonNull Iterable<? extends Order> entities) {
         EntityManager em = em();
         try {
             em.getTransaction().begin();

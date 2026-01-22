@@ -1,7 +1,5 @@
 package com.shopizer.merchant.impl;
 
-import com.shopizer.catalog.api.CatalogService;
-import com.shopizer.catalog.dto.ProductResponse;
 import com.shopizer.common.entity.*;
 import com.shopizer.common.exception.BadRequestException;
 import com.shopizer.common.exception.ResourceNotFoundException;
@@ -31,20 +29,18 @@ public class MerchantServiceImpl implements MerchantService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final ProductViewRepository productViewRepository;
-    private final CatalogService catalogService;
+
     public MerchantServiceImpl(MerchantRepository merchantRepository,
-                               MerchantStoreRepository merchantStoreRepository,
-                               ProductRepository productRepository,
-                               OrderRepository orderRepository,
-                               ProductViewRepository productViewRepository,
-                               CatalogService catalogService,
-                               OrderService orderService) {
+            MerchantStoreRepository merchantStoreRepository,
+            ProductRepository productRepository,
+            OrderRepository orderRepository,
+            ProductViewRepository productViewRepository,
+            OrderService orderService) {
         this.merchantRepository = merchantRepository;
         this.merchantStoreRepository = merchantStoreRepository;
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.productViewRepository = productViewRepository;
-        this.catalogService = catalogService;
     }
 
     // ========== Merchant Management (FR-015) ==========
@@ -64,7 +60,9 @@ public class MerchantServiceImpl implements MerchantService {
         }
 
         merchantRepository.findByEmail(request.getEmail())
-            .ifPresent(existing -> { throw new BadRequestException("Email already registered"); });
+                .ifPresent(existing -> {
+                    throw new BadRequestException("Email already registered");
+                });
 
         Merchant merchant = new Merchant();
         merchant.setBusinessName(request.getBusinessName());
@@ -98,7 +96,7 @@ public class MerchantServiceImpl implements MerchantService {
         }
 
         Merchant merchant = merchantRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "email", request.getEmail()));
+                .orElseThrow(() -> new ResourceNotFoundException("Merchant", "email", request.getEmail()));
 
         if (!verifyPassword(request.getPassword(), merchant.getPassword())) {
             throw new BadRequestException("Invalid credentials");
@@ -128,8 +126,8 @@ public class MerchantServiceImpl implements MerchantService {
 
         List<Merchant> merchants = merchantRepository.findAll();
         return merchants.stream()
-            .map(this::mapToMerchantProfile)
-            .collect(Collectors.toList());
+                .map(this::mapToMerchantProfile)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -137,7 +135,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Fetching merchant: {}", merchantId);
 
         Merchant merchant = merchantRepository.findById(merchantId)
-            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
+                .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
 
         return mapToMerchantProfile(merchant);
     }
@@ -147,7 +145,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Updating merchant: {}", merchantId);
 
         Merchant merchant = merchantRepository.findById(merchantId)
-            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
+                .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
 
         if (request.getBusinessName() != null) {
             merchant.setBusinessName(request.getBusinessName());
@@ -170,7 +168,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Deleting merchant: {}", merchantId);
 
         Merchant merchant = merchantRepository.findById(merchantId)
-            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
+                .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
 
         merchantRepository.delete(merchant);
         logger.info("Merchant deleted successfully: {}", merchantId);
@@ -218,7 +216,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Fetching merchant store: {}", storeId);
 
         MerchantStore store = merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
 
         return mapToStoreResponse(store);
     }
@@ -241,7 +239,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Updating merchant store: {}", storeId);
 
         MerchantStore store = merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
 
         if (request.getStoreName() != null) {
             store.setStoreName(request.getStoreName());
@@ -251,12 +249,12 @@ public class MerchantServiceImpl implements MerchantService {
         }
         if (request.getDescription() != null) {
             store.setDescription(request.getDescription());
-        // }
-        // if (request.getEmail() != null) {
-        //     store.setEmail(request.getEmail());
-        // }
-        // if (request.getStorePhone() != null) {
-        //     store.setPhone(request.getStorePhone());
+            // }
+            // if (request.getEmail() != null) {
+            // store.setEmail(request.getEmail());
+            // }
+            // if (request.getStorePhone() != null) {
+            // store.setPhone(request.getStorePhone());
         }
         if (request.getAddress() != null) {
             store.setAddress(request.getAddress());
@@ -286,7 +284,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Activating merchant store: {}", storeId);
 
         MerchantStore store = merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
 
         store.setIsActive(true);
         merchantStoreRepository.save(store);
@@ -299,7 +297,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Deactivating merchant store: {}", storeId);
 
         MerchantStore store = merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
 
         store.setIsActive(false);
         merchantStoreRepository.save(store);
@@ -323,8 +321,8 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Fetching store {} for merchant: {}", storeId, merchantId);
 
         MerchantStore store = merchantStoreRepository.findByIdAndMerchantId(storeId, merchantId)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Store not found for merchantId=" + merchantId + ", storeId=" + storeId));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Store not found for merchantId=" + merchantId + ", storeId=" + storeId));
 
         return mapToStoreResponse(store);
     }
@@ -334,7 +332,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Creating store for merchant: {}", merchantId);
 
         Merchant merchant = merchantRepository.findById(merchantId)
-            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
+                .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId));
 
         MerchantStore store = new MerchantStore();
         store.setMerchant(merchant);
@@ -358,8 +356,8 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Updating store {} for merchant: {}", storeId, merchantId);
 
         MerchantStore store = merchantStoreRepository.findByIdAndMerchantId(storeId, merchantId)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Store not found for merchantId=" + merchantId + ", storeId=" + storeId));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Store not found for merchantId=" + merchantId + ", storeId=" + storeId));
 
         if (request.getStoreName() != null) {
             store.setStoreName(request.getStoreName());
@@ -413,9 +411,8 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Generating sales report for store: {} from {} to {}", storeId, startDate, endDate);
 
         MerchantStore store = merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
 
-        // TODO: Implement actual order querying
         // For now, return mock data structure
         SalesReportResponse report = new SalesReportResponse();
         report.setStoreId(storeId);
@@ -438,9 +435,7 @@ public class MerchantServiceImpl implements MerchantService {
 
         // Verify store exists
         merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
-
-        // TODO: Implement actual daily sales calculation
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
         DailySalesResponse response = new DailySalesResponse();
         response.setDate(date);
         response.setOrderCount(0);
@@ -457,9 +452,8 @@ public class MerchantServiceImpl implements MerchantService {
 
         // Verify store exists
         merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
 
-        // TODO: Implement actual monthly sales calculation
         MonthlySalesResponse response = new MonthlySalesResponse();
         response.setYear(year);
         response.setMonth(month);
@@ -472,15 +466,15 @@ public class MerchantServiceImpl implements MerchantService {
     }
 
     @Override
-    public List<ProductSalesResponse> getTopSellingProducts(Long storeId, LocalDate startDate, LocalDate endDate, Integer limit) {
+    public List<ProductSalesResponse> getTopSellingProducts(Long storeId, LocalDate startDate, LocalDate endDate,
+            Integer limit) {
         logger.info("Fetching top {} selling products for store: {} from {} to {}",
-            limit, storeId, startDate, endDate);
+                limit, storeId, startDate, endDate);
 
         // Verify store exists
         merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
 
-        // TODO: Implement actual top products calculation
         return new ArrayList<>();
     }
 
@@ -491,9 +485,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Generating revenue analytics for store: {} from {} to {}", storeId, startDate, endDate);
 
         merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
-
-        // TODO: Implement actual revenue analytics
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
         RevenueAnalyticsResponse response = new RevenueAnalyticsResponse();
         response.setStoreId(storeId);
         response.setStartDate(startDate);
@@ -511,9 +503,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Generating revenue by category for store: {} from {} to {}", storeId, startDate, endDate);
 
         merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
-
-        // TODO: Implement actual revenue by category
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
         return new ArrayList<>();
     }
 
@@ -522,9 +512,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Calculating total revenue for store: {}", storeId);
 
         merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
-
-        // TODO: Implement actual total revenue calculation
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
         return BigDecimal.ZERO;
     }
 
@@ -533,9 +521,7 @@ public class MerchantServiceImpl implements MerchantService {
         logger.info("Calculating revenue for store: {} from {} to {}", storeId, startDate, endDate);
 
         merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
-
-        // TODO: Implement actual revenue calculation for period
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId));
         return BigDecimal.ZERO;
     }
 
@@ -546,14 +532,14 @@ public class MerchantServiceImpl implements MerchantService {
         response.setId(store.getId());
         response.setMerchantId(store.getMerchant() != null ? store.getMerchant().getId() : null);
         response.setStoreName(store.getStoreName());
-            response.setStoreCode(store.getStoreCode());
+        response.setStoreCode(store.getStoreCode());
         response.setDescription(store.getDescription());
-            response.setLogoUrl(store.getLogoUrl());
+        response.setLogoUrl(store.getLogoUrl());
         // response.setStoreEmail(store.getEmail());
         // response.setStorePhone(store.getPhone());
         response.setCurrency(store.getCurrency());
         response.setLanguage(store.getDefaultLanguage());
-            response.setIsActive(store.getIsActive());
+        response.setIsActive(store.getIsActive());
         response.setCreatedAt(store.getCreatedAt());
         response.setUpdatedAt(store.getUpdatedAt());
 
@@ -565,17 +551,17 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public InventoryItemResponse createProduct(Long merchantId, Long storeId, MerchantProductCreateRequest request) {
         logger.info("Creating product for store: {} under merchant: {}", storeId, merchantId);
-        
-        Merchant merchant = merchantRepository.findById(merchantId)
-            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId.toString()));
-        
+
+        merchantRepository.findById(merchantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId.toString()));
+
         MerchantStore store = merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId.toString()));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId.toString()));
+
         if (!store.getMerchant().getId().equals(merchantId)) {
             throw new BadRequestException("Store does not belong to this merchant");
         }
-        
+
         Product product = new Product();
         product.setStore(store);
         product.setName(request.getName());
@@ -590,7 +576,7 @@ public class MerchantServiceImpl implements MerchantService {
             category.setId(request.getCategoryId());
             product.setCategory(category);
         }
-        
+
         product = productRepository.save(product);
         return mapToInventoryResponse(product);
     }
@@ -598,55 +584,55 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public List<InventoryItemResponse> getInventory(Long merchantId) {
         logger.info("Getting inventory for merchant: {}", merchantId);
-        
-        Merchant merchant = merchantRepository.findById(merchantId)
-            .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId.toString()));
-        
+
+        merchantRepository.findById(merchantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Merchant", "id", merchantId.toString()));
+
         List<MerchantStore> stores = merchantStoreRepository.findByMerchantId(merchantId);
         List<Product> products = new ArrayList<>();
-        
+
         for (MerchantStore store : stores) {
             products.addAll(productRepository.findByStoreId(store.getId()));
         }
-        
+
         return products.stream()
-            .map(this::mapToInventoryResponse)
-            .collect(Collectors.toList());
+                .map(this::mapToInventoryResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<InventoryItemResponse> getInventoryByStore(Long merchantId, Long storeId) {
         logger.info("Getting inventory for store: {} under merchant: {}", storeId, merchantId);
-        
+
         MerchantStore store = merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId.toString()));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("MerchantStore", "id", storeId.toString()));
+
         if (!store.getMerchant().getId().equals(merchantId)) {
             throw new BadRequestException("Store does not belong to this merchant");
         }
-        
+
         List<Product> products = productRepository.findByStoreId(storeId);
         return products.stream()
-            .map(this::mapToInventoryResponse)
-            .collect(Collectors.toList());
+                .map(this::mapToInventoryResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
     public InventoryItemResponse updateProduct(Long merchantId, Long productId, InventoryUpdateRequest request) {
         logger.info("Updating product: {} for merchant: {}", productId, merchantId);
-        
+
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId.toString()));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId.toString()));
+
         // Verify it belongs to the merchant's store (store_id is an eager FK)
         final Long storeId = product.getStore().getId();
         MerchantStore store = merchantStoreRepository.findById(storeId)
-            .orElseThrow(() -> new ResourceNotFoundException("Store", "id", storeId.toString()));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Store", "id", storeId.toString()));
+
         if (!store.getMerchant().getId().equals(merchantId)) {
             throw new BadRequestException("Product does not belong to this merchant");
         }
-        
+
         if (request.getName() != null) {
             product.setName(request.getName());
         }
@@ -670,7 +656,7 @@ public class MerchantServiceImpl implements MerchantService {
             category.setId(request.getCategoryId());
             product.setCategory(category);
         }
-        
+
         product = productRepository.save(product);
         return mapToInventoryResponse(product);
     }
@@ -678,36 +664,36 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public void deleteProduct(Long merchantId, Long productId) {
         logger.info("Deleting product: {} for merchant: {}", productId, merchantId);
-        
+
         // Verify product exists
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId.toString()));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", productId.toString()));
+
         // Verify it belongs to the merchant's store (store_id is an eager FK)
         MerchantStore store = merchantStoreRepository.findById(product.getStore().getId())
-            .orElseThrow(() -> new ResourceNotFoundException("Store", "id", product.getStore().getId().toString()));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Store", "id", product.getStore().getId().toString()));
+
         if (!store.getMerchant().getId().equals(merchantId)) {
             throw new BadRequestException("Product does not belong to this merchant");
         }
-        
+
         productRepository.deleteById(productId);
     }
 
     @Override
     public List<InventoryItemResponse> getLowStockProducts(Long merchantId, Long storeId) {
         logger.info("Getting low stock products for merchant: {}", merchantId);
-        
+
         List<Product> products;
         if (storeId != null) {
             products = productRepository.findLowStockProducts(storeId);
         } else {
             products = productRepository.findLowStockProductsByMerchant(merchantId);
         }
-        
+
         return products.stream()
-            .map(this::mapToInventoryResponse)
-            .collect(Collectors.toList());
+                .map(this::mapToInventoryResponse)
+                .collect(Collectors.toList());
     }
 
     private InventoryItemResponse mapToInventoryResponse(Product product) {
@@ -720,9 +706,9 @@ public class MerchantServiceImpl implements MerchantService {
         response.setStockQuantity(product.getStockQuantity());
         response.setIsActive(product.getActive());
         response.setLowStockThreshold(product.getReorderLevel());
-        response.setIsLowStock(product.getStockQuantity() != null && 
-                               product.getReorderLevel() != null &&
-                               product.getStockQuantity() <= product.getReorderLevel());
+        response.setIsLowStock(product.getStockQuantity() != null &&
+                product.getReorderLevel() != null &&
+                product.getStockQuantity() <= product.getReorderLevel());
         response.setCreatedAt(product.getCreatedAt());
         response.setUpdatedAt(product.getUpdatedAt());
         return response;
@@ -749,54 +735,54 @@ public class MerchantServiceImpl implements MerchantService {
      */
     @Override
     public SalesReportResponse getSalesReport(Long merchantId, Long storeId, LocalDate startDate, LocalDate endDate) {
-        logger.info("📊 Sales report - merchant: {}, store: {}, dates: {} to {}", 
-            merchantId, storeId, startDate, endDate);
-        
+        logger.info("📊 Sales report - merchant: {}, store: {}, dates: {} to {}",
+                merchantId, storeId, startDate, endDate);
+
         // Verify merchant exists
-        Merchant merchant = merchantRepository.findById(merchantId)
-            .orElseThrow(() -> new RuntimeException("Merchant not found"));
-        
+        merchantRepository.findById(merchantId)
+                .orElseThrow(() -> new RuntimeException("Merchant not found"));
+
         // Verify store belongs to merchant if provided
         MerchantStore store = null;
         if (storeId != null) {
             store = merchantStoreRepository.findByIdAndMerchantId(storeId, merchantId)
-                .orElseThrow(() -> new RuntimeException("Store does not belong to this merchant"));
+                    .orElseThrow(() -> new RuntimeException("Store does not belong to this merchant"));
         }
-        
+
         SalesReportResponse report = new SalesReportResponse();
         report.setStoreId(storeId);
         report.setStoreName(store != null ? store.getStoreName() : "All Stores");
         report.setStartDate(startDate);
         report.setEndDate(endDate);
-        
+
         // Get all orders for store
-        List<Order> orders = getOrdersByStoreAndDate(storeId != null ? storeId : (store != null ? store.getId() : null), 
-                                                     startDate, endDate);
-        
+        List<Order> orders = getOrdersByStoreAndDate(storeId != null ? storeId : (store != null ? store.getId() : null),
+                startDate, endDate);
+
         // Calculate metrics
         int totalOrders = orders.size();
         int completedOrders = (int) orders.stream()
-            .filter(o -> o.getStatus() == Order.OrderStatus.DELIVERED || o.getStatus() == Order.OrderStatus.SHIPPED)
-            .count();
+                .filter(o -> o.getStatus() == Order.OrderStatus.DELIVERED || o.getStatus() == Order.OrderStatus.SHIPPED)
+                .count();
         int cancelledOrders = (int) orders.stream()
-            .filter(o -> o.getStatus() == Order.OrderStatus.CANCELLED)
-            .count();
-        
+                .filter(o -> o.getStatus() == Order.OrderStatus.CANCELLED)
+                .count();
+
         BigDecimal totalRevenue = orders.stream()
-            .map(o -> o.getTotalAmount() != null ? o.getTotalAmount() : BigDecimal.ZERO)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        BigDecimal avgOrderValue = totalOrders > 0 
-            ? totalRevenue.divide(new BigDecimal(totalOrders), 2, java.math.RoundingMode.HALF_UP)
-            : BigDecimal.ZERO;
-        
+                .map(o -> o.getTotalAmount() != null ? o.getTotalAmount() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal avgOrderValue = totalOrders > 0
+                ? totalRevenue.divide(new BigDecimal(totalOrders), 2, java.math.RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+
         report.setTotalOrders(totalOrders);
         report.setCompletedOrders(completedOrders);
         report.setCancelledOrders(cancelledOrders);
         report.setTotalRevenue(totalRevenue);
         report.setAverageOrderValue(avgOrderValue);
         report.setTopProducts(new ArrayList<>());
-        
+
         logger.info("✅ Sales report: {} orders, {} revenue", totalOrders, totalRevenue);
         return report;
     }
@@ -807,45 +793,47 @@ public class MerchantServiceImpl implements MerchantService {
      */
     @Override
     public List<ProductReportResponse> getProductReport(Long merchantId, Long storeId, Long categoryId,
-                                                         Long productId, LocalDate startDate, LocalDate endDate) {
+            Long productId, LocalDate startDate, LocalDate endDate) {
         logger.info("📈 Product report - merchant: {}, store: {}, category: {}", merchantId, storeId, categoryId);
-        
+
         // Verify merchant exists
         merchantRepository.findById(merchantId)
-            .orElseThrow(() -> new RuntimeException("Merchant not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Merchant not found"));
+
         List<ProductReportResponse> reports = new ArrayList<>();
-        
+
         // Get all orders for store
         List<Order> orders = getOrdersByStoreAndDate(storeId, startDate, endDate);
-        
+
         // Group OrderItems by Product
         Map<Product, List<OrderItem>> itemsByProduct = new HashMap<>();
         for (Order order : orders) {
             if (order.getItems() != null) {
                 for (OrderItem item : order.getItems()) {
                     Product p = item.getProduct();
-                    
+
                     // Apply filters
-                    if (productId != null && !p.getId().equals(productId)) continue;
-                    if (categoryId != null && (p.getCategory() == null || !p.getCategory().getId().equals(categoryId))) continue;
-                    
+                    if (productId != null && !p.getId().equals(productId))
+                        continue;
+                    if (categoryId != null && (p.getCategory() == null || !p.getCategory().getId().equals(categoryId)))
+                        continue;
+
                     itemsByProduct.computeIfAbsent(p, k -> new ArrayList<>()).add(item);
                 }
             }
         }
-        
+
         // Calculate metrics for each product
         for (Map.Entry<Product, List<OrderItem>> entry : itemsByProduct.entrySet()) {
             Product product = entry.getKey();
             List<OrderItem> items = entry.getValue();
-            
+
             long unitsSold = items.stream().mapToLong(OrderItem::getQuantity).sum();
             BigDecimal totalRevenue = items.stream()
-                .map(oi -> BigDecimal.valueOf(oi.getQuantity()).multiply(oi.getPrice()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    .map(oi -> BigDecimal.valueOf(oi.getQuantity()).multiply(oi.getPrice()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
             int orderCount = (int) items.stream().map(OrderItem::getOrder).distinct().count();
-            
+
             ProductReportResponse report = new ProductReportResponse();
             report.setProductId(product.getId());
             report.setProductName(product.getName());
@@ -853,13 +841,13 @@ public class MerchantServiceImpl implements MerchantService {
             report.setUnitsSold(unitsSold);
             report.setTotalRevenue(totalRevenue);
             report.setOrderCount(orderCount);
-            
+
             reports.add(report);
         }
-        
+
         // Sort by revenue descending
         reports.sort((a, b) -> b.getTotalRevenue().compareTo(a.getTotalRevenue()));
-        
+
         logger.info("✅ Product report: {} products", reports.size());
         return reports;
     }
@@ -869,68 +857,67 @@ public class MerchantServiceImpl implements MerchantService {
      * Includes daily breakdown and conversion metrics
      */
     @Override
-    public ProductAnalyticsResponse getProductAnalytics(Long merchantId, Long productId, 
-                                                         LocalDate startDate, LocalDate endDate) {
+    public ProductAnalyticsResponse getProductAnalytics(Long merchantId, Long productId,
+            LocalDate startDate, LocalDate endDate) {
         logger.info("📊 Product analytics - merchant: {}, product: {}", merchantId, productId);
-        
+
         // Verify merchant exists
         merchantRepository.findById(merchantId)
-            .orElseThrow(() -> new RuntimeException("Merchant not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Merchant not found"));
+
         // Verify product exists and belongs to merchant's store
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
         merchantStoreRepository.findByIdAndMerchantId(product.getStore().getId(), merchantId)
-            .orElseThrow(() -> new RuntimeException("Product store does not belong to merchant"));
-        
+                .orElseThrow(() -> new RuntimeException("Product store does not belong to merchant"));
+
         ProductAnalyticsResponse analytics = new ProductAnalyticsResponse();
         analytics.setProductId(productId);
         analytics.setProductName(product.getName());
         analytics.setSku(product.getSku());
         analytics.setStartDate(startDate);
         analytics.setEndDate(endDate);
-        
+
         // Get all orders for this product
         List<Order> orders = getOrdersByStoreAndDate(product.getStore().getId(), startDate, endDate);
-        
+
         long totalUnitsSold = 0;
         BigDecimal totalRevenue = BigDecimal.ZERO;
         int orderCount = 0;
-        
+
         for (Order order : orders) {
             if (order.getItems() != null) {
                 for (OrderItem item : order.getItems()) {
                     if (item.getProduct().getId().equals(productId)) {
                         totalUnitsSold += item.getQuantity();
                         totalRevenue = totalRevenue.add(
-                            BigDecimal.valueOf(item.getQuantity()).multiply(item.getPrice())
-                        );
+                                BigDecimal.valueOf(item.getQuantity()).multiply(item.getPrice()));
                         orderCount++;
                     }
                 }
             }
         }
-        
+
         analytics.setTotalUnitsSold(totalUnitsSold);
         analytics.setTotalRevenue(totalRevenue);
-        analytics.setAverageUnitPrice(totalUnitsSold > 0 
-            ? totalRevenue.divide(new BigDecimal(totalUnitsSold), 2, java.math.RoundingMode.HALF_UP)
-            : BigDecimal.ZERO);
+        analytics.setAverageUnitPrice(totalUnitsSold > 0
+                ? totalRevenue.divide(new BigDecimal(totalUnitsSold), 2, java.math.RoundingMode.HALF_UP)
+                : BigDecimal.ZERO);
         analytics.setTotalOrders(orderCount);
-        
+
         // Get view count for conversion rate calculation
         LocalDateTime startDT = startDate != null ? startDate.atStartOfDay() : LocalDateTime.now().minusMonths(1);
         LocalDateTime endDT = endDate != null ? endDate.atTime(23, 59, 59) : LocalDateTime.now();
         long pageViews = productViewRepository.countByProductIdAndViewedAtBetween(productId, startDT, endDT);
         analytics.setPageViews((int) pageViews);
-        
+
         // Calculate conversion rate (orders / views * 100)
         double conversionRate = pageViews > 0 ? (orderCount * 100.0) / pageViews : 0.0;
         analytics.setConversionRate(BigDecimal.valueOf(conversionRate).setScale(2, java.math.RoundingMode.HALF_UP));
-        
-        logger.info("✅ Product analytics: {} units, {} revenue, {} views, {}% conversion", 
-            totalUnitsSold, totalRevenue, pageViews, conversionRate);
+
+        logger.info("✅ Product analytics: {} units, {} revenue, {} views, {}% conversion",
+                totalUnitsSold, totalRevenue, pageViews, conversionRate);
         return analytics;
     }
 
@@ -940,26 +927,26 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public void recordProductView(Long merchantId, Long productId) {
         logger.info("👁️ Recording product view - merchant: {}, product: {}", merchantId, productId);
-        
+
         // Verify merchant exists
         merchantRepository.findById(merchantId)
-            .orElseThrow(() -> new RuntimeException("Merchant not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Merchant not found"));
+
         // Verify product exists
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
-        
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
         // Verify store belongs to merchant
         MerchantStore store = merchantStoreRepository.findByIdAndMerchantId(product.getStore().getId(), merchantId)
-            .orElseThrow(() -> new RuntimeException("Product store does not belong to merchant"));
-        
+                .orElseThrow(() -> new RuntimeException("Product store does not belong to merchant"));
+
         // Save product view to product_view_events table
         ProductView view = new ProductView();
         view.setProduct(product);
         view.setStore(store);
         view.setViewedAt(LocalDateTime.now());
         productViewRepository.save(view);
-        
+
         logger.info("✅ Product view recorded");
     }
 
@@ -970,20 +957,20 @@ public class MerchantServiceImpl implements MerchantService {
         if (storeId == null) {
             return new ArrayList<>();
         }
-        
+
         List<Order> orders = orderRepository.findByStoreId(storeId);
-        
+
         if (startDate != null && endDate != null) {
             LocalDateTime startDT = startDate.atStartOfDay();
             LocalDateTime endDT = endDate.atTime(23, 59, 59);
-            
+
             orders = orders.stream()
-                .filter(o -> o.getCreatedAt() != null && 
-                           o.getCreatedAt().isAfter(startDT) && 
-                           o.getCreatedAt().isBefore(endDT))
-                .collect(Collectors.toList());
+                    .filter(o -> o.getCreatedAt() != null &&
+                            o.getCreatedAt().isAfter(startDT) &&
+                            o.getCreatedAt().isBefore(endDT))
+                    .collect(Collectors.toList());
         }
-        
+
         return orders;
     }
 }

@@ -4,7 +4,6 @@ import com.shopizer.cart.api.CartService;
 import com.shopizer.cart.dto.CartItemRequest;
 import com.shopizer.cart.dto.CartResponse;
 import com.shopizer.common.entity.Cart;
-import com.shopizer.common.entity.Customer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 

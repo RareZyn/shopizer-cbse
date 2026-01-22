@@ -493,10 +493,8 @@ public class CartRepositoryImpl implements CartRepository {
             S probe = example.getProbe();
             StringBuilder jpql = new StringBuilder("SELECT c FROM Cart c");
 
-            boolean hasWhere = false;
             if (probe.getCustomer() != null && probe.getCustomer().getId() != null) {
                 jpql.append(" WHERE c.customer.id = :customerId");
-                hasWhere = true;
             }
 
             if (sort != null && sort.isSorted()) {

@@ -1,7 +1,6 @@
 package com.shopizer.merchant.activator;
 
 import com.shopizer.catalog.api.CatalogService;
-import com.shopizer.common.util.JwtTokenProvider;
 import com.shopizer.merchant.api.MerchantService;
 import com.shopizer.merchant.impl.MerchantServiceImpl;
 import com.shopizer.merchant.repository.MerchantRepository;
@@ -39,7 +38,7 @@ import java.util.Hashtable;
 public class MerchantActivator implements BundleActivator {
 
     private static final Logger logger = LoggerFactory.getLogger(MerchantActivator.class);
-    private static final String JWT_SECRET = "ShopizersecretKeyForJWTTokenAuthenticationForMerchantModule2025";
+
 
     private ServiceRegistration<MerchantService> serviceRegistration;
 
@@ -176,7 +175,6 @@ public class MerchantActivator implements BundleActivator {
                 productRepository,
                 orderRepository,
                 productViewRepository,
-                catalogService,
                 orderService
             );
 

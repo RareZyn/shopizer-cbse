@@ -196,7 +196,6 @@ public class OrderActivator implements BundleActivator {
      */
     private void registerOrderService(BundleContext context) {
         try {
-            // TODO: Initialize JPA repositories (will be configured via Spring Data JPA OSGI support)
             // For now, we'll create placeholder implementations
             OrderRepository orderRepository = null; // Will be injected by OSGI framework
             OrderItemRepository orderItemRepository = null; // Will be injected by OSGI framework

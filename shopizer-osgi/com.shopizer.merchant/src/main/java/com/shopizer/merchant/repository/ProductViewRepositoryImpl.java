@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.FluentQuery;
+import org.springframework.lang.NonNull;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -99,7 +100,7 @@ public class ProductViewRepositoryImpl implements ProductViewRepository {
 
     // Standard JpaRepository methods
     @Override
-    public <S extends ProductView> S save(S entity) {
+    public @NonNull <S extends ProductView> S save(@NonNull S entity) {
         EntityManager em = getEntityManager();
         try {
             em.getTransaction().begin();
@@ -121,7 +122,7 @@ public class ProductViewRepositoryImpl implements ProductViewRepository {
     }
 
     @Override
-    public Optional<ProductView> findById(Long id) {
+    public @NonNull Optional<ProductView> findById(@NonNull Long id) {
         EntityManager em = getEntityManager();
         try {
             ProductView view = em.find(ProductView.class, id);
@@ -132,7 +133,7 @@ public class ProductViewRepositoryImpl implements ProductViewRepository {
     }
 
     @Override
-    public List<ProductView> findAll() {
+    public @NonNull List<ProductView> findAll() {
         EntityManager em = getEntityManager();
         try {
             return em.createQuery("SELECT pv FROM ProductView pv", ProductView.class).getResultList();
@@ -142,7 +143,7 @@ public class ProductViewRepositoryImpl implements ProductViewRepository {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(@NonNull Long id) {
         EntityManager em = getEntityManager();
         try {
             em.getTransaction().begin();
@@ -162,7 +163,7 @@ public class ProductViewRepositoryImpl implements ProductViewRepository {
     }
 
     @Override
-    public void delete(ProductView entity) {
+    public void delete(@NonNull ProductView entity) {
         deleteById(entity.getId());
     }
 
@@ -177,28 +178,28 @@ public class ProductViewRepositoryImpl implements ProductViewRepository {
     }
 
     @Override
-    public boolean existsById(Long id) {
+    public boolean existsById(@NonNull Long id) {
         return findById(id).isPresent();
     }
 
     // Unimplemented methods (not needed for FR-018)
     @Override
-    public <S extends ProductView> List<S> saveAll(Iterable<S> entities) {
+    public @NonNull <S extends ProductView> List<S> saveAll(@NonNull Iterable<S> entities) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public List<ProductView> findAllById(Iterable<Long> ids) {
+    public @NonNull List<ProductView> findAllById(@NonNull Iterable<Long> ids) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public void deleteAllById(Iterable<? extends Long> ids) {
+    public void deleteAllById(@NonNull Iterable<? extends Long> ids) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public void deleteAll(Iterable<? extends ProductView> entities) {
+    public void deleteAll(@NonNull Iterable<? extends ProductView> entities) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -213,22 +214,22 @@ public class ProductViewRepositoryImpl implements ProductViewRepository {
     }
 
     @Override
-    public <S extends ProductView> S saveAndFlush(S entity) {
+    public @NonNull <S extends ProductView> S saveAndFlush(@NonNull S entity) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public <S extends ProductView> List<S> saveAllAndFlush(Iterable<S> entities) {
+    public @NonNull <S extends ProductView> List<S> saveAllAndFlush(@NonNull Iterable<S> entities) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public void deleteAllInBatch(Iterable<ProductView> entities) {
+    public void deleteAllInBatch(@NonNull Iterable<ProductView> entities) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public void deleteAllByIdInBatch(Iterable<Long> ids) {
+    public void deleteAllByIdInBatch(@NonNull Iterable<Long> ids) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -238,62 +239,62 @@ public class ProductViewRepositoryImpl implements ProductViewRepository {
     }
 
     @Override
-    public ProductView getOne(Long id) {
+    public @NonNull ProductView getOne(@NonNull Long id) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public ProductView getById(Long id) {
+    public @NonNull ProductView getById(@NonNull Long id) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public ProductView getReferenceById(Long id) {
+    public @NonNull ProductView getReferenceById(@NonNull Long id) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public <S extends ProductView> Optional<S> findOne(Example<S> example) {
+    public @NonNull <S extends ProductView> Optional<S> findOne(@NonNull Example<S> example) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public <S extends ProductView> List<S> findAll(Example<S> example) {
+    public @NonNull <S extends ProductView> List<S> findAll(@NonNull Example<S> example) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public <S extends ProductView> List<S> findAll(Example<S> example, Sort sort) {
+    public @NonNull <S extends ProductView> List<S> findAll(@NonNull Example<S> example, @NonNull Sort sort) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public <S extends ProductView> Page<S> findAll(Example<S> example, Pageable pageable) {
+    public @NonNull <S extends ProductView> Page<S> findAll(@NonNull Example<S> example, @NonNull Pageable pageable) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public <S extends ProductView> long count(Example<S> example) {
+    public <S extends ProductView> long count(@NonNull Example<S> example) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public <S extends ProductView> boolean exists(Example<S> example) {
+    public <S extends ProductView> boolean exists(@NonNull Example<S> example) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public <S extends ProductView, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction) {
+    public @NonNull <S extends ProductView, R> R findBy(@NonNull Example<S> example, @NonNull Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public List<ProductView> findAll(Sort sort) {
+    public @NonNull List<ProductView> findAll(@NonNull Sort sort) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public Page<ProductView> findAll(Pageable pageable) {
+    public @NonNull Page<ProductView> findAll(@NonNull Pageable pageable) {
         throw new UnsupportedOperationException("Not implemented");
     }
 }

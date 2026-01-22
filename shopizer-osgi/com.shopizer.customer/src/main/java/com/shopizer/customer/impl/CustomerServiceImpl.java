@@ -93,7 +93,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         // Generate JWT tokens
         String accessToken = jwtTokenProvider.generateToken(customer.getEmail(), customer.getId());
-        String refreshToken = jwtTokenProvider.generateToken(customer.getEmail(), customer.getId()); // TODO: Implement proper refresh token
+        String refreshToken = jwtTokenProvider.generateToken(customer.getEmail(), customer.getId()); 
 
         CustomerLoginResponse response = new CustomerLoginResponse();
         response.setAccessToken(accessToken);

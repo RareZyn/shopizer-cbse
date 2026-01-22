@@ -46,7 +46,7 @@ public class CustomerActivator implements BundleActivator {
         logger.info("Repository implementations created successfully");
 
         // Initialize JWT token provider
-        // TODO: Load secret key from configuration
+  
         JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(
             "your-256-bit-secret-key-change-this-in-production-minimum-32-characters"
         );

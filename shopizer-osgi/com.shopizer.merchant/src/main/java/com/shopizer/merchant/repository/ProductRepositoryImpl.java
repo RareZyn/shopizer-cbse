@@ -6,12 +6,12 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
 import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +33,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public Product save(Product product) {
+    public @NonNull <S extends Product> S save(@NonNull S product) {
         EntityManager em = em();
         try {
             em.getTransaction().begin();
@@ -45,7 +45,7 @@ public class ProductRepositoryImpl implements ProductRepository {
             if (product.getId() == null) {
                 em.persist(product);
             } else {
-                product = em.merge(product);
+                product = (S) em.merge(product);
             }
             em.getTransaction().commit();
             return product;
@@ -60,33 +60,33 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public <S extends Product> S saveAndFlush(S entity) {
-        return (S) save(entity);
+    public @NonNull <S extends Product> S saveAndFlush(@NonNull S entity) {
+        return save(entity);
     }
 
     @Override
-    public <S extends Product> List<S> saveAllAndFlush(Iterable<S> entities) {
+    public @NonNull <S extends Product> List<S> saveAllAndFlush(@NonNull Iterable<S> entities) {
         List<S> result = new java.util.ArrayList<>();
         for (S entity : entities) {
-            result.add((S) save(entity));
+            result.add(save(entity));
         }
         return result;
     }
 
     @Override
-    public void deleteInBatch(Iterable<Product> entities) {
+    public void deleteInBatch(@NonNull Iterable<Product> entities) {
         for (Product product : entities) {
             delete(product);
         }
     }
 
     @Override
-    public void deleteAllInBatch(Iterable<Product> entities) {
+    public void deleteAllInBatch(@NonNull Iterable<Product> entities) {
         deleteInBatch(entities);
     }
 
     @Override
-    public void deleteAllByIdInBatch(Iterable<Long> ids) {
+    public void deleteAllByIdInBatch(@NonNull Iterable<Long> ids) {
         for (Long id : ids) {
             deleteById(id);
         }
@@ -98,16 +98,16 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public <S extends Product> List<S> saveAll(Iterable<S> entities) {
+    public @NonNull <S extends Product> List<S> saveAll(@NonNull Iterable<S> entities) {
         List<S> result = new java.util.ArrayList<>();
         for (S entity : entities) {
-            result.add((S) save(entity));
+            result.add(save(entity));
         }
         return result;
     }
 
     @Override
-    public Optional<Product> findById(Long id) {
+    public @NonNull Optional<Product> findById(@NonNull Long id) {
         EntityManager em = em();
         try {
             return Optional.ofNullable(em.find(Product.class, id));
@@ -117,12 +117,12 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public boolean existsById(Long id) {
+    public boolean existsById(@NonNull Long id) {
         return findById(id).isPresent();
     }
 
     @Override
-    public List<Product> findAll() {
+    public @NonNull List<Product> findAll() {
         EntityManager em = em();
         try {
             TypedQuery<Product> q = em.createQuery("SELECT p FROM Product p", Product.class);
@@ -133,7 +133,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAllById(Iterable<Long> ids) {
+    public @NonNull List<Product> findAllById(@NonNull Iterable<Long> ids) {
         List<Long> idList = new java.util.ArrayList<>();
         ids.forEach(idList::add);
         if (idList.isEmpty()) return new java.util.ArrayList<>();
@@ -161,12 +161,12 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(@NonNull Long id) {
         findById(id).ifPresent(this::delete);
     }
 
     @Override
-    public void delete(Product product) {
+    public void delete(@NonNull Product product) {
         EntityManager em = em();
         try {
             em.getTransaction().begin();
@@ -184,14 +184,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public void deleteAllById(Iterable<? extends Long> ids) {
+    public void deleteAllById(@NonNull Iterable<? extends Long> ids) {
         for (Long id : ids) {
             deleteById(id);
         }
     }
 
     @Override
-    public void deleteAll(Iterable<? extends Product> entities) {
+    public void deleteAll(@NonNull Iterable<? extends Product> entities) {
         for (Product entity : entities) {
             delete(entity);
         }
@@ -215,44 +215,44 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public List<Product> findAll(Sort sort) {
+    public @NonNull List<Product> findAll(@NonNull Sort sort) {
         return findAll();
     }
 
     @Override
-    public Page<Product> findAll(Pageable pageable) {
+    public @NonNull Page<Product> findAll(@NonNull Pageable pageable) {
         List<Product> all = findAll();
         return new PageImpl<>(all, pageable, all.size());
     }
 
     @Override
-    public <S extends Product> Optional<S> findOne(Example<S> example) {
+    public @NonNull <S extends Product> Optional<S> findOne(@NonNull Example<S> example) {
         List<S> results = findAll(example);
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
 
     @Override
-    public <S extends Product> List<S> findAll(Example<S> example) {
+    public @NonNull <S extends Product> List<S> findAll(@NonNull Example<S> example) {
         return new java.util.ArrayList<>();
     }
 
     @Override
-    public <S extends Product> List<S> findAll(Example<S> example, Sort sort) {
+    public @NonNull <S extends Product> List<S> findAll(@NonNull Example<S> example, @NonNull Sort sort) {
         return new java.util.ArrayList<>();
     }
 
     @Override
-    public <S extends Product> Page<S> findAll(Example<S> example, Pageable pageable) {
+    public @NonNull <S extends Product> Page<S> findAll(@NonNull Example<S> example, @NonNull Pageable pageable) {
         return new PageImpl<>(new java.util.ArrayList<>(), pageable, 0);
     }
 
     @Override
-    public <S extends Product> long count(Example<S> example) {
+    public <S extends Product> long count(@NonNull Example<S> example) {
         return 0;
     }
 
     @Override
-    public <S extends Product> boolean exists(Example<S> example) {
+    public <S extends Product> boolean exists(@NonNull Example<S> example) {
         return false;
     }
 
@@ -327,31 +327,28 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     public void deleteAllInBatch() {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'deleteAllInBatch'");
     }
 
     @Override
-    public Product getById(Long arg0) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getById'");
+    public @NonNull Product getById(@NonNull Long arg0) {
+        return findById(arg0).orElseThrow(() ->
+            new jakarta.persistence.EntityNotFoundException("Product not found with id: " + arg0));
     }
 
     @Override
-    public Product getOne(Long arg0) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getOne'");
+    public @NonNull Product getOne(@NonNull Long arg0) {
+        return findById(arg0).orElseThrow(() ->
+            new jakarta.persistence.EntityNotFoundException("Product not found with id: " + arg0));
     }
 
     @Override
-    public Product getReferenceById(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getReferenceById'");
+    public @NonNull Product getReferenceById(@NonNull Long id) {
+        return getById(id);
     }
 
     @Override
-    public <S extends Product, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
-        // TODO Auto-generated method stub
+    public @NonNull <S extends Product, R> R findBy(@NonNull Example<S> example, @NonNull Function<FetchableFluentQuery<S>, R> queryFunction) {
         throw new UnsupportedOperationException("Unimplemented method 'findBy'");
     }
 }
