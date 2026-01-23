@@ -2,7 +2,6 @@ com\shopizer\order\dto\OrderTrackingResponse.class
 com\shopizer\order\dto\PaymentRequest.class
 com\shopizer\order\payment\StripePaymentProcessor.class
 com\shopizer\order\activator\OrderActivator$1.class
-com\shopizer\order\impl\OrderServiceImpl$1.class
 com\shopizer\order\payment\PaymentProcessor.class
 com\shopizer\order\api\OrderService.class
 com\shopizer\order\impl\OrderServiceImpl.class

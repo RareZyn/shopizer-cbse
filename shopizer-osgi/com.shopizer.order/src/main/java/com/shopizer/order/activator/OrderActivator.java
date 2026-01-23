@@ -201,19 +201,14 @@ public class OrderActivator implements BundleActivator {
             OrderItemRepository orderItemRepository = null; // Will be injected by OSGI framework
             PaymentRepository paymentRepository = null; // Will be injected by OSGI framework
 
-            // Create payment processor list
-            List<PaymentProcessor> paymentProcessors = new ArrayList<>();
-            paymentProcessors.add(new StripePaymentProcessor());
-            paymentProcessors.add(new PayPalPaymentProcessor());
-
-            // Create service implementation
+            // UPDATED: Removed paymentProcessors list from constructor call.
+            // The OrderServiceImpl now discovers processors via the OSGi registry directly.
             OrderService orderService = new OrderServiceImpl(
                 orderRepository,
                 orderItemRepository,
                 paymentRepository,
                 cartService,
-                catalogService,
-                paymentProcessors
+                catalogService
             );
 
             // Register service in OSGI registry
